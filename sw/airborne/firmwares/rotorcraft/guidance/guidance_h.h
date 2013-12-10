@@ -57,7 +57,7 @@
 #define GUIDANCE_H_MODE_RC_DIRECT   5
 #define GUIDANCE_H_MODE_CARE_FREE   6
 #define GUIDANCE_H_MODE_FORWARD     7
-
+#define GUIDANCE_H_MODE_VISION      8
 
 extern uint8_t guidance_h_mode;
 extern bool_t guidance_h_use_ref;
@@ -85,11 +85,17 @@ extern struct Int32Vect2 guidance_h_trim_att_integrator;
 extern struct Int32Vect2  guidance_h_cmd_earth;
 extern struct Int32Eulers guidance_h_rc_sp;         ///< with #INT32_ANGLE_FRAC
 extern int32_t guidance_h_heading_sp;               ///< with #INT32_ANGLE_FRAC
+extern struct Int32Eulers guidance_h_command_body;  ///< with #INT32_ANGLE_FRAC
 
 extern int32_t guidance_h_pgain;
 extern int32_t guidance_h_dgain;
 extern int32_t guidance_h_igain;
 extern int32_t guidance_h_again;
+
+extern int32_t guidance_h_vision_pgain;
+extern int32_t guidance_h_vision_dgain;
+extern int32_t guidance_h_vision_igain;
+extern int32_t guidance_h_vision_again;
 
 extern int32_t transition_percentage;
 extern int32_t transition_theta_offset;

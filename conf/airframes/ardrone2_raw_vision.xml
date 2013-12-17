@@ -23,8 +23,8 @@
     <subsystem name="actuators" type="ardrone2"/>
     <subsystem name="imu" type="ardrone2"/>
     <subsystem name="gps" type="ublox"/>
-    <subsystem name="stabilization" type="int_quat"/>
-    <subsystem name="ahrs" type="int_cmpl_quat"/>
+    <subsystem name="stabilization" type="int_euler"/>
+    <subsystem name="ahrs" type="int_cmpl_euler"/>
     <subsystem name="ins" type="extended"/>
   </firmware>
 
@@ -32,9 +32,14 @@
     <load name="gps_ubx_ucenter.xml"/>
     <load name="send_imu_mag_current.xml"/>
     <load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlowLand.xml"/>
-    <!--<load name="../../sw/ext/ardrone2_vision/modules/Mjpeg/ViewVideo.xml"/>-->
+<!--    <load name="../../sw/ext/ardrone2_vision/modules/Mjpeg/ViewVideo.xml"/-->
     <!--<load name="../../sw/ext/ardrone2_vision/modules/ObstacleAvoidSkySegmentation/ObstacleAvoidSkySegmentationV4L.xml"/>-->
   </modules>
+
+  <section name="VISION" prefix="VISION_">
+    <define name="PGAIN" value="10"/>
+    <define name="DGAIN" value="10"/>
+  </section>
 
   <commands>
     <axis name="PITCH" failsafe_value="0"/>

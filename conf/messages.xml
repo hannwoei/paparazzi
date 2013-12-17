@@ -1165,7 +1165,16 @@
     <field name="status" type="uint8" values="UNINIT|RUNNING|LOCKED"/>
   </message>
 
-  <!-- 138 is free -->
+  <message name="OPTIC_FLOW" id="138">
+    <field name="dx"         type="float"/>
+    <field name="dy"         type="float"/>
+    <field name="dx_trans"   type="float"/>
+    <field name="dy_trans"   type="float"/>
+    <field name="diff_roll"  type="float"/>
+    <field name="diff_pitch" type="float"/>
+    <field name="height"     type="int32"/>
+    <field name="no_corners" type="int32"/>    
+  </message>
 
   <message name="FILTER_COR" id="139">
     <field name="mphi"   type="int32"/>

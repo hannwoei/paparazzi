@@ -1174,6 +1174,11 @@
     <field name="diff_pitch" type="float"/>
     <field name="height"     type="int32"/>
     <field name="no_corners" type="int32"/>    
+    <field name="divergence" type="float"/>
+    <field name="meant_TTI"  type="float"/>
+    <field name="median_TTI" type="float"/>
+	<field name="d_heading"  type="float"/>  
+	<field name="d_pitch"    type="float"/>  
   </message>
 
   <message name="FILTER_COR" id="139">

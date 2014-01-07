@@ -24,7 +24,7 @@
     <subsystem name="imu" type="ardrone2"/>
     <subsystem name="gps" type="ublox"/>
     <subsystem name="stabilization" type="int_euler"/>
-    <subsystem name="ahrs" type="int_cmpl_euler"/>
+    <subsystem name="ahrs" type="int_cmpl_quat"/>
     <subsystem name="ins" type="extended"/>
   </firmware>
 
@@ -85,12 +85,12 @@
 
   <!--Ardrone 187-->
   <section name="IMU" prefix="IMU_">
-    <!-- Accelero (done) -->
+    
     <define name="ACCEL_X_NEUTRAL" value="2040"/>
     <define name="ACCEL_Y_NEUTRAL" value="2060"/>
     <define name="ACCEL_Z_NEUTRAL" value="2048"/>
     
-    <!-- Magneto calibration (done) -->
+    
     <define name="MAG_X_NEUTRAL" value="15"/>
         <define name="MAG_Y_NEUTRAL" value="4"/>
         <define name="MAG_Z_NEUTRAL" value="-233"/>
@@ -98,7 +98,28 @@
         <define name="MAG_Y_SENS" value="15.7035556048" integer="16"/>
         <define name="MAG_Z_SENS" value="16.6062003842" integer="16"/>
     
-    <!-- Magneto current calibration -->
+    
+    <define name="MAG_X_CURRENT_COEF" value="0.00175105205138"/>
+    <define name="MAG_Y_CURRENT_COEF" value="0.000172518663485"/>
+    <define name="MAG_Z_CURRENT_COEF" value="0.00022802329524"/>
+  </section>
+
+<!--Ardrone 193
+  <section name="IMU" prefix="IMU_">
+
+    <define name="ACCEL_X_NEUTRAL" value="2056"/>
+    <define name="ACCEL_Y_NEUTRAL" value="2052"/>
+    <define name="ACCEL_Z_NEUTRAL" value="2048"/>
+
+
+    <define name="MAG_X_NEUTRAL" value="33"/>
+    <define name="MAG_Y_NEUTRAL" value="44"/>
+    <define name="MAG_Z_NEUTRAL" value="-264"/>
+    <define name="MAG_X_SENS" value="19.1984157982" integer="16"/>
+    <define name="MAG_Y_SENS" value="18.7031225235" integer="16"/>
+    <define name="MAG_Z_SENS" value="19.0380688485" integer="16"/>
+
+
     <define name="MAG_X_CURRENT_COEF" value="0.00175105205138"/>
     <define name="MAG_Y_CURRENT_COEF" value="0.000172518663485"/>
     <define name="MAG_Z_CURRENT_COEF" value="0.00022802329524"/>
@@ -109,7 +130,7 @@
     <define name="BODY_TO_IMU_THETA" value="0." unit="deg"/>
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
   </section>
-
+-->
   <!-- local magnetic field -->
   <!-- http://paparazzi.enac.fr/wiki/Subsystem/ahrs#Local_Magnetic_Field -->
   <section name="AHRS" prefix="AHRS_">

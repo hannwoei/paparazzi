@@ -1166,12 +1166,13 @@
   </message>
 
   <message name="OPTIC_FLOW" id="138">
-    <field name="dx"         type="float"/>
-    <field name="dy"         type="float"/>
-    <field name="dx_trans"   type="float"/>
-    <field name="dy_trans"   type="float"/>
-    <field name="diff_roll"  type="float"/>
-    <field name="diff_pitch" type="float"/>
+  	<field name="FPS"        type="float"/>
+    <field name="dx"         type="int32"/>
+    <field name="dy"         type="int32"/>
+    <field name="dx_trans"   type="int32"/>
+    <field name="dy_trans"   type="int32"/>
+    <field name="diff_roll"  type="int32"/>
+    <field name="diff_pitch" type="int32"/>
     <field name="height"     type="int32"/>
     <field name="no_corners" type="int32"/>    
     <field name="divergence" type="float"/>

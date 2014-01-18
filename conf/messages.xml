@@ -1174,12 +1174,18 @@
     <field name="diff_roll"  type="int32"/>
     <field name="diff_pitch" type="int32"/>
     <field name="height"     type="int32"/>
-    <field name="no_corners" type="int32"/>    
+    <field name="no_corners" type="int32"/>  
+    <field name="no_OF"      type="int32"/>  
     <field name="divergence" type="float"/>
     <field name="meant_TTI"  type="float"/>
     <field name="median_TTI" type="float"/>
 	<field name="d_heading"  type="float"/>  
 	<field name="d_pitch"    type="float"/>  
+	<field name="ventral_dx" type="float"/>  
+	<field name="ventral_dy" type="float"/>  
+	<field name="div_error"  type="float"/>  
+	<field name="n_inlier_u" type="int32"/>
+    <field name="n_inlier_v" type="int32"/>	
   </message>
 
   <message name="FILTER_COR" id="139">
@@ -1458,7 +1464,6 @@
      <field name="status"   type="uint8" values="OK|LOST|REALLY_LOST"/>
   </message>
 
-  <!-- 161 is free -->
   <message name="VFF_EXTENDED" id="161">
       <field name="measure1"        type="float"/>
       <field name="measure2"        type="float"/>
@@ -1912,7 +1917,15 @@
  <!--215 is free -->
  <!--216 is free -->
  <!--217 is free -->
- <!--218 is free -->
+  <message name="OF_FITTING" id="218">
+    <field name="pu0"      type="float"/>
+    <field name="pu1"      type="float"/>
+    <field name="pu2"      type="float"/>
+    <field name="pv0"      type="float"/>
+    <field name="pv1"      type="float"/>
+    <field name="pv2"      type="float"/>    
+  </message>
+ 	
   <message name="WEATHER" id="219">
     <field name="p_amb" type="float" unit="Pa" alt_unit="mBar" alt_unit_coef="0.01"/>
     <field name="t_amb" type="float" unit="deg C"/>

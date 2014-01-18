@@ -39,7 +39,9 @@
   <section name="VISION" prefix="VISION_">
     <define name="PGAIN" value="10"/>
     <define name="DGAIN" value="10"/>
-  </section>
+    <define name="LAND_PGAIN" value="10"/>
+    <define name="LAND_DGAIN" value="10"/>
+   </section>
 
   <commands>
     <axis name="PITCH" failsafe_value="0"/>
@@ -246,10 +248,10 @@
   </section>
 
   <section name="AUTOPILOT">
-    <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
+    <define name="MODE_STARTUP" value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_AUTO1" value="AP_MODE_ATTITUDE_Z_HOLD"/>
-    <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
+    <define name="MODE_AUTO2" value="AP_MODE_HOVER_CLIMB"/>
   </section>
 
   <section name="BAT">

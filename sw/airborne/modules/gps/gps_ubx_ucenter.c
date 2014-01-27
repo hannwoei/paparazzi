@@ -297,7 +297,7 @@ static inline void gps_ubx_ucenter_config_port(void)
   #endif
   // UART Interface
   #if GPS_PORT_ID == GPS_PORT_UART1 || GPS_PORT_ID == GPS_PORT_UART2
-    UbxSend_CFG_PRT(GPS_PORT_ID, 0x0, 0x0, 0x000008D0, UBX_GPS_BAUD, UBX_PROTO_MASK, UBX_PROTO_MASK, 0x0, 0x0);
+    UbxSend_CFG_PRT(GPS_PORT_ID, 0x0, 0x0, 0x000008D0, UART_SPEED(UBX_GPS_BAUD), UBX_PROTO_MASK, UBX_PROTO_MASK, 0x0, 0x0);
   #endif
   #if GPS_PORT_ID == GPS_PORT_USB
     UbxSend_CFG_PRT(GPS_PORT_ID, 0x0, 0x0, 0x0, 0, UBX_PROTO_MASK, UBX_PROTO_MASK, 0x0, 0x0);
@@ -379,7 +379,7 @@ static bool_t gps_ubx_ucenter_configure(uint8_t nr)
   case 6:
     // Now the GPS baudrate should have changed
     GpsUartSetBaudrate(UBX_GPS_BAUD);
-    gps_ubx_ucenter.baud_run = UBX_GPS_BAUD;
+    gps_ubx_ucenter.baud_run = UART_SPEED(UBX_GPS_BAUD);
     gps_ubx_ucenter_config_nav();
     break;
   case 7:
@@ -417,10 +417,15 @@ static bool_t gps_ubx_ucenter_configure(uint8_t nr)
 #endif
     break;
   case 16:
+#if USE_GPS_UBX_RXM_SFRB
+    gps_ubx_ucenter_enable_msg(UBX_RXM_ID, UBX_RXM_SFRB_ID, 1);
+#endif
+    break;
+  case 17:
     // Try to save on non-ROM devices...
     UbxSend_CFG_CFG(0x00000000,0xffffffff,0x00000000);
     break;
-  case 17:
+  case 18:
 #if DEBUG_GPS_UBX_UCENTER
     // Debug Downlink the result of all configuration steps: see messages
     DOWNLINK_SEND_DEBUG(DefaultChannel, DefaultDevice,GPS_UBX_UCENTER_CONFIG_STEPS,gps_ubx_ucenter.replies);

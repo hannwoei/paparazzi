@@ -38,6 +38,6 @@ volatile bool_t inter_mcu_received_ap  = FALSE;
 
 #ifdef FBW
 /** Variables for monitoring AP communication status */
-uint8_t ap_ok;
+bool_t ap_ok;
 uint8_t time_since_last_ap;
 #endif

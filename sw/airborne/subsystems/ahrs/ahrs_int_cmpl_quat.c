@@ -52,9 +52,16 @@ PRINT_CONFIG_MSG("LOW PASS FILTER ON GYRO RATES")
 #endif
 
 #if USE_MAGNETOMETER && AHRS_USE_GPS_HEADING
-#warning "Using both magnetometer and GPS course to update heading. Probably better to set USE_MAGNETOMETER=0 if you want to use GPS course."
+#warning "Using both magnetometer and GPS course to update heading. Probably better to configure USE_MAGNETOMETER=0 if you want to use GPS course."
 #endif
 
+#if !USE_MAGNETOMETER && !AHRS_USE_GPS_HEADING
+#error "Please use either USE_MAGNETOMETER or AHRS_USE_GPS_HEADING."
+#endif
+
+#if AHRS_USE_GPS_HEADING && !USE_GPS
+#error "AHRS_USE_GPS_HEADING needs USE_GPS to be TRUE"
+#endif
 
 #ifndef AHRS_PROPAGATE_FREQUENCY
 #define AHRS_PROPAGATE_FREQUENCY PERIODIC_FREQUENCY
@@ -123,7 +130,7 @@ static inline void set_body_state_from_quat(void);
 static inline void ahrs_update_mag_full(void);
 static inline void ahrs_update_mag_2d(void);
 
-#if DOWNLINK
+#if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
 
 static void send_quat(void) {
@@ -193,7 +200,7 @@ void ahrs_init(void) {
   VECT3_ASSIGN(ahrs_impl.mag_h, MAG_BFP_OF_REAL(AHRS_H_X),
                MAG_BFP_OF_REAL(AHRS_H_Y), MAG_BFP_OF_REAL(AHRS_H_Z));
 
-#if DOWNLINK
+#if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "AHRS_QUAT_INT", send_quat);
   register_periodic_telemetry(DefaultPeriodic, "AHRS_EULER_INT", send_euler);
   register_periodic_telemetry(DefaultPeriodic, "AHRS_GYRO_BIAS_INT", send_bias);

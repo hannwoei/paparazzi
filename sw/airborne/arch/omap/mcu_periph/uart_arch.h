@@ -31,16 +31,34 @@
 // for definition of baud rates
 #include <termios.h>
 
+// for conversion between linux baud rate definition and actual speed
+static inline int uart_speed(int def) {
+  switch (def) {
+    case B1200: return 1200;
+    case B2400: return 2400;
+    case B4800: return 4800;
+    case B9600: return 9600;
+    case B19200: return 19200;
+    case B38400: return 38400;
+    case B57600: return 57600;
+    case B115200: return 115200;
+    case B230400: return 230400;
+    case B921600: return 921600;
+    default: return 9600;
+  }
+}
+#define UART_SPEED(_def) uart_speed(_def)
+
 #define UART1_irq_handler usart1_irq_handler
 #define UART2_irq_handler usart2_irq_handler
 #define UART3_irq_handler usart3_irq_handler
 #define UART5_irq_handler usart5_irq_handler
 
-#if defined USE_UART0 || OVERRIDE_UART0_IRQ_HANDLER
+#if USE_UART0 || OVERRIDE_UART0_IRQ_HANDLER
 extern void uart0_handler(void);
 #endif
 
-#if defined USE_UART1 || OVERRIDE_UART1_IRQ_HANDLER
+#if USE_UART1 || OVERRIDE_UART1_IRQ_HANDLER
 extern void uart1_handler(void);
 #endif
 

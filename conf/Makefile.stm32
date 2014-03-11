@@ -43,11 +43,7 @@ else
 MCU   = cortex-m3
 endif
 #DEBUG = dwarf-2
-OPT   = s
-#OPT   = 2
-#OPT   = 0
-
-
+OPT ?= s
 
 # input files
 SRCS = $($(TARGET).srcs)
@@ -105,6 +101,8 @@ CFLAGS += -Wredundant-decls -Wmissing-declarations
 CFLAGS += -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS += -Wshadow
 CFLAGS += -Wnested-externs
+
+#CFLAGS += -fno-diagnostics-show-caret
 
 ifneq ($(ARCH_L), )
 ifeq ($(ARCH_L),f4)

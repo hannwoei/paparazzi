@@ -55,8 +55,8 @@
 #include "subsystems/air_data.h"
 
 #if USE_BARO_BOARD
-PRINT_CONFIG_MSG("USE_BARO_BOARD is TRUE: Reading onboard baro.")
 #include "subsystems/sensors/baro.h"
+PRINT_CONFIG_MSG_VALUE("USE_BARO_BOARD is TRUE, reading onboard baro: ", BARO_BOARD)
 #endif
 
 #include "subsystems/electrical.h"
@@ -254,6 +254,7 @@ STATIC_INLINE void failsafe_check( void ) {
 #endif
 
 #if USE_GPS
+  gps_periodic_check();
   if (autopilot_mode == AP_MODE_NAV &&
       autopilot_motors_on &&
 #if NO_GPS_LOST_WITH_RC_VALID

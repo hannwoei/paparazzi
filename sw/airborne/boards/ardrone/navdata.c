@@ -49,7 +49,6 @@ static void navdata_cropbuffer(int cropsize);
 
 navdata_port nav_port;
 static int nav_fd = 0;
-static int16_t previousUltrasoundHeight;
 measures_t navdata;
 
 #include "subsystems/sonar.h"
@@ -67,7 +66,7 @@ ssize_t full_write(int fd, const uint8_t *buf, size_t count)
     if (n < 0)
     {
       if (errno == EAGAIN || errno == EWOULDBLOCK)
-	continue;
+        continue;
       return n;
     }
     written += n;
@@ -86,7 +85,7 @@ ssize_t full_read(int fd, uint8_t *buf, size_t count)
     if (n < 0)
     {
       if (errno == EAGAIN || errno == EWOULDBLOCK)
-	continue;
+        continue;
       return n;
     }
     readed += n;
@@ -190,7 +189,6 @@ bool_t navdata_init()
   navdata_imu_available = FALSE;
   navdata_baro_available = FALSE;
 
-  previousUltrasoundHeight = 0;
   nav_port.checksum_errors = 0;
   nav_port.lost_imu_frames = 0;
   nav_port.bytesRead = 0;
@@ -294,7 +292,6 @@ static void baro_update_logic(void)
         // wait for temp again
         temp_or_press_was_updated_last = FALSE;
         sync_errors++;
-        navdata_baro_available = TRUE;
         printf("Baro-Logic-Error (expected updated temp, got press)\n");
       }
     }
@@ -316,13 +313,25 @@ static void baro_update_logic(void)
         printf("Baro-Logic-Error (expected updated press, got temp)\n");
 
       }
+      else {
+        // We now got valid pressure and temperature
+        navdata_baro_available = TRUE;
+      }
     }
-
-    navdata_baro_available = TRUE;
   }
 
-  lastpressval = navdata.pressure;
+  // Detected a pressure switch
+  if(lastpressval != 0 && lasttempval != 0 && ABS(lastpressval - navdata.pressure) > ABS(lasttempval - navdata.pressure)) {
+    navdata_baro_available = FALSE;
+  }
+
+  // Detected a temprature switch
+  if(lastpressval != 0 && lasttempval != 0 && ABS(lasttempval - navdata.temperature_pressure) > ABS(lastpressval - navdata.temperature_pressure)) {
+    navdata_baro_available = FALSE;
+  }
+
   lasttempval = navdata.temperature_pressure;
+  lastpressval = navdata.pressure;
 
   /*
    * It turns out that a lot of navdata boards have a problem (probably interrupt related)
@@ -391,6 +400,7 @@ static void baro_update_logic(void)
     lasttempval_nospike = navdata.temperature_pressure;
   }
 
+// printf("%d %d %d\r\n", navdata.temperature_pressure, navdata.pressure, spike_detected);
 //  printf(",%d,%d",spike_detected,spikes);
 }
 
@@ -456,14 +466,13 @@ void navdata_update()
 
 
 #ifdef USE_SONAR
-        if (navdata.ultrasound < 10000)
+        // Check if there is a new sonar measurement and update the sonar
+        if (navdata.ultrasound >> 15)
         {
-            sonar_meas = navdata.ultrasound;
-            ins_update_sonar();
-
+          sonar_meas = (navdata.ultrasound & 0x7FFF);
+          ins_update_sonar();
         }
 #endif
-
 
         navdata_imu_available = TRUE;
         last_checksum_wrong = FALSE;
@@ -487,17 +496,7 @@ void navdata_update()
       }
     }
   }
-}
 
-int16_t navdata_height(void) {
-  if (navdata.ultrasound > 10000) {
-    return previousUltrasoundHeight;
-  }
-
-  int16_t ultrasoundHeight = 0;
-  ultrasoundHeight = (navdata.ultrasound - 880) / 26.553;
-  previousUltrasoundHeight = ultrasoundHeight;
-  return ultrasoundHeight;
 }
 
 static void navdata_cropbuffer(int cropsize)

@@ -34,7 +34,7 @@
 #include "subsystems/gps.h"
 #include "subsystems/nav.h"
 
-void ins_init() {
+void ins_init(void) {
   struct UtmCoor_f utm0 = { nav_utm_north0, nav_utm_east0, 0., nav_utm_zone0 };
   stateSetLocalUtmOrigin_f(&utm0);
   stateSetPositionUtm_f(&utm0);
@@ -42,41 +42,47 @@ void ins_init() {
   ins.status = INS_RUNNING;
 }
 
-void ins_periodic( void ) {
+void ins_reset_local_origin(void) {
+  struct UtmCoor_f utm;
+#ifdef GPS_USE_LATLONG
+  /* Recompute UTM coordinates in this zone */
+  struct LlaCoor_f lla;
+  lla.lat = gps.lla_pos.lat/1e7;
+  lla.lon = gps.lla_pos.lon/1e7;
+  utm.zone = (DegOfRad(gps.lla_pos.lon/1e7)+180) / 6 + 1;
+  utm_of_lla_f(&utm, &lla);
+#else
+  utm.zone = gps.utm_pos.zone;
+  utm.east = gps.utm_pos.east / 100.0f;
+  utm.north = gps.utm_pos.north / 100.0f;
+#endif
+  // ground_alt
+  utm.alt = gps.hmsl / 1000.0f;
+  // reset state UTM ref
+  stateSetLocalUtmOrigin_f(&utm);
+}
+
+void ins_reset_altitude_ref(void) {
+  struct UtmCoor_f utm = state.utm_origin_f;
+  utm.alt = gps.hmsl / 1000.0f;
+  stateSetLocalUtmOrigin_f(&utm);
 }
 
 void ins_update_gps(void) {
   struct UtmCoor_f utm;
-  utm.east = gps.utm_pos.east / 100.;
-  utm.north = gps.utm_pos.north / 100.;
+  utm.east = gps.utm_pos.east / 100.0f;
+  utm.north = gps.utm_pos.north / 100.0f;
   utm.zone = nav_utm_zone0;
-  utm.alt = gps.hmsl / 1000.;
+  utm.alt = gps.hmsl / 1000.0f;
 
   // set position
   stateSetPositionUtm_f(&utm);
 
   struct NedCoor_f ned_vel = {
-    gps.ned_vel.x / 100.,
-    gps.ned_vel.y / 100.,
-    gps.ned_vel.z / 100.
+    gps.ned_vel.x / 100.0f,
+    gps.ned_vel.y / 100.0f,
+    gps.ned_vel.z / 100.0f
   };
   // set velocity
   stateSetSpeedNed_f(&ned_vel);
 }
-
-
-void ins_propagate() {
-}
-
-void ins_update_baro() {
-}
-
-void ins_update_sonar() {
-}
-
-void ins_realign_h(struct FloatVect2 pos __attribute__ ((unused)), struct FloatVect2 speed __attribute__ ((unused))) {
-}
-
-void ins_realign_v(float z __attribute__ ((unused))) {
-}
-

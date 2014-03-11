@@ -30,6 +30,8 @@
 
 #include <inttypes.h>
 
+#ifndef PPRZ_DATALINK_EXPORT
+
 #include "generated/modules.h"
 #include "messages.h"
 #include "generated/airframe.h" // AC_ID is required
@@ -49,6 +51,7 @@
 
 #include "subsystems/datalink/udp.h"
 #include "subsystems/datalink/pprz_transport.h"
+#include "subsystems/datalink/pprzlog_transport.h"
 #include "subsystems/datalink/xbee.h"
 #include "subsystems/datalink/w5100.h"
 #if USE_SUPERBITRF
@@ -63,6 +66,16 @@
 #include "mcu_periph/uart.h"
 
 #endif /** !SITL */
+
+#else /* PPRZ_DATALINK_EXPORT defined */
+
+#include "messages.h"
+#include "pprz_transport.h"
+#ifndef AC_ID
+#define AC_ID 0
+#endif
+
+#endif
 
 #ifndef DefaultChannel
 #define DefaultChannel DOWNLINK_TRANSPORT

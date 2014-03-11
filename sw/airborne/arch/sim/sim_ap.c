@@ -109,6 +109,11 @@ value update_bat(value bat) {
   return Val_unit;
 }
 
+value update_dl_status(value dl_enabled) {
+  ivy_dl_enabled = Int_val(dl_enabled);
+  return Val_unit;
+}
+
 
 value get_commands(value val_commands) {
   int i;
@@ -134,6 +139,6 @@ value set_datalink_message(value s) {
 
 /** Required by electrical */
 void adc_buf_channel(void* a __attribute__ ((unused)),
-		     void* b __attribute__ ((unused)),
-		     void* c __attribute__ ((unused))) {
+         void* b __attribute__ ((unused)),
+         void* c __attribute__ ((unused))) {
 }

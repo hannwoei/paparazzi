@@ -920,7 +920,7 @@ void i2c1_hw_init(void) {
 
   /* Enable peripheral clocks -------------------------------------------------*/
   /* Enable I2C1 clock */
-  rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_I2C1EN);
+  rcc_periph_clock_enable(RCC_I2C1);
   /* Enable GPIO clock */
   gpio_enable_clock(I2C1_GPIO_PORT);
 #if defined(STM32F1)
@@ -1006,7 +1006,7 @@ void i2c2_hw_init(void) {
 
   /* Enable peripheral clocks -------------------------------------------------*/
   /* Enable I2C2 clock */
-  rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_I2C2EN);
+  rcc_periph_clock_enable(RCC_I2C2);
   /* Enable GPIO clock */
   gpio_enable_clock(I2C2_GPIO_PORT);
 #if defined(STM32F1)
@@ -1035,7 +1035,7 @@ void i2c2_hw_init(void) {
   I2C_OAR1(I2C2) = 0 | 0x4000;
 
   // enable error interrupts
-  I2C_CR2(I2C1) |= I2C_CR2_ITERREN;
+  I2C_CR2(I2C2) |= I2C_CR2_ITERREN;
 
   i2c_setbitrate(&i2c2, I2C2_CLOCK_SPEED);
 }
@@ -1093,7 +1093,7 @@ void i2c3_hw_init(void) {
 
   /* Enable peripheral clocks -------------------------------------------------*/
   /* Enable I2C3 clock */
-  rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_I2C3EN);
+  rcc_periph_clock_enable(RCC_I2C3);
   /* Enable GPIO clock */
   gpio_enable_clock(I2C3_GPIO_PORT_SCL);
   gpio_mode_setup(I2C3_GPIO_PORT_SCL, GPIO_MODE_AF, GPIO_PUPD_NONE, I2C3_GPIO_SCL);
@@ -1120,7 +1120,7 @@ void i2c3_hw_init(void) {
   I2C_OAR1(I2C3) = 0 | 0x4000;
 
   // enable error interrupts
-  I2C_CR2(I2C1) |= I2C_CR2_ITERREN;
+  I2C_CR2(I2C3) |= I2C_CR2_ITERREN;
 
   i2c_setbitrate(&i2c3, I2C3_CLOCK_SPEED);
 }

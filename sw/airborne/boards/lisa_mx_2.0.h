@@ -40,7 +40,6 @@
 #define USE_LED_1 1
 #endif
 #define LED_1_GPIO GPIOA
-#define LED_1_GPIO_CLK RCC_AHB1ENR_IOPAEN
 #define LED_1_GPIO_PIN GPIO8
 #define LED_1_GPIO_ON gpio_clear
 #define LED_1_GPIO_OFF gpio_set
@@ -51,7 +50,6 @@
 #define USE_LED_2 1
 #endif
 #define LED_2_GPIO GPIOB
-#define LED_2_GPIO_CLK RCC_AHB1ENR_IOPBEN
 #define LED_2_GPIO_PIN GPIO4
 #define LED_2_GPIO_ON gpio_clear
 #define LED_2_GPIO_OFF gpio_set
@@ -62,7 +60,6 @@
 #define USE_LED_3 1
 #endif
 #define LED_3_GPIO GPIOC
-#define LED_3_GPIO_CLK RCC_AHB1ENR_IOPCEN
 #define LED_3_GPIO_PIN GPIO2
 #define LED_3_GPIO_ON gpio_clear
 #define LED_3_GPIO_OFF gpio_set
@@ -73,7 +70,6 @@
 #define USE_LED_4 1
 #endif
 #define LED_4_GPIO GPIOC
-#define LED_4_GPIO_CLK RCC_AHB1ENR_IOPCEN
 #define LED_4_GPIO_PIN GPIO5
 #define LED_4_GPIO_ON gpio_clear
 #define LED_4_GPIO_OFF gpio_set
@@ -84,7 +80,6 @@
 #define USE_LED_5 1
 #endif
 #define LED_5_GPIO GPIOC
-#define LED_5_GPIO_CLK RCC_AHB1ENR_IOPCEN
 #define LED_5_GPIO_PIN GPIO15
 #define LED_5_GPIO_ON gpio_clear
 #define LED_5_GPIO_OFF gpio_set
@@ -95,7 +90,6 @@
  */
 /* PC3, ADC13 on ADC_1 */
 #define LED_6_GPIO GPIOC
-#define LED_6_GPIO_CLK RCC_AHB1ENR_IOPCEN
 #define LED_6_GPIO_PIN GPIO3
 #define LED_6_GPIO_ON gpio_clear
 #define LED_6_GPIO_OFF gpio_set
@@ -103,7 +97,6 @@
 
 /* PC0, ADC10 on ADC_2 */
 #define LED_7_GPIO GPIOC
-#define LED_7_GPIO_CLK RCC_AHB1ENR_IOPCEN
 #define LED_7_GPIO_PIN GPIO0
 #define LED_7_GPIO_ON gpio_clear
 #define LED_7_GPIO_OFF gpio_set
@@ -111,7 +104,6 @@
 
 /* PC1, ADC11 on ADC_3 */
 #define LED_8_GPIO GPIOC
-#define LED_8_GPIO_CLK RCC_AHB1ENR_IOPCEN
 #define LED_8_GPIO_PIN GPIO1
 #define LED_8_GPIO_ON gpio_clear
 #define LED_8_GPIO_OFF gpio_set
@@ -124,7 +116,6 @@
 
 /* PB1, DRDY on EXT SPI connector*/
 #define LED_BODY_GPIO GPIOB
-#define LED_BODY_GPIO_CLK RCC_AHB1ENR_IOPBEN
 #define LED_BODY_GPIO_PIN GPIO1
 #define LED_BODY_GPIO_ON gpio_set
 #define LED_BODY_GPIO_OFF gpio_clear
@@ -132,7 +123,6 @@
 
 /* PC12, on GPIO connector*/
 #define LED_12_GPIO GPIOC
-#define LED_12_GPIO_CLK RCC_AHB1ENR_IOPCEN
 #define LED_12_GPIO_PIN GPIO12
 #define LED_12_GPIO_ON gpio_clear
 #define LED_12_GPIO_OFF gpio_set
@@ -178,8 +168,7 @@
 #define SPEKTRUM_BIND_PIN GPIO3
 #define SPEKTRUM_BIND_PIN_PORT GPIOC
 
-#define SPEKTRUM_UART1_RCC_REG &RCC_APB2ENR
-#define SPEKTRUM_UART1_RCC_DEV RCC_APB2ENR_USART1EN
+#define SPEKTRUM_UART1_RCC RCC_USART1
 #define SPEKTRUM_UART1_BANK GPIOA
 #define SPEKTRUM_UART1_PIN GPIO10
 #define SPEKTRUM_UART1_AF GPIO_AF7
@@ -187,8 +176,7 @@
 #define SPEKTRUM_UART1_ISR usart1_isr
 #define SPEKTRUM_UART1_DEV USART1
 
-#define SPEKTRUM_UART5_RCC_REG &RCC_APB1ENR
-#define SPEKTRUM_UART5_RCC_DEV RCC_APB1ENR_UART5EN
+#define SPEKTRUM_UART5_RCC RCC_UART5
 #define SPEKTRUM_UART5_BANK GPIOD
 #define SPEKTRUM_UART5_PIN GPIO2
 #define SPEKTRUM_UART5_AF GPIO_AF7
@@ -198,7 +186,7 @@
 
 /* PPM
  *
- * Default is PPM config 2, input on GPIO01 (Servo pin 6)
+ * Default is PPM config 2, input on GPIOA1 (Servo pin 6)
  */
 
 #ifndef PPM_CONFIG
@@ -210,8 +198,8 @@
 #define USE_PPM_TIM1 1
 #define PPM_CHANNEL         TIM_IC3
 #define PPM_TIMER_INPUT     TIM_IC_IN_TI3
-#define PPM_IRQ             NVIC_TIM1_UP_IRQ
-#define PPM_IRQ2            NVIC_TIM1_CC_IRQ
+#define PPM_IRQ             NVIC_TIM1_CC_IRQ
+#define PPM_IRQ2            NVIC_TIM1_UP_TIM10_IRQ
 // Capture/Compare InteruptEnable and InterruptFlag
 #define PPM_CC_IE           TIM_DIER_CC3IE
 #define PPM_CC_IF           TIM_SR_CC3IF
@@ -394,7 +382,7 @@
 #if USE_PWM1
 #define PWM_SERVO_1 0
 #define PWM_SERVO_1_TIMER TIM3
-#define PWM_SERVO_1_RCC_IOP RCC_AHB1ENR_IOPCEN
+#define PWM_SERVO_1_RCC RCC_GPIOC
 #define PWM_SERVO_1_GPIO GPIOC
 #define PWM_SERVO_1_PIN GPIO6
 #define PWM_SERVO_1_AF GPIO_AF2
@@ -407,7 +395,7 @@
 #if USE_PWM2
 #define PWM_SERVO_2 1
 #define PWM_SERVO_2_TIMER TIM3
-#define PWM_SERVO_2_RCC_IOP RCC_AHB1ENR_IOPCEN
+#define PWM_SERVO_2_RCC RCC_GPIOC
 #define PWM_SERVO_2_GPIO GPIOC
 #define PWM_SERVO_2_PIN GPIO7
 #define PWM_SERVO_2_AF GPIO_AF2
@@ -420,7 +408,7 @@
 #if USE_PWM3
 #define PWM_SERVO_3 2
 #define PWM_SERVO_3_TIMER TIM3
-#define PWM_SERVO_3_RCC_IOP RCC_AHB1ENR_IOPCEN
+#define PWM_SERVO_3_RCC RCC_GPIOC
 #define PWM_SERVO_3_GPIO GPIOC
 #define PWM_SERVO_3_PIN GPIO8
 #define PWM_SERVO_3_AF GPIO_AF2
@@ -433,7 +421,7 @@
 #if USE_PWM4
 #define PWM_SERVO_4 3
 #define PWM_SERVO_4_TIMER TIM3
-#define PWM_SERVO_4_RCC_IOP RCC_AHB1ENR_IOPCEN
+#define PWM_SERVO_4_RCC RCC_GPIOC
 #define PWM_SERVO_4_GPIO GPIOC
 #define PWM_SERVO_4_PIN GPIO9
 #define PWM_SERVO_4_AF GPIO_AF2
@@ -446,7 +434,7 @@
 #if USE_PWM5
 #define PWM_SERVO_5 4
 #define PWM_SERVO_5_TIMER TIM5
-#define PWM_SERVO_5_RCC_IOP RCC_AHB1ENR_IOPAEN
+#define PWM_SERVO_5_RCC RCC_GPIOA
 #define PWM_SERVO_5_GPIO GPIOA
 #define PWM_SERVO_5_PIN GPIO0
 #define PWM_SERVO_5_AF GPIO_AF2
@@ -459,7 +447,7 @@
 #if USE_PWM6
 #define PWM_SERVO_6 5
 #define PWM_SERVO_6_TIMER TIM5
-#define PWM_SERVO_6_RCC_IOP RCC_AHB1ENR_IOPAEN
+#define PWM_SERVO_6_RCC RCC_GPIOA
 #define PWM_SERVO_6_GPIO GPIOA
 #define PWM_SERVO_6_PIN GPIO1
 #define PWM_SERVO_6_AF GPIO_AF2
@@ -472,7 +460,7 @@
 #if USE_PWM7
 #define PWM_SERVO_7 6
 #define PWM_SERVO_7_TIMER TIM4
-#define PWM_SERVO_7_RCC_IOP RCC_AHB1ENR_IOPBEN
+#define PWM_SERVO_7_RCC RCC_GPIOB
 #define PWM_SERVO_7_GPIO GPIOB
 #define PWM_SERVO_7_PIN GPIO6
 #define PWM_SERVO_7_AF GPIO_AF2
@@ -485,7 +473,7 @@
 #if USE_PWM8
 #define PWM_SERVO_8 7
 #define PWM_SERVO_8_TIMER TIM4
-#define PWM_SERVO_8_RCC_IOP RCC_AHB1ENR_IOPBEN
+#define PWM_SERVO_8_RCC RCC_GPIOB
 #define PWM_SERVO_8_GPIO GPIOB
 #define PWM_SERVO_8_PIN GPIO7
 #define PWM_SERVO_8_AF GPIO_AF2

@@ -57,7 +57,10 @@ bool_t   autopilot_power_switch;
 bool_t   autopilot_ground_detected;
 bool_t   autopilot_detect_ground_once;
 
+/** time steps for in_flight detection (at 20Hz, so 20=1second) */
+#ifndef AUTOPILOT_IN_FLIGHT_TIME
 #define AUTOPILOT_IN_FLIGHT_TIME    20
+#endif
 
 /** minimum vertical speed for in_flight condition in m/s */
 #ifndef AUTOPILOT_IN_FLIGHT_MIN_SPEED
@@ -69,7 +72,7 @@ bool_t   autopilot_detect_ground_once;
 #define AUTOPILOT_IN_FLIGHT_MIN_ACCEL 2.0
 #endif
 
-/** minimum thrust for in_flight condition in pprz_t units */
+/** minimum thrust for in_flight condition in pprz_t units (max = 9600) */
 #ifndef AUTOPILOT_IN_FLIGHT_MIN_THRUST
 #define AUTOPILOT_IN_FLIGHT_MIN_THRUST 500
 #endif
@@ -130,6 +133,14 @@ static void send_status(void) {
       &autopilot_in_flight, &autopilot_motors_on,
       &guidance_h_mode, &guidance_v_mode,
       &electrical.vsupply, &time_sec);
+}
+
+static void send_energy(void) {
+  const int16_t e = electrical.energy;
+  const float vsup = ((float)electrical.vsupply) / 10.0f;
+  const float curs = ((float)electrical.current) / 1000.0f;
+  const float power = vsup * curs;
+  DOWNLINK_SEND_ENERGY(DefaultChannel, DefaultDevice, &vsup, &curs, &e, &power);
 }
 
 static void send_fp(void) {
@@ -222,6 +233,7 @@ void autopilot_init(void) {
 
   register_periodic_telemetry(DefaultPeriodic, "ALIVE", send_alive);
   register_periodic_telemetry(DefaultPeriodic, "ROTORCRAFT_STATUS", send_status);
+  register_periodic_telemetry(DefaultPeriodic, "ENERGY", send_energy);
   register_periodic_telemetry(DefaultPeriodic, "ROTORCRAFT_FP", send_fp);
   register_periodic_telemetry(DefaultPeriodic, "ROTORCRAFT_CMD", send_rotorcraft_cmd);
   register_periodic_telemetry(DefaultPeriodic, "DL_VALUE", send_dl_value);

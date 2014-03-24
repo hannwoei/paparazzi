@@ -41,7 +41,7 @@ SERVERCMO = server_globals.cmo aircraft.cmo wind.cmo airprox.cmo kml.cmo fw_serv
 SERVERCMX = $(SERVERCMO:.cmo=.cmx)
 
 
-all: link server messages settings dia diadec $(VAR)/boa.conf ivy_tcp_aircraft ivy_tcp_controller broadcaster ivy2udp ivy_serial_bridge
+all: link server messages settings dia diadec ivy_tcp_aircraft ivy_tcp_controller broadcaster ivy2udp ivy_serial_bridge
 
 opt: server.opt
 
@@ -49,63 +49,58 @@ clean:
 	$(Q)rm -f link server messages settings dia diadec *.bak *~ core *.o .depend *.opt *.out *.cm* ivy_tcp_aircraft ivy_tcp_controller broadcaster ivy2udp ivy_serial_bridge gpsd2ivy c_ivy_client_example_1 c_ivy_client_example_2 c_ivy_client_example_3
 
 
-$(VAR)/boa.conf :$(CONF)/boa.conf
-	mkdir -p $(VAR)
-	sed 's|PAPARAZZI_HOME|$(PAPARAZZI_HOME)|' < $< > $@
-
-
-messages : messages.cmo
+messages : messages.cmo $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) gtkInit.cmo $<
 
-settings : settings.cmo ../cockpit/page_settings.cmo
+settings : settings.cmo ../cockpit/page_settings.cmo $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(XLINKPKG) gtkInit.cmo -I ../cockpit gtk_save_settings.cmo saveSettings.cmo page_settings.cmo $<
 
-server : $(SERVERCMO)
+server : $(SERVERCMO) $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $(SERVERCMO)
 
-server.opt :  $(SERVERCMX)
+server.opt :  $(SERVERCMX) $(LIBPPRZCMXA)
 	@echo OOL $@
 	$(Q)$(OCAMLOPT) $(INCLUDES) -o $@ -package glibivy,pprz -linkpkg $(SERVERCMX)
 
-link : link.cmo $(LIBMULTIMONCMA)
+link : link.cmo $(LIBMULTIMONCMA) $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $(LIBMULTIMONDLL) $<
 
 
-ivy_tcp_aircraft : ivy_tcp_aircraft.cmo  $(LIBMULTIMONCMA)
+ivy_tcp_aircraft : ivy_tcp_aircraft.cmo  $(LIBMULTIMONCMA) $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $(LIBMULTIMONDLL) $<
 
 
-ivy_tcp_controller : ivy_tcp_controller.cmo  $(LIBMULTIMONCMA)
+ivy_tcp_controller : ivy_tcp_controller.cmo  $(LIBMULTIMONCMA) $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $(LIBMULTIMONDLL) $<
 
 
-broadcaster : broadcaster.cmo $(LIBMULTIMONCMA)
+broadcaster : broadcaster.cmo $(LIBMULTIMONCMA) $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $(LIBMULTIMONDLL) $<
 
 
-ivy2udp : ivy2udp.cmo
+ivy2udp : ivy2udp.cmo $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $<
 
 
-dia : dia.cmo $(LIBMULTIMONCMA)
+dia : dia.cmo $(LIBMULTIMONCMA) $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $(LIBMULTIMONDLL) $<
 
 
-diadec : diadec.cmo $(LIBMULTIMONCMA)
+diadec : diadec.cmo $(LIBMULTIMONCMA) $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) $(LIBMULTIMONDLL) $<
 
 
-150m : 150m.cmo
+150m : 150m.cmo $(LIBPPRZCMA)
 	@echo OL $@
 	$(Q)$(OCAMLC) $(INCLUDES) -o $@ $(LINKPKG) gtkInit.cmo $<
 
@@ -151,7 +146,8 @@ c_ivy_client_example_3: c_ivy_client_example_3.c
 	$(CC) $(GTK_CFLAGS) $(C_LIBRARYS) $(C_INCLUDES) -o $@ $< $(GTK_LDFLAGS)
 
 ivy_serial_bridge: ivy_serial_bridge.c
-	$(CC) $(GTK_CFLAGS) $(C_LIBRARYS) $(C_INCLUDES) -o $@ $< $(GTK_LDFLAGS)
+	@echo OL $@
+	$(Q)$(CC) $(GTK_CFLAGS) $(C_LIBRARYS) $(C_INCLUDES) -o $@ $< $(GTK_LDFLAGS)
 
 
 .PHONY: all opt clean
@@ -161,7 +157,8 @@ ivy_serial_bridge: ivy_serial_bridge.c
 #
 
 .depend: Makefile
-	$(OCAMLDEP) -I $(LIBPPRZDIR) -I ../multimon *.ml* > .depend
+	@echo DEPEND $@
+	$(Q)$(OCAMLDEP) -I $(LIBPPRZDIR) -I ../multimon *.ml* > .depend
 
 ifneq ($(MAKECMDGOALS),clean)
 -include .depend

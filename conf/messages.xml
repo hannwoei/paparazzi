@@ -1909,14 +1909,15 @@
     <field name="ref_zd"    type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
   </message>
 
-  <message name="OF_ERROR" id="214">
+ <!--215 is free -->
+ <!--216 is free -->
+ <!--217 is free -->
+
+  <message name="OF_ERROR" id="217">
     <field name="corner_error"      type="int32"/>
     <field name="opticflow_error"      type="int32"/>
   </message>
 
- <!--215 is free -->
- <!--216 is free -->
- <!--217 is free -->
   <message name="OF_FITTING" id="218">
     <field name="pu0"      type="float"/>
     <field name="pu1"      type="float"/>

@@ -32,6 +32,7 @@
     <load name="gps_ubx_ucenter.xml"/>
     <load name="send_imu_mag_current.xml"/>
     <load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlowLand.xml"/>
+<!--    <load name="../../sw/ext/ardrone2_vision/modules/OpenCV/OpenCV.xml"/>-->
 <!--    <load name="../../sw/ext/ardrone2_vision/modules/Mjpeg/ViewVideo.xml"/-->
     <!--<load name="../../sw/ext/ardrone2_vision/modules/ObstacleAvoidSkySegmentation/ObstacleAvoidSkySegmentationV4L.xml"/>-->
   </modules>

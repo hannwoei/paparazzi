@@ -25,6 +25,7 @@ else
 endif
 
 CC   = $(PREFIX)-gcc
+CXX   = $(PREFIX)-g++
 LD   = $(PREFIX)-gcc
 AR   = $(PREFIX)-ar
 CP   = $(PREFIX)-objcopy

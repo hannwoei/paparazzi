@@ -72,7 +72,8 @@ OBJ_CPP_OMAP = $(SRC_CPP_OMAP:%.cpp=$(OBJDIR)/%.o)
 printcommands:
 	@echo ""
 	@echo "Using CC   = $(CC)"
-#	@echo "Using LD   = $(LD)"
+	@echo "Absolutely NOT CERTAINLY using LD   = $(LD), ask Hann"
+	@echo "LDFLAGS are $(LDFLAGS)" 
 	@echo "GCC version:"
 	@$(CC) --version | head -1
 	@echo ""
@@ -95,6 +96,11 @@ elf: $(OBJDIR)/$(TARGET).elf
 	$(Q)if (expr "$($(TARGET).cpp_srcs)"); \
 		  then $(CXX) $(CXXFLAGS) $(OBJ_CPP_OMAP) $(OBJ_C_OMAP) --output $@ $(LDFLAGS) $($(TARGET).LDFLAGS); \
 		  else $(CC) $(CFLAGS) $(OBJ_C_OMAP) --output $@ $(LDFLAGS) $($(TARGET).LDFLAGS); fi
+
+#%.elf:   $(OBJ_C_OMAP) 
+#	@echo LD $@
+#	$(CXX) $(LDFLAGS) $(OBJ_C_OMAP) --output $@ $(LDFLAGS) $($(TARGET).LDFLAGS)
+
 
 # Compile: create object files from C source files
 $(OBJDIR)/%.o : %.c $(OBJDIR)/../Makefile.ac

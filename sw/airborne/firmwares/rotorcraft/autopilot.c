@@ -39,7 +39,10 @@
 #include "firmwares/rotorcraft/navigation.h"
 #include "firmwares/rotorcraft/guidance.h"
 #include "firmwares/rotorcraft/stabilization.h"
-#include "led.h"
+
+#ifdef POWER_SWITCH_GPIO
+#include "mcu_periph/gpio.h"
+#endif
 
 uint8_t  autopilot_mode;
 uint8_t  autopilot_mode_auto2;
@@ -87,6 +90,22 @@ PRINT_CONFIG_MSG("Using AUTOPILOT_DISABLE_AHRS_KILL")
 static inline int ahrs_is_aligned(void) {
   return TRUE;
 }
+#endif
+
+/** Set descent speed in failsafe mode */
+#ifndef FAILSAFE_DESCENT_SPEED
+#define FAILSAFE_DESCENT_SPEED 1.5
+PRINT_CONFIG_VAR(FAILSAFE_DESCENT_SPEED)
+#endif
+
+/** Mode that is set when the plane is really too far from home */
+#ifndef FAILSAFE_MODE_TOO_FAR_FROM_HOME
+#define FAILSAFE_MODE_TOO_FAR_FROM_HOME AP_MODE_FAILSAFE
+#endif
+
+/** mode to enter when RC is lost while using a mode with RC input (not AP_MODE_NAV) */
+#ifndef RC_LOST_MODE
+#define RC_LOST_MODE AP_MODE_HOME
 #endif
 
 #if USE_KILL_SWITCH_FOR_MOTOR_ARMING
@@ -217,8 +236,9 @@ void autopilot_init(void) {
   autopilot_flight_time = 0;
   autopilot_rc = TRUE;
   autopilot_power_switch = FALSE;
-#ifdef POWER_SWITCH_LED
-  LED_ON(POWER_SWITCH_LED); // POWER OFF
+#ifdef POWER_SWITCH_GPIO
+  gpio_setup_output(POWER_SWITCH_GPIO);
+  gpio_clear(POWER_SWITCH_GPIO); // POWER OFF
 #endif
 
   autopilot_arming_init();
@@ -247,9 +267,27 @@ void autopilot_init(void) {
 }
 
 
+#define NAV_PRESCALER (PERIODIC_FREQUENCY / NAV_FREQ)
 void autopilot_periodic(void) {
 
-  RunOnceEvery(NAV_PRESCALER, nav_periodic_task());
+  RunOnceEvery(NAV_PRESCALER, compute_dist2_to_home());
+
+  if (autopilot_in_flight) {
+    if (too_far_from_home) {
+      if (dist2_to_home > failsafe_mode_dist2)
+        autopilot_set_mode(FAILSAFE_MODE_TOO_FAR_FROM_HOME);
+      else
+        autopilot_set_mode(AP_MODE_HOME);
+    }
+  }
+
+  if (autopilot_mode == AP_MODE_HOME) {
+    RunOnceEvery(NAV_PRESCALER, nav_home());
+  }
+  else {
+    // otherwise always call nav_periodic_task so that carrot is always updated in GCS for other modes
+    RunOnceEvery(NAV_PRESCALER, nav_periodic_task());
+  }
 
 
   /* If in FAILSAFE mode and either already not in_flight anymore
@@ -333,6 +371,7 @@ void autopilot_set_mode(uint8_t new_autopilot_mode) {
       case AP_MODE_HOVER_Z_HOLD:
         guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
         break;
+      case AP_MODE_HOME:
       case AP_MODE_NAV:
         guidance_h_mode_changed(GUIDANCE_H_MODE_NAV);
         break;
@@ -344,7 +383,7 @@ void autopilot_set_mode(uint8_t new_autopilot_mode) {
       case AP_MODE_FAILSAFE:
 #ifndef KILL_AS_FAILSAFE
         guidance_v_mode_changed(GUIDANCE_V_MODE_CLIMB);
-        guidance_v_zd_sp = SPEED_BFP_OF_REAL(0.5);
+        guidance_v_zd_sp = SPEED_BFP_OF_REAL(FAILSAFE_DESCENT_SPEED);
         break;
 #endif
       case AP_MODE_KILL:
@@ -373,6 +412,7 @@ void autopilot_set_mode(uint8_t new_autopilot_mode) {
       case AP_MODE_HOVER_Z_HOLD:
         guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
         break;
+      case AP_MODE_HOME:
       case AP_MODE_NAV:
         guidance_v_mode_changed(GUIDANCE_V_MODE_NAV);
         break;
@@ -435,22 +475,27 @@ void autopilot_set_motors_on(bool_t motors_on) {
 
 void autopilot_on_rc_frame(void) {
 
-  if (kill_switch_is_on())
+  if (kill_switch_is_on()) {
     autopilot_set_mode(AP_MODE_KILL);
-  else {
+  }
+  else if ((autopilot_mode != AP_MODE_HOME)
+#ifdef UNLOCKED_HOME_MODE
+           || !too_far_from_home
+#endif
+           )
+  {
     uint8_t new_autopilot_mode = 0;
     AP_MODE_OF_PPRZ(radio_control.values[RADIO_MODE], new_autopilot_mode);
-    /* don't enter NAV mode if GPS is lost (this also prevents mode oscillations) */
-    if (!(new_autopilot_mode == AP_MODE_NAV
+
 #if USE_GPS
-          && GpsIsLost()
+    /* don't enter NAV mode if GPS is lost (this also prevents mode oscillations) */
+    if (!(new_autopilot_mode == AP_MODE_NAV && GpsIsLost()))
 #endif
-       ))
       autopilot_set_mode(new_autopilot_mode);
   }
 
-  /* if not in FAILSAFE mode check motor and in_flight status, read RC */
-  if (autopilot_mode > AP_MODE_FAILSAFE) {
+  /* if not in FAILSAFE or HOME mode check motor and in_flight status, read RC */
+  if (autopilot_mode != AP_MODE_FAILSAFE && autopilot_mode != AP_MODE_HOME) {
 
     /* if there are some commands that should always be set from RC, do it */
 #ifdef SetAutoCommandsFromRC

@@ -1982,7 +1982,14 @@
 
  <!--228 is free -->
  <!--229 is free -->
+   <message name="VISION_CONTROL" id="228">
+    <field name="guidance_v_zd_sp" type="int32" alt_unit="m" alt_unit_coef="0.0000019"/>
+    <field name="divergence_sp" type="float"/>
+    <field name="div_err" type="float"/>
+    <field name="vision_land_pgain" type="int32"/>
+   </message>
 
+ 	
   <message name="AHRS_ARDRONE2" id="230">
     <field name="state" type="uint32" />
     <field name="control_state" type="uint32" values="DEFAULT|INIT|LANDING|FLYING|HOVERING|TEST|TRANS_TAKEOFF|TRANS_GOTOFIX|TRANS_LANDING|TRANS_LOOPING"/>

@@ -1986,7 +1986,7 @@
     <field name="guidance_v_zd_sp" type="int32" alt_unit="m" alt_unit_coef="0.0000019"/>
     <field name="divergence_sp" type="float"/>
     <field name="div_err" type="float"/>
-    <field name="vision_land_pgain" type="int32"/>
+    <field name="vision_land_pgain" type="float"/>
    </message>
 
  	

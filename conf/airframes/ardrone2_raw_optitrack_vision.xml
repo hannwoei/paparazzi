@@ -37,10 +37,11 @@
   </modules>
   
    <section name="VISION" prefix="VISION_">
-    <define name="PGAIN" value="10"/>
-    <define name="DGAIN" value="10"/>
-    <define name="LAND_PGAIN" value="10"/>
-    <define name="LAND_DGAIN" value="10"/>
+    <define name="PGAIN" value="1"/>
+    <define name="DGAIN" value="1"/>
+    <define name="LAND_PGAIN" value="1"/>
+    <define name="LAND_DGAIN" value="1"/>
+    <define name="DIV_CONST" value="0.3"/>
    </section>
 
   <commands>

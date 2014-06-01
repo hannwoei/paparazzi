@@ -1169,14 +1169,17 @@
   	<field name="FPS"        type="float"/>
     <field name="dx"         type="int32"/>
     <field name="dy"         type="int32"/>
-    <field name="dx_trans"   type="int32"/>
-    <field name="dy_trans"   type="int32"/>
-    <field name="diff_roll"  type="int32"/>
-    <field name="diff_pitch" type="int32"/>
-    <field name="height"     type="int32"/>
+    <field name="dx_trans"   type="float"/>
+    <field name="dy_trans"   type="float"/>
+    <field name="vel_x"      type="float"/>
+    <field name="vel_y"      type="float"/>
+    <field name="diff_roll"  type="float"/>
+    <field name="diff_pitch" type="float"/>
+    <field name="height"     type="float"/>
     <field name="no_corners" type="int32"/>  
     <field name="no_OF"      type="int32"/>  
     <field name="divergence" type="float"/>
+    <field name="new_divergence" type="float"/>
     <field name="meant_TTI"  type="float"/>
     <field name="median_TTI" type="float"/>
 	<field name="d_heading"  type="float"/>  
@@ -1186,6 +1189,7 @@
 	<field name="div_error"  type="float"/>  
 	<field name="n_inlier_u" type="int32"/>
     <field name="n_inlier_v" type="int32"/>	
+    <field name="filter" type="int32"/>	
   </message>
 
   <message name="FILTER_COR" id="139">
@@ -1982,11 +1986,23 @@
 
  <!--228 is free -->
  <!--229 is free -->
-   <message name="VISION_CONTROL" id="228">
+   <message name="VISION_LAND" id="228">
     <field name="guidance_v_zd_sp" type="int32" alt_unit="m" alt_unit_coef="0.0000019"/>
     <field name="divergence_sp" type="float"/>
     <field name="div_err" type="float"/>
     <field name="vision_land_pgain" type="float"/>
+    <field name="off_count" type="int32"/>
+   </message>
+   
+   <message name="VISION_STABILIZATION" id="229">
+    <field name="ins_z" type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="baro_z"    type="float" unit="m"/>
+    <field name="sonar_z"    type="float" unit="m"/>
+    <field name="phi" type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
+    <field name="theta" type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
+    <field name="psi" type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
+    <field name="cmd_phi" type="int32"/>
+    <field name="cmd_theta" type="int32"/>
    </message>
 
  	

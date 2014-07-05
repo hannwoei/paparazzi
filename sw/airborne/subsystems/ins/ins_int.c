@@ -352,7 +352,9 @@ static void sonar_cb(uint8_t __attribute__((unused)) sender_id, const float *dis
   DOWNLINK_SEND_INS_SONAR(DefaultChannel,DefaultDevice, distance, &var);
 #endif
 
+#if USE_SONAR
   ins_impl.sonar_z = *distance;
+#endif
 
   /* update filter assuming a flat ground */
   if (*distance < INS_SONAR_MAX_RANGE

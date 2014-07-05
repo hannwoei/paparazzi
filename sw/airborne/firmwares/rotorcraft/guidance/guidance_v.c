@@ -256,7 +256,7 @@ void guidance_v_run(bool_t in_flight) {
     break;
 
   case GUIDANCE_V_MODE_CLIMB:
-	//guidance_v_zd_sp = 263158; // descent at a rate of 0.1 m/s = 0.1/0.0000019 = 52631, 0.3 m/s = 157895, 0.5 m/s = 263158
+	//guidance_v_zd_sp = 105263; // descent at a rate of 0.1 m/s = 0.1/0.0000019 = 52631, 0.2 m/s = 105263, 0.3 m/s = 157895, 0.4 m/s = 210526, 0.5 m/s = 263158, 0.6 m/s = 315789, 0.8 m/s = 421053, 1.0 m/s = 526316
     gv_update_ref_from_zd_sp(guidance_v_zd_sp);
     run_hover_loop(in_flight);
 #if NO_RC_THRUST_LIMIT

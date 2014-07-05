@@ -43,6 +43,10 @@
 #include "math/pprz_trig_int.h"
 #include "math/pprz_algebra_int.h"
 
+#ifdef USE_OPTICFLOW_HOVER
+#include "../ext/ardrone2_vision/modules/OpticFlow/opticflow_code.h"
+#endif
+
 #ifdef AHRS_PROPAGATE_LOW_PASS_RATES
 PRINT_CONFIG_MSG("LOW PASS FILTER ON GYRO RATES")
 #endif
@@ -699,4 +703,11 @@ static inline void set_body_state_from_quat(void) {
   INT32_RMAT_TRANSP_RATEMULT(body_rate, imu.body_to_imu_rmat, ahrs_impl.imu_rate);
   /* Set state */
   stateSetBodyRates_i(&body_rate);
+
+/*
+#ifdef USE_OPTICFLOW_HOVER
+  visionInputPropagate(body_rate, imu.accel);
+  //opticFlowPropagateRates(&body_rate);
+#endif
+*/
 }

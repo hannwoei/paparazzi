@@ -1937,7 +1937,26 @@
  <!--215 is free -->
  <!--216 is free -->
  <!--217 is free -->
-
+  <message name="EKF_VISION_ACCEL" id="216">
+    <field name="accel_x"      type="float"/>
+    <field name="accel_y"      type="float"/>
+    <field name="accel_z"      type="float"/>
+    <field name="p"            type="float"/>
+    <field name="q"            type="float"/>
+    <field name="r"            type="float"/>
+    <field name="phi"          type="float"/>
+    <field name="theta"        type="float"/>
+    <field name="psi"          type="float"/>
+    <field name="dx"           type="int32"/>
+    <field name="dy"           type="int32"/>
+    <field name="dx_trans"     type="float"/>
+    <field name="dy_trans"     type="float"/>
+    <field name="vel_z"        type="float"/>
+    <field name="cam_h"        type="float"/>   
+    <field name="FPS"          type="float"/>	 
+  </message>
+ 	
+ 	
   <message name="OF_ERROR" id="217">
     <field name="corner_error"      type="int32"/>
     <field name="opticflow_error"      type="int32"/>
@@ -1991,7 +2010,7 @@
     <field name="divergence_sp" type="float"/>
     <field name="div_err" type="float"/>
     <field name="vision_land_pgain" type="float"/>
-    <field name="off_count" type="int32"/>
+    <field name="ground_divergence" type="float"/>
    </message>
    
    <message name="VISION_STABILIZATION" id="229">
@@ -2003,6 +2022,9 @@
     <field name="psi" type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
     <field name="cmd_phi" type="int32"/>
     <field name="cmd_theta" type="int32"/>
+	<field name="x"    type="float" unit="m"/>
+	<field name="y"    type="float" unit="m"/>
+	<field name="dt"    type="float" unit="s"/>
    </message>
 
  	

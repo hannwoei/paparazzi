@@ -4,7 +4,9 @@
 
   <firmware name="rotorcraft">
     <target name="ap" board="ardrone2_raw">
+
       <define name="USE_SONAR"/>
+
       <define name="AUTOPILOT_DISABLE_AHRS_KILL"/>
       <configure name="USE_MAGNETOMETER" value="0"/>
 
@@ -38,11 +40,13 @@
   </modules>
   
    <section name="VISION" prefix="VISION_">
-    <define name="PGAIN" value="10"/>
-    <define name="DGAIN" value="1"/>
-    <define name="LAND_PGAIN" value="0.02"/>
+    <define name="PHI_PGAIN" value="5"/>
+    <define name="PHI_DGAIN" value="0"/>
+    <define name="THETA_PGAIN" value="5"/>
+    <define name="THETA_DGAIN" value="0"/>
+    <define name="LAND_PGAIN" value="0.05"/>
     <define name="LAND_DGAIN" value="1"/>
-    <define name="DIV_CONST" value="0.2"/>
+    <define name="DIV_CONST" value="0.3"/>
    </section>
 
   <commands>
@@ -131,10 +135,12 @@
     <!-- Use GPS altitude measurments and set the R gain -->
     <define name="USE_GPS_ALT" value="1"/>
     <define name="VFF_R_GPS" value="0.01"/>
+
     <define name="SONAR_SENS" value="0.00034"/>
     <define name="SONAR_MAX_RANGE" value="2.2"/>
     <define name="SONAR_UPDATE_ON_AGL" value="TRUE"/>
     <define name="SONAR_VARIANCE_THRESHOLD" VALUE="2.0"/>
+
   </section>
 
   <section name="STABILIZATION_RATE" prefix="STABILIZATION_RATE_">
@@ -229,7 +235,7 @@
     <define name="REF_OMEGA" value="RadOfDeg(190.)"/>
     <define name="REF_ZETA" value="0.9"/>
     <define name="REF_MAX_ACCEL" value="9.5"/>
-    <define name="REF_MAX_SPEED" value="8.5"/>
+    <define name="REF_MAX_SPEED" value="1.1"/> <!--default:8.5-->
 
     <!-- gains -->
     <define name="PGAIN" value="150"/>
@@ -249,8 +255,8 @@
   <section name="AUTOPILOT">
     <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
-    <define name="MODE_AUTO1" value="AP_MODE_ATTITUDE_Z_HOLD"/>
-    <!--<define name="MODE_AUTO1" value="AP_MODE_HOVER_CLIMB"/>-->
+    <!--<define name="MODE_AUTO1" value="AP_MODE_ATTITUDE_Z_HOLD"/>-->
+    <define name="MODE_AUTO1" value="AP_MODE_HOVER_CLIMB"/>
     <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
   </section>
 

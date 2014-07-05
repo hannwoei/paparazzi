@@ -72,7 +72,7 @@ OBJ_CPP_OMAP = $(SRC_CPP_OMAP:%.cpp=$(OBJDIR)/%.o)
 printcommands:
 	@echo ""
 	@echo "Using CC   = $(CC)"
-	@echo "Absolutely NOT CERTAINLY using LD   = $(LD), ask Hann"
+	@echo "Using LD   = $(LD)"
 	@echo "LDFLAGS are $(LDFLAGS)" 
 	@echo "GCC version:"
 	@$(CC) --version | head -1

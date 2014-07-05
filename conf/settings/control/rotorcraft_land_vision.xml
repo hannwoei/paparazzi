@@ -4,8 +4,10 @@
   <dl_settings>
 
 	<dl_settings NAME="Vision Loop">
-		<dl_setting var="vision_pgain" min="0" step="1" max="400" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kp_v" param="VISION_PGAIN"/>
-		<dl_setting var="vision_dgain" min="0" step="1" max="400" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kd_v" param="VISION_DGAIN"/>
+		<dl_setting var="vision_phi_pgain" min="0" step="1" max="400" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kp_v_phi" param="VISION_PHI_PGAIN"/>
+		<dl_setting var="vision_phi_dgain" min="0" step="1" max="400" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kd_v_phi" param="VISION_PHI_DGAIN"/>
+		<dl_setting var="vision_theta_pgain" min="0" step="1" max="400" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kp_v_theta" param="VISION_THETA_PGAIN"/>
+		<dl_setting var="vision_theta_dgain" min="0" step="1" max="400" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kd_v_theta" param="VISION_THETA_DGAIN"/>
 		<dl_setting var="vision_land_pgain" min="0" step="0.001" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kp_land_v" param="VISION_LAND_PGAIN"/>
 		<dl_setting var="vision_land_dgain" min="0" step="0.001" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kd_land_v" param="VISION_LAND_DGAIN"/>
 		<dl_setting var="vision_div_const" min="-1" step="0.1" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="div_const" param="VISION_DIV_CONST"/>

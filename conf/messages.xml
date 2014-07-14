@@ -1167,8 +1167,8 @@
 
   <message name="OPTIC_FLOW" id="138">
   	<field name="FPS"        type="float"/>
-    <field name="dx"         type="int32"/>
-    <field name="dy"         type="int32"/>
+    <field name="dx"         type="float"/>
+    <field name="dy"         type="float"/>
     <field name="dx_trans"   type="float"/>
     <field name="dy_trans"   type="float"/>
     <field name="vel_x"      type="float"/>
@@ -1962,13 +1962,32 @@
     <field name="opticflow_error"      type="int32"/>
   </message>
 
-  <message name="OF_FITTING" id="218">
-    <field name="pu0"      type="float"/>
-    <field name="pu1"      type="float"/>
-    <field name="pu2"      type="float"/>
-    <field name="pv0"      type="float"/>
-    <field name="pv1"      type="float"/>
-    <field name="pv2"      type="float"/>    
+  <message name="LOG_VISION" id="218">
+  	<field name="logID"     type="int32"/>
+    <field name="ecefX"     type="int32"/>
+    <field name="ecefY"     type="int32"/>
+    <field name="ecefZ"     type="int32"/>   
+    <field name="ecefVx"    type="int32"/>
+    <field name="ecefVy"    type="int32"/>
+    <field name="ecefVz"    type="int32"/>  
+    <field name="lat"    	type="int32"/>
+    <field name="lon"    	type="int32"/>
+    <field name="alt"    	type="int32"/> 
+    <field name="bodyAccX"  type="float"/>
+    <field name="bodyAccY"  type="float"/>
+    <field name="bodyAccZ"  type="float"/>   
+    <field name="bodyRatep" type="float"/>
+	<field name="bodyRateq" type="float"/>
+	<field name="bodyRater" type="float"/>   
+    <field name="phi"       type="float"/>
+    <field name="theta"     type="float"/>
+    <field name="psi"       type="float"/>
+    <field name="count"     type="int32"/> 
+	<field name="dx"        type="int32"/>
+	<field name="dy"        type="int32"/>   
+    <field name="sonarVz"   type="float"/>
+    <field name="sonarZ"    type="float"/>
+    <field name="FPS"       type="float"/>   
   </message>
  	
   <message name="WEATHER" id="219">

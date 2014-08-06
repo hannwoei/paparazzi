@@ -44,9 +44,9 @@
     <define name="PHI_DGAIN" value="0"/>
     <define name="THETA_PGAIN" value="5"/>
     <define name="THETA_DGAIN" value="0"/>
-    <define name="LAND_PGAIN" value="0.05"/>
+    <define name="LAND_PGAIN" value="0.01"/>
     <define name="LAND_DGAIN" value="1"/>
-    <define name="DIV_CONST" value="0.3"/>
+    <define name="DIV_CONST" value="0.15"/>
    </section>
 
   <commands>

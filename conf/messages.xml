@@ -1169,27 +1169,27 @@
   	<field name="FPS"        type="float"/>
     <field name="dx"         type="float"/>
     <field name="dy"         type="float"/>
-    <field name="dx_trans"   type="int32"/>
-    <field name="dy_trans"   type="int32"/>
-    <field name="vel_x"      type="int32"/>
-    <field name="vel_y"      type="int32"/>
+    <field name="dx_trans"   type="float"/>
+    <field name="dy_trans"   type="float"/>
+    <field name="vel_x"      type="float"/>
+    <field name="vel_y"      type="float"/>
     <field name="diff_roll"  type="float"/>
     <field name="diff_pitch" type="float"/>
     <field name="height"     type="float"/>
     <field name="no_corners" type="int32"/>  
-    <field name="no_OF"      type="int32"/>  
+    <field name="height_ins"      type="int32"/>  
     <field name="divergence" type="float"/>
     <field name="new_divergence" type="float"/>
     <field name="meant_TTI"  type="float"/>
     <field name="median_TTI" type="float"/>
 	<field name="d_heading"  type="float"/>  
 	<field name="d_pitch"    type="float"/>  
-	<field name="ventral_dx" type="float"/>  
-	<field name="ventral_dy" type="float"/>  
+	<field name="slope_x" type="float"/>  
+	<field name="slope_y" type="float"/>  
 	<field name="div_error"  type="float"/>  
 	<field name="n_inlier_u" type="int32"/>
     <field name="n_inlier_v" type="int32"/>	
-    <field name="filter" type="int32"/>	
+    <field name="thrust" type="int32"/>	
   </message>
 
   <message name="FILTER_COR" id="139">

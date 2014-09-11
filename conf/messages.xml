@@ -1169,27 +1169,28 @@
   	<field name="FPS"        type="float"/>
     <field name="dx"         type="float"/>
     <field name="dy"         type="float"/>
-    <field name="dx_trans"   type="float"/>
-    <field name="dy_trans"   type="float"/>
-    <field name="vel_x"      type="float"/>
+    <field name="ecef_x"   type="int32" alt_unit="m"    alt_unit_coef="0.0000019"/> <!--0.0039063, 0.0000019 -->
+    <field name="ecef_y"   type="int32" alt_unit="m"    alt_unit_coef="0.0000019"/>
+    <field name="ecef_z"      type="int32" alt_unit="m"    alt_unit_coef="0.0000019"/>
     <field name="vel_y"      type="float"/>
     <field name="diff_roll"  type="float"/>
     <field name="diff_pitch" type="float"/>
     <field name="height"     type="float"/>
     <field name="no_corners" type="int32"/>  
-    <field name="height_ins"      type="int32"/>  
+    <field name="z_ins"      type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>  
     <field name="divergence" type="float"/>
-    <field name="new_divergence" type="float"/>
-    <field name="meant_TTI"  type="float"/>
-    <field name="median_TTI" type="float"/>
+    <field name="zd_ins" type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
+    <field name="land_safe"  type="float"/>
+    <field name="land_safe_false" type="float"/>
 	<field name="d_heading"  type="float"/>  
 	<field name="d_pitch"    type="float"/>  
 	<field name="slope_x" type="float"/>  
 	<field name="slope_y" type="float"/>  
-	<field name="div_error"  type="float"/>  
+	<field name="zdd_ins"  type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>  
 	<field name="n_inlier_u" type="int32"/>
     <field name="n_inlier_v" type="int32"/>	
     <field name="thrust" type="int32"/>	
+    <field name="three_dimensionality"  type="float"/>   	
   </message>
 
   <message name="FILTER_COR" id="139">

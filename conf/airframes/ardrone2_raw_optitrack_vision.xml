@@ -4,9 +4,9 @@
 
   <firmware name="rotorcraft">
     <target name="ap" board="ardrone2_raw">
-
+<!--
       <define name="USE_SONAR"/>
-
+-->
       <define name="AUTOPILOT_DISABLE_AHRS_KILL"/>
       <configure name="USE_MAGNETOMETER" value="0"/>
 
@@ -135,12 +135,12 @@
     <!-- Use GPS altitude measurments and set the R gain -->
     <define name="USE_GPS_ALT" value="1"/>
     <define name="VFF_R_GPS" value="0.01"/>
-
+<!--
     <define name="SONAR_SENS" value="0.00034"/>
     <define name="SONAR_MAX_RANGE" value="2.2"/>
     <define name="SONAR_UPDATE_ON_AGL" value="TRUE"/>
     <define name="SONAR_VARIANCE_THRESHOLD" VALUE="2.0"/>
-
+-->
   </section>
 
   <section name="STABILIZATION_RATE" prefix="STABILIZATION_RATE_">
@@ -235,7 +235,7 @@
     <define name="REF_OMEGA" value="RadOfDeg(190.)"/>
     <define name="REF_ZETA" value="0.9"/>
     <define name="REF_MAX_ACCEL" value="9.5"/>
-    <define name="REF_MAX_SPEED" value="1.1"/> <!--default:8.5-->
+    <define name="REF_MAX_SPEED" value="0.6"/> <!--default:8.5-->
 
     <!-- gains -->
     <define name="PGAIN" value="150"/>

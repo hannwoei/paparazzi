@@ -227,22 +227,22 @@
 
   <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
     <!-- Good weather -->
-    <define name="MAX_BANK" value="20" unit="deg"/>
+    <define name="MAX_BANK" value="20" unit="deg"/> <!--default:20-->
     <!-- Bad weather -->
     <!-- define name="MAX_BANK" value="32" unit="deg"/ -->
 
     <!-- reference model -->
     <define name="REF_OMEGA" value="RadOfDeg(190.)"/>
     <define name="REF_ZETA" value="0.9"/>
-    <define name="REF_MAX_ACCEL" value="9.5"/>
-    <define name="REF_MAX_SPEED" value="0.6"/> <!--default:8.5-->
+    <define name="REF_MAX_ACCEL" value="9.5"/> 
+    <define name="REF_MAX_SPEED" value="0.6"/> <!--default:8.5--> <!--0.6 -->
 
     <!-- gains -->
     <define name="PGAIN" value="150"/>
     <define name="DGAIN" value="60"/>
     <define name="IGAIN" value="30"/>
     <define name="VGAIN" value="70"/>
-    <define name="AGAIN" value="140"/>
+    <define name="AGAIN" value="17"/> <!--default:140-->
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">

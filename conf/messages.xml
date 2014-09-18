@@ -1958,9 +1958,31 @@
   </message>
  	
  	
-  <message name="OF_ERROR" id="217">
-    <field name="corner_error"      type="int32"/>
-    <field name="opticflow_error"      type="int32"/>
+  <message name="LAND_SAFE" id="217">
+  	<field name="FPS"        type="float"/>
+    <field name="dx"         type="float"/>
+    <field name="dy"         type="float"/>
+    <field name="enu_x"      type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/> <!--0.0039063-->
+    <field name="enu_y"      type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="enu_z"      type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="enu_dx"     type="int32" alt_unit="m"    alt_unit_coef="0.0000019"/> <!--0.0000019 -->
+    <field name="enu_dy"     type="int32" alt_unit="m"    alt_unit_coef="0.0000019"/>
+	<field name="enu_dz"     type="int32" alt_unit="m"    alt_unit_coef="0.0000019"/>    
+	<field name="z_ins"      type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/> 
+    <field name="diff_roll"  type="float"/>
+    <field name="diff_pitch" type="float"/>
+    <field name="no_corners" type="int32"/>    
+    <field name="divergence" type="float"/>
+    <field name="land_safe"  type="float"/>
+	<field name="d_heading"  type="float"/>  
+	<field name="d_pitch"    type="float"/>  
+	<field name="slope_x"    type="float"/>  
+	<field name="slope_y"    type="float"/>  
+	<field name="n_inlier_u" type="int32"/>
+    <field name="n_inlier_v" type="int32"/>	
+    <field name="max_safe"   type="int32"/>	
+    <field name="active_3D"  type="int32"/>
+    <field name="three_dimensionality"  type="float"/>  
   </message>
 
   <message name="OF_FITTING" id="218">

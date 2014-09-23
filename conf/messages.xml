@@ -1989,7 +1989,7 @@
     <field name="no_corners" type="int32"/>    
     <field name="divergence" type="float"/>
     <field name="land_safe"  type="float"/>
-	<field name="d_heading"  type="float"/>  
+	<field name="fake_3D"  type="float"/>  
 	<field name="d_pitch"    type="float"/>  
 	<field name="slope_x"    type="float"/>  
 	<field name="slope_y"    type="float"/>  

@@ -49,6 +49,7 @@
     <define name="DIV_CONST" value="0.15"/>
     <define name="TRAIN_DICTIONARY" value="FALSE"/>
     <define name="EXTRACT_DISTRIBUTION" value="FALSE"/>
+    <define name="SNAPSHOT" value="FALSE"/>
    </section>
 
   <commands>

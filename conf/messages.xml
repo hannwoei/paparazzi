@@ -1940,6 +1940,9 @@
  <!--217 is free -->
   <message name="Distribution" id="216">
   	<field name="three_dimensionality"  type="float"/> 
+  	<field name="fake_3D"               type="float"/>
+  	<field name="snapshot"				type="int32"/>
+	<field name="land_distribution"		type="int32"/>  	
 	<field name="D1"					type="float"/>
 	<field name="D2"					type="float"/>	
 	<field name="D3"					type="float"/>

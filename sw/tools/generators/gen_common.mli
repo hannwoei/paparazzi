@@ -25,18 +25,16 @@
 (* Module configuration:
   * Xml node
   * file name
+  * optional vpath
   * parameters
   * extrat targets
   *)
-type module_conf = { xml : Xml.xml; file : string; param : Xml.xml list; extra_targets : string list; }
+type module_conf = { xml : Xml.xml; file : string; vpath : string option; param : Xml.xml list; extra_targets : string list; }
 
 (* Modules directory *)
 val modules_dir : string
 (* Default targets for modules *)
 val default_module_targets : string
-
-(* Default AP freq *)
-val default_freq : int
 
 (** remove all duplicated elements of a list *)
 val singletonize : 'a list -> 'a list
@@ -70,5 +68,5 @@ val get_modules_dir : module_conf list -> string list
  * Returns (autopilot file, main freq) from airframe xml file
  * Raise Not_found if no autopilot
  * Fail if more than one *)
-val get_autopilot_of_airframe : Xml.xml -> (string * int)
+val get_autopilot_of_airframe : Xml.xml -> (string * string option)
 

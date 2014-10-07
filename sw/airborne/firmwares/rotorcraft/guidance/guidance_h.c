@@ -24,18 +24,18 @@
  *
  */
 
-#include "firmwares/rotorcraft/guidance/guidance_h.h"
+#include "generated/airframe.h"
 
+#include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_rc_setpoint.h"
 #include "firmwares/rotorcraft/navigation.h"
+#include "subsystems/radio_control.h"
 
 /* for guidance_v_thrust_coeff */
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
 
 #include "state.h"
-
-#include "generated/airframe.h"
 
 #ifndef GUIDANCE_H_AGAIN
 #define GUIDANCE_H_AGAIN 0
@@ -137,9 +137,11 @@ static void send_hover_loop(void) {
 static void send_href(void) {
   DOWNLINK_SEND_GUIDANCE_H_REF_INT(DefaultChannel, DefaultDevice,
       &guidance_h_pos_sp.x, &guidance_h_pos_ref.x,
-      &guidance_h_speed_ref.x, &guidance_h_accel_ref.x,
+      &guidance_h_speed_sp.x, &guidance_h_speed_ref.x,
+      &guidance_h_accel_ref.x,
       &guidance_h_pos_sp.y, &guidance_h_pos_ref.y,
-      &guidance_h_speed_ref.y, &guidance_h_accel_ref.y);
+      &guidance_h_speed_sp.y, &guidance_h_speed_ref.y,
+      &guidance_h_accel_ref.y);
 }
 
 static void send_tune_hover(void) {
@@ -175,6 +177,8 @@ void guidance_h_init(void) {
   guidance_h_vgain = GUIDANCE_H_VGAIN;
   transition_percentage = 0;
   transition_theta_offset = 0;
+
+  gh_ref_init();
 
 #if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "GUIDANCE_H_INT", send_gh);
@@ -389,9 +393,9 @@ static void guidance_h_update_reference(void) {
   /* either use the reference or simply copy the pos setpoint */
   if (guidance_h_use_ref) {
     /* convert our reference to generic representation */
-    INT32_VECT2_RSHIFT(guidance_h_pos_ref,   gh_pos_ref,   (GH_POS_REF_FRAC - INT32_POS_FRAC));
-    INT32_VECT2_LSHIFT(guidance_h_speed_ref, gh_speed_ref, (INT32_SPEED_FRAC - GH_SPEED_REF_FRAC));
-    INT32_VECT2_LSHIFT(guidance_h_accel_ref, gh_accel_ref, (INT32_ACCEL_FRAC - GH_ACCEL_REF_FRAC));
+    INT32_VECT2_RSHIFT(guidance_h_pos_ref,   gh_ref.pos,   (GH_POS_REF_FRAC - INT32_POS_FRAC));
+    INT32_VECT2_LSHIFT(guidance_h_speed_ref, gh_ref.speed, (INT32_SPEED_FRAC - GH_SPEED_REF_FRAC));
+    INT32_VECT2_LSHIFT(guidance_h_accel_ref, gh_ref.accel, (INT32_ACCEL_FRAC - GH_ACCEL_REF_FRAC));
   } else {
     VECT2_COPY(guidance_h_pos_ref, guidance_h_pos_sp);
     INT_VECT2_ZERO(guidance_h_speed_ref);
@@ -399,7 +403,7 @@ static void guidance_h_update_reference(void) {
   }
 
 #if GUIDANCE_H_USE_SPEED_REF
-  if(guidance_h_mode == GUIDANCE_H_MODE_HOVER) {
+  if (guidance_h_mode == GUIDANCE_H_MODE_HOVER) {
     VECT2_COPY(guidance_h_pos_sp, guidance_h_pos_ref); // for display only
   }
 #endif
@@ -446,7 +450,7 @@ static void guidance_h_traj_run(bool_t in_flight) {
     ((guidance_h_again * guidance_h_accel_ref.x) >> 8);   /* acceleration feedforward gain */
   guidance_h_cmd_earth.y =
     pd_y +
-    ((guidance_h_vgain * guidance_h_speed_ref.x) >> 17) + /* speed feedforward gain */
+    ((guidance_h_vgain * guidance_h_speed_ref.y) >> 17) + /* speed feedforward gain */
     ((guidance_h_again * guidance_h_accel_ref.y) >> 8);   /* acceleration feedforward gain */
 
   /* trim max bank angle from PD */
@@ -513,7 +517,7 @@ static inline void transition_run(void) {
 
 /// read speed setpoint from RC
 static void read_rc_setpoint_speed_i(struct Int32Vect2 *speed_sp, bool_t in_flight) {
-  if(in_flight) {
+  if (in_flight) {
     // negative pitch is forward
     int64_t rc_x = -radio_control.values[RADIO_PITCH];
     int64_t rc_y = radio_control.values[RADIO_ROLL];

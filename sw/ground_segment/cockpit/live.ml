@@ -322,7 +322,7 @@ let mark = fun (geomap:G.widget) ac_id track plugin_frame ->
 
 (** Light display of attributes in the flight plan. *)
 let attributes_pretty_printer = fun attribs ->
-  (* Remove the optional attributes *)
+  (* Remove the optional attributesÂ *)
   let valid = fun a ->
     let a = String.lowercase a in
     a <> "no" && a <> "strip_icon" && a <> "strip_button" && a <> "pre_call"
@@ -390,9 +390,8 @@ let get_icon_and_track_size = fun af_xml ->
   try
     (* search AC_ICON in GCS section *)
     let gcs_section = ExtXml.child af_xml ~select:(fun x -> Xml.attrib x "name" = "GCS") "section" in
-    let fvalue = fun name default ->
-      try ExtXml.attrib (ExtXml.child gcs_section ~select:(fun x -> ExtXml.attrib x "name" = name) "define") "value" with _ -> default in
-    match fvalue "AC_ICON" "fixedwing" with
+    let ac_icon = ExtXml.child gcs_section ~select:(fun x -> ExtXml.attrib x "name" = "AC_ICON") "define" in
+    match ExtXml.attrib ac_icon "value" with
     | "home" -> ("home", 1) (* no track for home icon *)
     | x -> (x, !track_size)
   with _ -> (firmware_name, !track_size)
@@ -444,7 +443,8 @@ let create_ac = fun alert (geomap:G.widget) (acs_notebook:GPack.notebook) (ac_id
   ignore (fp_show#connect#toggled (fun () -> show_mission ac_id fp_show#active));
 
   let (icon, size) = get_icon_and_track_size af_xml in
-  let track = new MapTrack.track ~size ~icon ~name ~color:color geomap in
+  let track = new MapTrack.track ~size ~icon ~name ~color:color ac_id geomap in
+  track#set_event_cb (select_ac acs_notebook);
   geomap#register_to_fit (track:>MapCanvas.geographic);
 
   let center_ac = center geomap track in
@@ -1157,8 +1157,8 @@ let listen_flight_params = fun geomap auto_center_new_ac alert alt_graph ->
       ac.last_block_name <- b;
       ac.strip#set_label "block_name" b
     end;
-    let block_time = Int32.to_int (Pprz.int32_assoc "block_time" vs)
-    and stage_time = Int32.to_int (Pprz.int32_assoc "stage_time" vs) in
+    let block_time = Int64.to_int (Pprz.uint32_assoc "block_time" vs)
+    and stage_time = Int64.to_int (Pprz.uint32_assoc "stage_time" vs) in
     let bt = sprintf "%02d:%02d" (block_time / 60) (block_time mod 60) in
     ac.strip#set_label "block_time" bt;
     let st = sprintf "%02d:%02d" (stage_time / 60) (stage_time mod 60) in
@@ -1167,7 +1167,7 @@ let listen_flight_params = fun geomap auto_center_new_ac alert alt_graph ->
     (* Estimated Time Arrival to next waypoint *)
     let d = Pprz.float_assoc "dist_to_wp" vs in
     let label =
-      if d = 0. || ac.speed = 0. then
+      if d < 0.5 || ac.speed < 0.5 then
         "N/A"
       else
         sprintf "%.0fs" (d /. ac.speed) in
@@ -1239,7 +1239,7 @@ let listen_flight_params = fun geomap auto_center_new_ac alert alt_graph ->
 
   let get_ap_status = fun _sender vs ->
     let ac = get_ac vs in
-    let flight_time = Int32.to_int (Pprz.int32_assoc "flight_time" vs) in
+    let flight_time = Int64.to_int (Pprz.uint32_assoc "flight_time" vs) in
     ac.track#update_ap_status (float_of_int flight_time);
     ac.flight_time <- flight_time;
     let ap_mode = Pprz.string_assoc "ap_mode" vs in
@@ -1252,7 +1252,7 @@ let listen_flight_params = fun geomap auto_center_new_ac alert alt_graph ->
         match ap_mode with
             "AUTO2" | "NAV" -> ok_color
           | "AUTO1" | "R_RCC" | "A_RCC" | "ATT_C" | "R_ZH" | "A_ZH" | "HOVER" | "HOV_C" | "H_ZH" -> "#10F0E0"
-          | "MANUAL" | "RATE" | "ATT" | "RC_D" -> warning_color
+          | "MANUAL" | "RATE" | "ATT" | "RC_D" | "CF" | "FWD" -> warning_color
           | _ -> alert_color in
       ac.strip#set_color "AP" color;
     end;
@@ -1288,10 +1288,12 @@ let listen_waypoint_moved = fun () ->
     let wp_id = Pprz.int_assoc "wp_id" vs in
     let a = fun s -> Pprz.float_assoc s vs in
     let geo = { posn_lat = (Deg>>Rad)(a "lat"); posn_long = (Deg>>Rad)(a "long") }
-    and altitude = a "alt" in
+    and altitude = a "alt"
+    and ground_alt = a "ground_alt" in
 
     try
       let w = ac.fp_group#get_wp wp_id in
+      w#set_ground_alt ground_alt;
       w#set ~altitude ~update:true geo
     with
         Not_found -> () (* Silently ignore unknown waypoints *)
@@ -1437,6 +1439,6 @@ let listen_acs_and_msgs = fun geomap ac_notebook my_alert auto_center_new_ac alt
       center geomap ac.track () in
   let key_press = fun ev ->
     match GdkEvent.Key.keyval ev with
-      | k when k = GdkKeysyms._c -> center_active () ; true
+      | k when (k = GdkKeysyms._c) || (k = GdkKeysyms._C) -> center_active () ; true
       | _ -> false in
   ignore (geomap#canvas#event#connect#after#key_press key_press)

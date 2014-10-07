@@ -74,12 +74,6 @@ typedef uint8_t unit_t;
 #define M_PI_2 (M_PI/2)
 #endif
 
-#ifndef cbi
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
 
 #ifndef bit_is_set
 #define bit_is_set(x, b) ((x >> b) & 0x1)
@@ -107,32 +101,32 @@ typedef uint8_t unit_t;
 #define ABS(val) ((val) < 0 ? -(val) : (val))
 #endif
 
-#define Bound(_x, _min, _max) { if (_x > _max) _x = _max; else if (_x < _min) _x = _min; }
+#define Bound(_x, _min, _max) { if (_x > (_max)) _x = (_max); else if (_x < (_min)) _x = (_min); }
 #define BoundInverted(_x, _min, _max) {           \
-    if ((_x < _min) && (_x > _max)) {             \
-      if (abs(_x - _min) < abs(_x - _max))        \
-        _x = _min;                                \
+    if ((_x < (_min)) && (_x > (_max))) {         \
+      if (abs(_x - (_min)) < abs(_x - (_max)))    \
+        _x = (_min);                              \
       else                                        \
-        _x = _max;                                \
+        _x = (_max);                              \
     }                                             \
   }
 #define BoundWrapped(_x, _min, _max) {            \
-    if (_max > _min)                              \
+    if ((_max) > (_min))                          \
       Bound(_x, _min, _max)                       \
     else                                          \
       BoundInverted(_x, _min, _max)               \
   }
 #define BoundAbs(_x, _max) Bound(_x, -(_max), (_max))
 #define Chop(_x, _min, _max) ( (_x) < (_min) ? (_min) : (_x) > (_max) ? (_max) : (_x) )
-#define ChopAbs(x, max) Chop(x, -max, max)
+#define ChopAbs(x, max) Chop(x, -(max), (max))
 
 #define DeadBand(_x, _v) {						\
-    if (_x > _v)							\
-      _x = _x -_v;							\
-    else if  (_x < -_v)							\
-      _x = _x +_v;							\
-    else								\
-      _x = 0;								\
+    if (_x > (_v))                              \
+      _x = _x -(_v);                            \
+    else if  (_x < -(_v))                       \
+      _x = _x +(_v);                            \
+    else                                        \
+      _x = 0;                                   \
   }
 
 #define Blend(a, b, rho) (((rho)*(a))+(1-(rho))*(b))
@@ -231,5 +225,11 @@ static inline bool_t str_equal(const char * a, const char * b) {
   }
   return TRUE;
 }
+
+#ifdef __GNUC__
+#  define UNUSED __attribute__((__unused__))
+#else
+#  define UNUSED
+#endif
 
 #endif /* STD_H */

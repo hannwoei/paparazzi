@@ -23,15 +23,17 @@
  * Rotorcraft quaternion attitude stabilization
  */
 
+#include "generated/airframe.h"
+
 #include "firmwares/rotorcraft/stabilization.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_rc_setpoint.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_quat_transformations.h"
 
-#include <stdio.h>
+#include "std.h"
+#include "paparazzi.h"
 #include "math/pprz_algebra_float.h"
 #include "math/pprz_algebra_int.h"
 #include "state.h"
-#include "generated/airframe.h"
 
 struct Int32AttitudeGains stabilization_gains = {
   {STABILIZATION_ATTITUDE_PHI_PGAIN, STABILIZATION_ATTITUDE_THETA_PGAIN, STABILIZATION_ATTITUDE_PSI_PGAIN },
@@ -50,7 +52,7 @@ struct Int32AttitudeGains stabilization_gains = {
   (STABILIZATION_ATTITUDE_PHI_IGAIN < 0)   ||   \
   (STABILIZATION_ATTITUDE_THETA_IGAIN < 0) ||   \
   (STABILIZATION_ATTITUDE_PSI_IGAIN  < 0)
-#warning "ALL control gains are now positive!!!"
+#error "ALL control gains have to be positive!!!"
 #endif
 
 struct Int32Quat stabilization_att_sum_err_quat;
@@ -125,7 +127,7 @@ void stabilization_attitude_init(void) {
 
   stabilization_attitude_ref_init();
 
-  INT32_QUAT_ZERO( stabilization_att_sum_err_quat );
+  int32_quat_identity(&stabilization_att_sum_err_quat);
   INT_EULERS_ZERO( stabilization_att_sum_err );
 
 #if PERIODIC_TELEMETRY
@@ -142,7 +144,7 @@ void stabilization_attitude_enter(void) {
 
   stabilization_attitude_ref_enter();
 
-  INT32_QUAT_ZERO(stabilization_att_sum_err_quat);
+  int32_quat_identity(&stabilization_att_sum_err_quat);
   INT_EULERS_ZERO(stabilization_att_sum_err);
 
 }
@@ -228,8 +230,8 @@ void stabilization_attitude_run(bool_t enable_integrator) {
   struct Int32Quat* att_quat = stateGetNedToBodyQuat_i();
   INT32_QUAT_INV_COMP(att_err, *att_quat, stab_att_ref_quat);
   /* wrap it in the shortest direction       */
-  INT32_QUAT_WRAP_SHORTEST(att_err);
-  INT32_QUAT_NORMALIZE(att_err);
+  int32_quat_wrap_shortest(&att_err);
+  int32_quat_normalize(&att_err);
 
   /*  rate error                */
   const struct Int32Rates rate_ref_scaled = {
@@ -248,13 +250,13 @@ void stabilization_attitude_run(bool_t enable_integrator) {
     scaled_att_err.qx = att_err.qx / IERROR_SCALE;
     scaled_att_err.qy = att_err.qy / IERROR_SCALE;
     scaled_att_err.qz = att_err.qz / IERROR_SCALE;
-    INT32_QUAT_COMP(new_sum_err, stabilization_att_sum_err_quat, scaled_att_err);
-    INT32_QUAT_NORMALIZE(new_sum_err);
+    int32_quat_comp(&new_sum_err, &stabilization_att_sum_err_quat, &scaled_att_err);
+    int32_quat_normalize(&new_sum_err);
     QUAT_COPY(stabilization_att_sum_err_quat, new_sum_err);
-    INT32_EULERS_OF_QUAT(stabilization_att_sum_err, stabilization_att_sum_err_quat);
+    int32_eulers_of_quat(&stabilization_att_sum_err, &stabilization_att_sum_err_quat);
   } else {
     /* reset accumulator */
-    INT32_QUAT_ZERO( stabilization_att_sum_err_quat );
+    int32_quat_identity(&stabilization_att_sum_err_quat);
     INT_EULERS_ZERO( stabilization_att_sum_err );
   }
 

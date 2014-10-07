@@ -174,7 +174,7 @@ end
 (************ Google, OSM Maps handling *****************************************)
 module GM = struct
   (** Fill the visible background with Google, OSM tiles *)
-  let zoomlevel = ref 18
+  let zoomlevel = ref 20
   let fill_tiles = fun geomap ->
     match geomap#georef with
         None -> ()
@@ -311,7 +311,7 @@ let keys_help = fun () ->
     "Zoom: Mouse Wheel, PgUp, PgDown\n\
     Pan: Map & keyboard arrows\n\
     Fit to window: f\n\
-    Center active A/C: f\n\
+    Center active A/C: c or C\n\
     Fullscreen: F11\n\
     Load Map Tile: Right\n\
     Create Waypoint: Ctrl-Left\n\
@@ -348,7 +348,7 @@ let options =
     "-edit", Arg.Unit (fun () -> edit := true; layout_file := "editor.xml"), "Flight plan editor";
     "-fullscreen", Arg.Set fullscreen, "Fullscreen window";
     "-maps_fill", Arg.Set GM.auto, "Automatically start loading background maps";
-    "-maps_zoom", Arg.Set_int GM.zoomlevel, "Background maps zoomlevel (default: 18, max: 22)";
+    "-maps_zoom", Arg.Set_int GM.zoomlevel, "Background maps zoomlevel (default: 20, min: 18, max: 22)";
     "-ign", Arg.String (fun s -> ign:=true; IGN.data_path := s), "IGN tiles path";
     "-lambertIIe", Arg.Unit (fun () -> projection:=G.LambertIIe),"Switch to LambertIIe projection";
     "-layout", Arg.Set_string layout_file, (sprintf "<XML layout specification> GUI layout. Default: %s" !layout_file);
@@ -613,7 +613,7 @@ let () =
   let window, switch_fullscreen =
     match !wid with
         None ->
-          let icon = GdkPixbuf.from_file Env.icon_file in
+          let icon = GdkPixbuf.from_file Env.icon_gcs_file in
           let window = GWindow.window ~icon ~title:"GCS" ~border_width:1 ~width ~height ~allow_shrink:true () in
           if !maximize then
             window#maximize ();

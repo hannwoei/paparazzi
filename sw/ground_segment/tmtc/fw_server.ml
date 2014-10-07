@@ -44,6 +44,7 @@ let fvalue = fun x ->
   match x with
       Pprz.Float x -> x
     | Pprz.Int32 x -> Int32.to_float x
+    | Pprz.Int64 x -> Int64.to_float x
     | Pprz.Int x -> float_of_int x
     | _ -> failwith (sprintf "Receive.log_and_parse: float expected, got '%s'" (Pprz.string_of_value x))
 
@@ -52,6 +53,7 @@ let ivalue = fun x ->
   match x with
       Pprz.Int x -> x
     | Pprz.Int32 x -> Int32.to_int x
+    | Pprz.Int64 x -> Int64.to_int x
     | _ -> failwith "Receive.log_and_parse: int expected"
 
 let format_string_field = fun s ->
@@ -113,14 +115,14 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
           a.course  <- norm_course ((Deg>>Rad)(fvalue "course" /. 10.));
           if !heading_from_course then
             a.heading <- a.course;
-          a.agl     <- a.alt -. float (try Srtm.of_wgs84 a.pos with _ -> 0);
+          a.agl     <- a.alt -. (try float (Srtm.of_wgs84 a.pos) with _ -> a.ground_alt);
           if a.gspeed > 3. && a.ap_mode = _AUTO2 then
             Wind.update ac_name a.gspeed a.course
         end
     | "GPS_LLA" ->
       let lat = ivalue "lat"
       and lon = ivalue "lon" in
-      let geo = make_geo (float lat /. 1e7) (float lon /. 1e7) in
+      let geo = make_geo_deg (float lat /. 1e7) (float lon /. 1e7) in
       a.pos <- geo;
       a.unix_time <- LL.unix_time_of_tow (truncate (fvalue "itow" /. 1000.));
       a.itow <- Int32.of_float (fvalue "itow");
@@ -128,7 +130,7 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
       a.course  <- norm_course ((Deg>>Rad)(fvalue "course" /. 10.));
       if !heading_from_course then
         a.heading <- a.course;
-      a.agl     <- a.alt -. float (try Srtm.of_wgs84 a.pos with _ -> 0);
+      a.agl     <- a.alt -. (try float (Srtm.of_wgs84 a.pos) with _ -> a.ground_alt);
       a.gps_mode <- check_index (ivalue "mode") gps_modes "GPS_MODE";
       if a.gspeed > 3. && a.ap_mode = _AUTO2 then
         Wind.update ac_name a.gspeed a.course
@@ -136,7 +138,11 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
       a.gps_Pacc <- ivalue "Pacc"
     | "ESTIMATOR" ->
       a.alt     <- fvalue "z";
-      a.climb   <- fvalue "z_dot"
+      a.climb   <- fvalue "z_dot";
+      if a.gps_mode = _3D then
+        a.agl <- a.alt -. (try float (Srtm.of_wgs84 a.pos) with _ -> a.ground_alt)
+      else
+        a.agl <- a.alt -. a.ground_alt
     | "AIRSPEED" ->
       a.airspeed <- fvalue "airspeed"
     | "DESIRED" ->
@@ -152,12 +158,22 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
       a.desired_climb <- (try fvalue "climb" with _ -> fvalue "desired_climb");
       begin try a.desired_course <- norm_course (fvalue "course") with _ -> () end
     | "NAVIGATION_REF" ->
-      a.nav_ref <- Some (Utm { utm_x = fvalue "utm_east"; utm_y = fvalue "utm_north"; utm_zone = ivalue "utm_zone" })
+      a.nav_ref <- Some (Utm { utm_x = fvalue "utm_east"; utm_y = fvalue "utm_north"; utm_zone = ivalue "utm_zone" });
+      a.ground_alt <- fvalue "ground_alt";
+      if a.gps_mode = _3D then
+        a.agl <- a.alt -. (try float (Srtm.of_wgs84 a.pos) with _ -> a.ground_alt)
+      else
+        a.agl <- a.alt -. a.ground_alt
     | "NAVIGATION_REF_LLA" ->
       let lat = ivalue "lat"
       and lon = ivalue "lon" in
-      let geo = make_geo (float lat /. 1e7) (float lon /. 1e7) in
-      a.nav_ref <- Some (Geo geo)
+      let geo = make_geo_deg (float lat /. 1e7) (float lon /. 1e7) in
+      a.nav_ref <- Some (Geo geo);
+      a.ground_alt <- fvalue "ground_alt";
+      if a.gps_mode = _3D then
+        a.agl <- a.alt -. (try float (Srtm.of_wgs84 a.pos) with _ -> a.ground_alt)
+      else
+        a.agl <- a.alt -. a.ground_alt
     | "ATTITUDE" ->
       let roll = fvalue "phi"
       and pitch = fvalue "theta" in
@@ -173,7 +189,7 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
     | "NAVIGATION" ->
       a.cur_block <- ivalue "cur_block";
       a.cur_stage <- ivalue "cur_stage";
-      a.dist_to_wp <- sqrt (fvalue "dist2_wp")
+      a.dist_to_wp <- (try sqrt (fvalue "dist2_wp") with _ -> fvalue "dist_wp");
     | "BAT" ->
       a.throttle <- fvalue "throttle" /. 9600. *. 100.;
       a.kill_mode <- ivalue "kill_auto_throttle" <> 0;
@@ -301,7 +317,7 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
       let lat = ivalue "lat"
       and lon = ivalue "lon"
       and alt = ivalue "alt" in
-      let geo = make_geo (float lat /. 1e7) (float lon /. 1e7) in
+      let geo = make_geo_deg (float lat /. 1e7) (float lon /. 1e7) in
       update_waypoint a (ivalue "wp_id") geo (float alt /. 100.)
     | "GENERIC_COM" ->
       let flight_time = ivalue "flight_time" in
@@ -309,14 +325,14 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
         a.flight_time <- flight_time;
         let lat = fvalue "lat"
         and lon = fvalue "lon" in
-        let geo = make_geo (lat /. 1e7) (lon /. 1e7) in
+        let geo = make_geo_deg (lat /. 1e7) (lon /. 1e7) in
         a.pos <- geo;
         a.alt <- fvalue "alt";
         a.gspeed  <- fvalue "gspeed" /. 100.;
         a.course  <- norm_course (fvalue "course" /. 1e3);
         if !heading_from_course then
           a.heading <- a.course;
-        a.agl <- a.alt -. float (try Srtm.of_wgs84 a.pos with _ -> 0);
+        a.agl <- a.alt -. (try float (Srtm.of_wgs84 a.pos) with _ -> a.ground_alt);
         a.bat <- fvalue "vsupply" /. 10.;
         a.energy <- ivalue "energy" * 100;
         a.throttle <- fvalue "throttle";

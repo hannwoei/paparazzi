@@ -16,6 +16,7 @@ ifeq ($(NORADIO), False)
   ifneq ($(RADIO_CONTROL_LED),none)
     ap.CFLAGS += -DRADIO_CONTROL_LED=$(RADIO_CONTROL_LED)
     fbw.CFLAGS += -DRADIO_CONTROL_LED=$(RADIO_CONTROL_LED)
+    test_radio_control.CFLAGS += -DRADIO_CONTROL_LED=$(RADIO_CONTROL_LED)
   endif
   $(TARGET).CFLAGS 	+= -DRADIO_CONTROL_TYPE_H=\"subsystems/radio_control/ppm.h\"
   $(TARGET).CFLAGS 	+= -DRADIO_CONTROL_TYPE_PPM
@@ -34,3 +35,6 @@ ifeq ($(NORADIO), False)
   endif
 endif
 
+# dummy stuff so you don't have to unload superbitrf.xml settings file for simulators
+nps.srcs += $(SRC_ARCH)/subsystems/datalink/superbitrf.c
+sim.srcs += $(SRC_ARCH)/subsystems/datalink/superbitrf.c

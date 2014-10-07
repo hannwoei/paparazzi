@@ -30,8 +30,6 @@ module LL = Latlong
 module U = Unix
 module Dl_Pprz = Pprz.Messages (struct let name = "datalink" end)
 
-let nav_ref_alt = ref 0.
-let nav_ref_hmsl = ref 0.
 
 (* FIXME: bound the loop *)
 let rec norm_course =
@@ -46,6 +44,7 @@ let fvalue = fun x ->
   match x with
       Pprz.Float x -> x
     | Pprz.Int32 x -> Int32.to_float x
+    | Pprz.Int64 x -> Int64.to_float x
     | Pprz.Int x -> float_of_int x
     | _ -> failwith (sprintf "Receive.log_and_parse: float expected, got '%s'" (Pprz.string_of_value x))
 
@@ -54,6 +53,7 @@ let ivalue = fun x ->
   match x with
       Pprz.Int x -> x
     | Pprz.Int32 x -> Int32.to_int x
+    | Pprz.Int64 x -> Int64.to_int x
     | _ -> failwith "Receive.log_and_parse: int expected"
 
 (*
@@ -168,7 +168,7 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
         and vnorth = foi32value "vnorth" /. speed_frac in
         a.gspeed  <- sqrt(vnorth*.vnorth +. veast*.veast);
         a.climb   <- foi32value "vup" /. speed_frac;
-        a.agl     <- a.alt -. float (try Srtm.of_wgs84 a.pos with _ -> 0);
+        a.agl     <- a.alt -. (try float (Srtm.of_wgs84 a.pos) with _ -> a.ground_alt);
         a.course  <- norm_course ((Rad>>Deg) (foi32value "psi" /. angle_frac));
         a.heading <- norm_course (foi32value "psi" /. angle_frac);
         a.roll    <- foi32value "phi" /. angle_frac;
@@ -200,13 +200,14 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
       let nav_ref_ecef = LL.make_ecef [| x; y; z |] in
       a.nav_ref <- Some (Ltp nav_ref_ecef);
       a.d_hmsl <- hmsl -. alt;
+      a.ground_alt <- hmsl;
     | "ROTORCRAFT_NAV_STATUS" ->
       a.block_time <- ivalue "block_time";
       a.stage_time <- ivalue "stage_time";
       a.cur_block <- ivalue "cur_block";
       a.cur_stage <- ivalue "cur_stage";
       a.horizontal_mode <- check_index (ivalue "horizontal_mode") horiz_modes "AP_HORIZ";
-  (*a.dist_to_wp <- sqrt (fvalue "dist2_wp")*)
+      a.dist_to_wp <- (try fvalue "dist_wp" with _ -> 0.);
     | "WP_MOVED_ENU" ->
       begin
         match a.nav_ref with

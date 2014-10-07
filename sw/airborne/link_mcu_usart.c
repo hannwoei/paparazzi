@@ -74,7 +74,7 @@
 
 #define MSG_INTERMCU_COMMAND_ID 0x05
 #define MSG_INTERMCU_COMMAND_LENGTH  (2*(COMMANDS_NB))
-#define MSG_INTERMCU_COMMAND(_intermcu_payload, nr) (uint16_t)(*((uint8_t*)_intermcu_payload+0)|*((uint8_t*)_intermcu_payload+1+(2*(nr)))<<8)
+#define MSG_INTERMCU_COMMAND(_intermcu_payload, nr) (uint16_t)(*((uint8_t*)_intermcu_payload+0+(2*(nr)))|*((uint8_t*)_intermcu_payload+1+(2*(nr)))<<8)
 
 #define InterMcuSend_INTERMCU_COMMAND(cmd) { \
   InterMcuHeader(MSG_INTERMCU_ID, MSG_INTERMCU_COMMAND_ID, MSG_INTERMCU_COMMAND_LENGTH);\
@@ -87,7 +87,7 @@
 
 #define MSG_INTERMCU_RADIO_ID 0x08
 #define MSG_INTERMCU_RADIO_LENGTH  (2*(RADIO_CONTROL_NB_CHANNEL))
-#define MSG_INTERMCU_RADIO(_intermcu_payload, nr) (uint16_t)(*((uint8_t*)_intermcu_payload+0)|*((uint8_t*)_intermcu_payload+1+(2*(nr)))<<8)
+#define MSG_INTERMCU_RADIO(_intermcu_payload, nr) (uint16_t)(*((uint8_t*)_intermcu_payload+0+(2*(nr)))|*((uint8_t*)_intermcu_payload+1+(2*(nr)))<<8)
 
 #define InterMcuSend_INTERMCU_RADIO(cmd) { \
   InterMcuHeader(MSG_INTERMCU_ID, MSG_INTERMCU_RADIO_ID, MSG_INTERMCU_RADIO_LENGTH);\
@@ -103,6 +103,7 @@
 #define MSG_INTERMCU_FBW_STAT(_intermcu_payload) (uint8_t)(*((uint8_t*)_intermcu_payload+1))
 #define MSG_INTERMCU_FBW_ERR(_intermcu_payload) (uint8_t)(*((uint8_t*)_intermcu_payload+2))
 #define MSG_INTERMCU_FBW_VOLT(_intermcu_payload) (uint16_t)(*((uint8_t*)_intermcu_payload+3)|*((uint8_t*)_intermcu_payload+1+3)<<8)
+//FIXME: Current is now 4BYTES
 #define MSG_INTERMCU_FBW_CURRENT(_intermcu_payload) (uint16_t)(*((uint8_t*)_intermcu_payload+5)|*((uint8_t*)_intermcu_payload+1+5)<<8)
 
 #define InterMcuSend_INTERMCU_FBW(mod,stat,err,volt,current) { \
@@ -244,11 +245,50 @@ struct link_mcu_msg link_mcu_from_fbw_msg;
 
 inline void parse_mavpilot_msg( void );
 
+
+#ifdef AP
+#include "subsystems/datalink/telemetry.h"
+
+#define RC_OK          0
+#define RC_LOST        1
+#define RC_REALLY_LOST 2
+
+
+static void send_commands(void) {
+  DOWNLINK_SEND_COMMANDS(DefaultChannel, DefaultDevice, COMMANDS_NB, ap_state->commands);
+}
+
+
+static void send_fbw_status(void) {
+  uint8_t rc_status = 0;
+  uint8_t fbw_status = 0;
+  if (bit_is_set(fbw_state->status, STATUS_MODE_AUTO))
+    fbw_status = FBW_MODE_AUTO;
+  if (bit_is_set(fbw_state->status, STATUS_MODE_FAILSAFE))
+    fbw_status = FBW_MODE_FAILSAFE;
+  if (bit_is_set(fbw_state->status, STATUS_RADIO_REALLY_LOST))
+    rc_status = RC_REALLY_LOST;
+  else if (bit_is_set(fbw_state->status, RC_OK))
+    rc_status = RC_OK;
+  else
+    rc_status = RC_LOST;
+  DOWNLINK_SEND_FBW_STATUS(DefaultChannel, DefaultDevice,
+      &(rc_status), &(fbw_state->ppm_cpt), &(fbw_status), &(fbw_state->vsupply), &(fbw_state->current));
+}
+#endif
+
 void link_mcu_init( void )
 {
    intermcu_data.status = LINK_MCU_UNINIT;
    intermcu_data.msg_available = FALSE;
    intermcu_data.error_cnt = 0;
+#ifdef AP
+ #if PERIODIC_TELEMETRY
+   // If FBW has not telemetry, then AP can send some of the info
+   register_periodic_telemetry(DefaultPeriodic, "COMMANDS", send_commands);
+   register_periodic_telemetry(DefaultPeriodic, "FBW_STATUS", send_fbw_status);
+#endif
+#endif
 }
 
 void parse_mavpilot_msg( void )

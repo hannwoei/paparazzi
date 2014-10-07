@@ -48,7 +48,7 @@
 #endif
 
 void follow_init( void ) {
-  
+
 }
 
 void follow_change_wp( unsigned char* buffer ) {
@@ -72,5 +72,5 @@ void follow_change_wp( unsigned char* buffer ) {
   // TODO: Remove the angle to the north
 
   // Move the waypoint
-  INT32_VECT3_COPY(waypoints[FOLLOW_WAYPOINT_ID], enu);
+  VECT3_COPY(waypoints[FOLLOW_WAYPOINT_ID], enu);
 }

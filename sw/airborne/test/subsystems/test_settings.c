@@ -28,11 +28,10 @@
 #include "subsystems/datalink/downlink.h"
 #include "subsystems/datalink/datalink.h"
 #include "subsystems/settings.h"
+#include "generated/settings.h"
 
 #include "mcu_periph/uart.h"
 #include "messages.h"
-
-#include "my_debug_servo.h"
 
 static inline void main_init( void );
 static inline void main_periodic( void );
@@ -60,12 +59,7 @@ static inline void main_init( void ) {
   mcu_init();
   sys_time_register_timer((1./PERIODIC_FREQUENCY), NULL);
   settings_init();
-  //  DEBUG_SERVO2_INIT();
-  //  LED_ON(1);
-  //  LED_ON(2);
-  //  DEBUG_S4_ON();
-  //  DEBUG_S5_ON();
-  //  DEBUG_S6_ON();
+
   mcu_int_enable();
 
 }
@@ -73,8 +67,8 @@ static inline void main_init( void ) {
 static inline void main_periodic( void ) {
 
   RunOnceEvery(100, {
-      DOWNLINK_SEND_ALIVE(DefaultChannel, DefaultDevice,  16, MD5SUM);
-      PeriodicSendDlValue(DefaultChannel);
+      DOWNLINK_SEND_ALIVE(DefaultChannel, DefaultDevice, 16, MD5SUM);
+      PeriodicSendDlValue(DefaultChannel, DefaultDevice);
     });
 
 }
@@ -91,11 +85,11 @@ void dl_parse_msg(void) {
   switch (msg_id) {
 
   case  DL_PING: {
-    DOWNLINK_SEND_PONG(DefaultChannel);
+    DOWNLINK_SEND_PONG(DefaultChannel, DefaultDevice);
   }
     break;
   case DL_SETTING:
-    if(DL_SETTING_ac_id(dl_buffer) == AC_ID) {
+    if (DL_SETTING_ac_id(dl_buffer) == AC_ID) {
       uint8_t i = DL_SETTING_index(dl_buffer);
       float val = DL_SETTING_value(dl_buffer);
       DlSetting(i, val);

@@ -303,27 +303,27 @@ void xsens_periodic(void) {
 
 static inline void update_fw_estimator(void) {
   // Send to Estimator (Control)
-#ifdef XSENS_BACKWARDS
-  struct FloatEulers att = {
-    -ins_phi+ins_roll_neutral,
-    -ins_theta+ins_pitch_neutral,
-    ins_psi + RadOfDeg(180)
-  };
-  struct FloatRates rates = {
-    -ins_p,
-    -ins_q,
-    ins_r
-  };
-#else
+#if XSENS_BACKWARDS
   struct FloatEulers att = {
     ins_phi+ins_roll_neutral,
-    ins_theta+ins_pitch_neutral,
-    ins_psi
+    -ins_theta+ins_pitch_neutral,
+    -ins_psi + RadOfDeg(180)
   };
   struct FloatRates rates = {
     ins_p,
+    -ins_q,
+    -ins_r
+  };
+#else
+  struct FloatEulers att = {
+    -ins_phi+ins_roll_neutral,
+    ins_theta+ins_pitch_neutral,
+    -ins_psi
+  };
+  struct FloatRates rates = {
+    -ins_p,
     ins_q,
-    ins_r
+    -ins_r
   };
 #endif
   stateSetNedToBodyEulers_f(&att);
@@ -491,8 +491,7 @@ void parse_ins_msg( void ) {
           gps.utm_pos.alt = XSENS_DATA_Altitude_h(xsens_msg_buf,offset)* 1000.0f;
 
           // Compute geoid (MSL) height
-          float geoid_h;
-          WGS84_ELLIPSOID_TO_GEOID(lla_f.lat,lla_f.lon,geoid_h);
+          float geoid_h = wgs84_ellipsoid_to_geoid(lla_f.lat, lla_f.lon);
           gps.hmsl =  gps.utm_pos.alt - (geoid_h * 1000.0f);
 
           //gps.tow = geoid_h * 1000.0f; //gps.utm_pos.alt;

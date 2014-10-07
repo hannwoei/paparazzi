@@ -141,8 +141,21 @@
 #define SPI1_GPIO_PORT_SCK GPIOA
 #define SPI1_GPIO_SCK GPIO5
 
+// SLAVE0 on SPI connector
 #define SPI_SELECT_SLAVE0_PORT GPIOB
 #define SPI_SELECT_SLAVE0_PIN GPIO9
+// SLAVE1 on AUX1
+#define SPI_SELECT_SLAVE1_PORT GPIOB
+#define SPI_SELECT_SLAVE1_PIN GPIO1
+// SLAVE2 on AUX2
+#define SPI_SELECT_SLAVE2_PORT GPIOC
+#define SPI_SELECT_SLAVE2_PIN GPIO5
+// SLAVE3 on AUX3
+#define SPI_SELECT_SLAVE3_PORT GPIOC
+#define SPI_SELECT_SLAVE3_PIN GPIO4
+// SLAVE4 on AUX4
+#define SPI_SELECT_SLAVE4_PORT GPIOB
+#define SPI_SELECT_SLAVE4_PIN GPIO15
 
 
 /* Onboard ADCs */
@@ -222,7 +235,6 @@
 #if USE_PWM0
 #define PWM_SERVO_0 0
 #define PWM_SERVO_0_TIMER TIM3
-#define PWM_SERVO_0_RCC RCC_GPIOB
 #define PWM_SERVO_0_GPIO GPIOB
 #define PWM_SERVO_0_PIN GPIO0
 #define PWM_SERVO_0_AF GPIO_AF2
@@ -238,7 +250,6 @@
 #if USE_PWM1
 #define PWM_SERVO_1 1
 #define PWM_SERVO_1_TIMER TIM2
-#define PWM_SERVO_1_RCC RCC_GPIOA
 #define PWM_SERVO_1_GPIO GPIOA
 #define PWM_SERVO_1_PIN GPIO2
 #define PWM_SERVO_1_AF GPIO_AF1
@@ -254,7 +265,6 @@
 #if USE_PWM2
 #define PWM_SERVO_2 2
 #define PWM_SERVO_2_TIMER TIM3
-#define PWM_SERVO_2_RCC RCC_GPIOB
 #define PWM_SERVO_2_GPIO GPIOB
 #define PWM_SERVO_2_PIN GPIO5
 #define PWM_SERVO_2_AF GPIO_AF2
@@ -270,7 +280,6 @@
 #if USE_PWM3
 #define PWM_SERVO_3 3
 #define PWM_SERVO_3_TIMER TIM3
-#define PWM_SERVO_3_RCC RCC_GPIOB
 #define PWM_SERVO_3_GPIO GPIOB
 #define PWM_SERVO_3_PIN GPIO4
 #define PWM_SERVO_3_AF GPIO_AF2
@@ -286,7 +295,6 @@
 #if USE_PWM4
 #define PWM_SERVO_4 4
 #define PWM_SERVO_4_TIMER TIM2
-#define PWM_SERVO_4_RCC RCC_GPIOB
 #define PWM_SERVO_4_GPIO GPIOB
 #define PWM_SERVO_4_PIN GPIO3
 #define PWM_SERVO_4_AF GPIO_AF1
@@ -302,7 +310,6 @@
 #if USE_PWM5
 #define PWM_SERVO_5 5
 #define PWM_SERVO_5_TIMER TIM2
-#define PWM_SERVO_5_RCC RCC_GPIOA
 #define PWM_SERVO_5_GPIO GPIOA
 #define PWM_SERVO_5_PIN GPIO15
 #define PWM_SERVO_5_AF GPIO_AF1
@@ -316,7 +323,6 @@
 #if USE_PWM6
 #define PWM_SERVO_6 6
 #define PWM_SERVO_6_TIMER TIM3
-#define PWM_SERVO_6_RCC RCC_GPIOB
 #define PWM_SERVO_6_GPIO GPIOB
 #define PWM_SERVO_6_PIN GPIO1
 #define PWM_SERVO_6_AF GPIO_AF2
@@ -347,12 +353,47 @@
 #define PPM_GPIO_AF         GPIO_AF1
 
 /*
+ * PWM input
+ */
+#define PWM_INPUT1_TIMER          TIM1
+#define PWM_INPUT1_CHANNEL_PERIOD TIM_IC1
+#define PWM_INPUT1_CHANNEL_DUTY   TIM_IC2
+#define PWM_INPUT1_TIMER_INPUT    TIM_IC_IN_TI1
+#define PWM_INPUT1_SLAVE_TRIG     TIM_SMCR_TS_IT1FP1
+#define PWM_INPUT1_IRQ            NVIC_TIM1_CC_IRQ
+#define PWM_INPUT1_IRQ2           NVIC_TIM1_UP_TIM10_IRQ
+#define PWM_INPUT1_CC_IE          (TIM_DIER_CC1IE | TIM_DIER_CC2IE)
+#define USE_PWM_INPUT_TIM1        TRUE
+#define TIM1_PWM_INPUT_IDX        0
+#define TIM1_CC_IF_PERIOD         TIM_SR_CC1IF
+#define TIM1_CC_IF_DUTY           TIM_SR_CC2IF
+#define TIM1_CCR_PERIOD           TIM1_CCR1
+#define TIM1_CCR_DUTY             TIM1_CCR2
+// PPM in (aka PA8) is used: not compatible with PPM RC receiver
+#define PWM_INPUT1_GPIO_PORT      GPIOA
+#define PWM_INPUT1_GPIO_PIN       GPIO8
+#define PWM_INPUT1_GPIO_AF        GPIO_AF1
+
+/*
  * Spektrum
  */
-/* The line that is pulled low at power up to initiate the bind process */
-#define SPEKTRUM_BIND_PIN GPIO8
-#define SPEKTRUM_BIND_PIN_PORT GPIOA
 
+/* The line that is pulled low at power up to initiate the bind process
+ * PB15: AUX4
+ */
+#define SPEKTRUM_BIND_PIN GPIO15
+#define SPEKTRUM_BIND_PIN_PORT GPIOB
+
+/* The line used to send the pulse train for the bind process
+ * When using UART2 on Apogee, this as to be a different pin than the uart2 rx
+ * Default pin for this is PA8: PPM_IN
+ */
+#ifndef SPEKTRUM_PRIMARY_BIND_CONF_PORT
+#define SPEKTRUM_PRIMARY_BIND_CONF_PORT GPIOA
+#define SPEKTRUM_PRIMARY_BIND_CONF_PIN GPIO8
+#endif
+
+/* Configuration of UART2 for Spektrum */
 #define SPEKTRUM_UART2_RCC RCC_USART2
 #define SPEKTRUM_UART2_BANK GPIOA
 #define SPEKTRUM_UART2_PIN GPIO3

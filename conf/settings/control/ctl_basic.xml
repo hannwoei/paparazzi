@@ -34,6 +34,7 @@
           <strip_button name="Cruise" value="0" group="dash_loiter"/>
           <strip_button name="Dash" value="1" group="dash_loiter"/>
         </dl_setting>
+        <dl_setting MAX="15" MIN="-15" STEP="0.1" VAR="v_ctl_pitch_trim" shortname="pitch trim" param="V_CTL_PITCH_TRIM" unit="rad" alt_unit="deg"/>
         <dl_setting MAX="0.05" MIN="0.00" STEP="0.005" VAR="v_ctl_auto_throttle_pgain" shortname="throttle_pgain" param="V_CTL_AUTO_THROTTLE_PGAIN"/>
         <dl_setting MAX="1" MIN="0.0" STEP="0.05" VAR="v_ctl_auto_throttle_igain" shortname="throttle_igain" param="V_CTL_AUTO_THROTTLE_IGAIN"/>
         <dl_setting MAX="2" MIN="0.0" STEP="0.1" VAR="v_ctl_auto_throttle_dgain" shortname="throttle_dgain"/>
@@ -58,7 +59,7 @@
         <dl_setting MAX="2" MIN="1" STEP="1" VAR="nav_mode"/>
         <dl_setting MAX="5" MIN="-5" STEP="0.5" VAR="nav_climb"/>
         <dl_setting MAX="15" MIN="-15" STEP="1" VAR="fp_pitch"/>
-        <dl_setting MAX="50" MIN="-50" STEP="5" VAR="nav_shift" module="subsystems/nav" handler="IncreaseShift" shortname="inc. shift"/>
+        <dl_setting MAX="50" MIN="-50" STEP="5" VAR="nav_shift" module="firmwares/fixedwing/nav" handler="IncreaseShift" shortname="inc. shift"/>
         <dl_setting MAX="50" MIN="5" STEP="0.5" VAR="nav_ground_speed_setpoint" shortname="ground speed"/>
         <dl_setting MAX="0.2" MIN="0" STEP="0.01" VAR="nav_ground_speed_pgain" shortname="ground speed pgain"/>
         <dl_setting MAX="500" MIN="50" STEP="5" VAR="nav_survey_shift"/>

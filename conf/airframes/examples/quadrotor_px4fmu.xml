@@ -2,10 +2,10 @@
 
 <!-- this is a quadrotor frame equiped with
      * Autopilot:   PX4FMU 1.7             https://pixhawk.ethz.ch/px4/modules/px4fmu
-     * IMU:         MPU6000 + HMC5883      http://paparazzi.enac.fr/wiki/AspirinIMU
-     * Actuators:   PWM motor controllers  http://paparazzi.enac.fr/wiki/Subsystem/actuators#PWM_Supervision
-     * GPS:         Ublox                  http://paparazzi.enac.fr/wiki/Subsystem/gps
-     * RC:          PPM                    http://paparazzi.enac.fr/wiki/Subsystem/radio_control#PPM
+     * IMU:         MPU6000 + HMC5883      http://wiki.paparazziuav.org/wiki/AspirinIMU
+     * Actuators:   PWM motor controllers  http://wiki.paparazziuav.org/wiki/Subsystem/actuators#PWM_Supervision
+     * GPS:         Ublox                  http://wiki.paparazziuav.org/wiki/Subsystem/gps
+     * RC:          PPM                    http://wiki.paparazziuav.org/wiki/Subsystem/radio_control#PPM
 -->
 
 <airframe name="Quadrotor PX4FMU 1.7">
@@ -67,10 +67,10 @@
 
   <command_laws>
     <call fun="motor_mixing_run(autopilot_motors_on,FALSE,values)"/>
-    <set servo="FRONT"  value="motor_mixing.commands[SERVO_FRONT]"/>
-    <set servo="BACK"   value="motor_mixing.commands[SERVO_BACK]"/>
-    <set servo="RIGHT"  value="motor_mixing.commands[SERVO_RIGHT]"/>
-    <set servo="LEFT"   value="motor_mixing.commands[SERVO_LEFT]"/>
+    <set servo="FRONT"  value="motor_mixing.commands[0]"/>
+    <set servo="BACK"   value="motor_mixing.commands[1]"/>
+    <set servo="RIGHT"  value="motor_mixing.commands[2]"/>
+    <set servo="LEFT"   value="motor_mixing.commands[3]"/>
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
@@ -171,11 +171,6 @@
   </section>
 
   <section name="GUIDANCE_V" prefix="GUIDANCE_V_">
-    <define name="MIN_ERR_Z"   value="POS_BFP_OF_REAL(-10.)"/>
-    <define name="MAX_ERR_Z"   value="POS_BFP_OF_REAL( 10.)"/>
-    <define name="MIN_ERR_ZD"  value="SPEED_BFP_OF_REAL(-10.)"/>
-    <define name="MAX_ERR_ZD"  value="SPEED_BFP_OF_REAL( 10.)"/>
-    <define name="MAX_SUM_ERR" value="2000000"/>
     <define name="HOVER_KP"    value="150"/>
     <define name="HOVER_KD"    value="80"/>
     <define name="HOVER_KI"    value="20"/>
@@ -187,7 +182,7 @@
     <define name="MAX_BANK" value="20" unit="deg"/>
     <define name="PGAIN" value="50"/>
     <define name="DGAIN" value="100"/>
-    <define name="AGAIN" value="100"/>
+    <define name="AGAIN" value="70"/>
     <define name="IGAIN" value="20"/>
   </section>
 

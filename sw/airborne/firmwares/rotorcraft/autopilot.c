@@ -39,6 +39,7 @@
 #include "firmwares/rotorcraft/navigation.h"
 #include "firmwares/rotorcraft/guidance.h"
 #include "firmwares/rotorcraft/stabilization.h"
+#include "generated/settings.h"
 
 #ifdef POWER_SWITCH_GPIO
 #include "mcu_periph/gpio.h"
@@ -103,10 +104,6 @@ PRINT_CONFIG_VAR(FAILSAFE_DESCENT_SPEED)
 #define FAILSAFE_MODE_TOO_FAR_FROM_HOME AP_MODE_FAILSAFE
 #endif
 
-/** mode to enter when RC is lost while using a mode with RC input (not AP_MODE_NAV) */
-#ifndef RC_LOST_MODE
-#define RC_LOST_MODE AP_MODE_HOME
-#endif
 
 #if USE_KILL_SWITCH_FOR_MOTOR_ARMING
 #include "autopilot_arming_switch.h"
@@ -122,6 +119,18 @@ PRINT_CONFIG_MSG("Using 2 sec yaw for motor arming")
 #ifndef MODE_STARTUP
 #define MODE_STARTUP AP_MODE_KILL
 PRINT_CONFIG_MSG("Using default AP_MODE_KILL as MODE_STARTUP")
+#endif
+
+#ifndef UNLOCKED_HOME_MODE
+#if MODE_AUTO1 == AP_MODE_HOME
+#define UNLOCKED_HOME_MODE TRUE
+PRINT_CONFIG_MSG("Enabled UNLOCKED_HOME_MODE since MODE_AUTO1 is AP_MODE_HOME")
+#elif MODE_AUTO2 == AP_MODE_HOME
+#define UNLOCKED_HOME_MODE TRUE
+PRINT_CONFIG_MSG("Enabled UNLOCKED_HOME_MODE since MODE_AUTO2 is AP_MODE_HOME")
+#else
+#define UNLOCKED_HOME_MODE FALSE
+#endif
 #endif
 
 static void send_alive(void) {
@@ -306,7 +315,7 @@ INFO("Using FAILSAFE_GROUND_DETECT: KILL")
 
   /* Reset ground detection _after_ running flight plan
    */
-  if (!autopilot_in_flight || autopilot_ground_detected) {
+  if (!autopilot_in_flight) {
     autopilot_ground_detected = FALSE;
     autopilot_detect_ground_once = FALSE;
   }
@@ -464,7 +473,7 @@ void autopilot_check_in_flight(bool_t motors_on) {
 
 
 void autopilot_set_motors_on(bool_t motors_on) {
-  if (ahrs_is_aligned() && motors_on)
+  if (autopilot_mode != AP_MODE_KILL && ahrs_is_aligned() && motors_on)
     autopilot_motors_on = TRUE;
   else
     autopilot_motors_on = FALSE;
@@ -479,7 +488,7 @@ void autopilot_on_rc_frame(void) {
     autopilot_set_mode(AP_MODE_KILL);
   }
   else if ((autopilot_mode != AP_MODE_HOME)
-#ifdef UNLOCKED_HOME_MODE
+#if UNLOCKED_HOME_MODE
            || !too_far_from_home
 #endif
            )

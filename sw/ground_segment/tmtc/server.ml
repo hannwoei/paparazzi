@@ -294,7 +294,8 @@ let send_moved_waypoints = fun a ->
          "wp_id", Pprz.Int wp_id;
          "long", Pprz.Float ((Rad>>Deg)geo.posn_long);
          "lat", Pprz.Float ((Rad>>Deg)geo.posn_lat);
-         "alt", Pprz.Float wp.altitude] in
+         "alt", Pprz.Float wp.altitude;
+         "ground_alt", Pprz.Float (try float (Srtm.of_wgs84 geo) with _ -> a.ground_alt)] in
       Ground_Pprz.message_send my_id "WAYPOINT_MOVED" vs)
     a.waypoints
 
@@ -510,7 +511,8 @@ let check_alerts = fun a ->
                "level", Pprz.String level;
                "value", Pprz.Float a.bat] in
     Alerts_Pprz.message_send my_id "BAT_LOW" vs in
-  if a.bat < catastrophic_level then send "CATASTROPHIC"
+  if a.bat < 1. then send "INVALID"
+  else if a.bat < catastrophic_level then send "CATASTROPHIC"
   else if a.bat < critic_level then send "CRITIC"
   else if a.bat < warning_level then send "WARNING"
 
@@ -630,7 +632,7 @@ let ivy_server = fun http ->
   ignore (Ground_Pprz.message_answerer my_id "CONFIG" (send_config http))
 
 
-let cm_of_m = fun f -> Pprz.Int (truncate (100. *. f))
+let cm_of_m = fun f -> Pprz.Int (truncate ((100. *. f) +. 0.5)) (* Convert to cm, with rounding *)
 let dl_id = "ground_dl" (* Hack, should be [my_id] *)
 
 (** Got a ground.MOVE_WAYPOINT and send a datalink.MOVE_WP *)

@@ -22,6 +22,9 @@
 #include "subsystems/gps/gps_sim_nps.h"
 #include "subsystems/gps.h"
 
+#include "nps_sensors.h"
+#include "nps_fdm.h"
+
 #if GPS_USE_LATLONG
 /* currently needed to get nav_utm_zone0 */
 #include "subsystems/navigation/common_nav.h"
@@ -32,6 +35,10 @@ bool_t gps_available;
 bool_t gps_has_fix;
 
 void  gps_feed_value() {
+  // FIXME, set proper time instead of hardcoded to May 2014
+  gps.week = 1794;
+  gps.tow = fdm.time * 1000;
+
   gps.ecef_pos.x = sensors.gps.ecef_pos.x * 100.;
   gps.ecef_pos.y = sensors.gps.ecef_pos.y * 100.;
   gps.ecef_pos.z = sensors.gps.ecef_pos.z * 100.;
@@ -39,8 +46,8 @@ void  gps_feed_value() {
   gps.ecef_vel.y = sensors.gps.ecef_vel.y * 100.;
   gps.ecef_vel.z = sensors.gps.ecef_vel.z * 100.;
   //ecef pos seems to be based on geocentric model, hence we get a very high alt when converted to lla
-  gps.lla_pos.lat = sensors.gps.lla_pos.lat * 1e7;
-  gps.lla_pos.lon = sensors.gps.lla_pos.lon * 1e7;
+  gps.lla_pos.lat = DegOfRad(sensors.gps.lla_pos.lat) * 1e7;
+  gps.lla_pos.lon = DegOfRad(sensors.gps.lla_pos.lon) * 1e7;
   gps.lla_pos.alt = sensors.gps.lla_pos.alt * 1000.;
   gps.hmsl        = sensors.gps.hmsl * 1000.;
 
@@ -63,8 +70,7 @@ void  gps_feed_value() {
 #if GPS_USE_LATLONG
   /* Computes from (lat, long) in the referenced UTM zone */
   struct LlaCoor_f lla_f;
-  lla_f.lat = ((float) gps.lla_pos.lat) / 1e7;
-  lla_f.lon = ((float) gps.lla_pos.lon) / 1e7;
+  LLA_FLOAT_OF_BFP(lla_f, gps.lla_pos);
   struct UtmCoor_f utm_f;
   utm_f.zone = nav_utm_zone0;
   /* convert to utm */

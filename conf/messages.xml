@@ -1945,6 +1945,19 @@
  <!--215 is free -->
  <!--216 is free -->
  <!--217 is free -->
+ 
+  <message name="OF_HOVER" id="215">
+  	<field name="FPS"        type="float"/>
+    <field name="dx"         type="float"/>
+    <field name="dy"         type="float"/> 
+ 	<field name="velx"       type="float"/>
+ 	<field name="vely"       type="float"/>
+ 	<field name="velx_Ned"   type="float"/>
+ 	<field name="vely_Ned"   type="float"/>
+ 	<field name="z_sonar"    type="float"/>
+ 	<field name="count"      type="int32"/>
+ </message>
+
   <message name="Distribution" id="216">
   	<field name="three_dimensionality"  type="float"/> 
   	<field name="fake_3D"               type="float"/>

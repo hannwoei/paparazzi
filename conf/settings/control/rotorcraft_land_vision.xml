@@ -11,8 +11,6 @@
 		<dl_setting var="vision_land_pgain" min="0" step="0.001" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kp_land_v" param="VISION_LAND_PGAIN"/>
 		<dl_setting var="vision_land_dgain" min="0" step="0.001" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="kd_land_v" param="VISION_LAND_DGAIN"/>
 		<dl_setting var="vision_div_const" min="-1" step="0.1" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/land_guidance" shortname="div_const" param="VISION_DIV_CONST"/>
-      <dl_setting var="train_dictionary" min="0" step="1" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/opticflow_code" shortname="dictionary" param="VISION_TRAIN_DICTIONARY" values="FALSE|TRUE"/>
-      <dl_setting var="extract_distribution" min="0" step="1" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/opticflow_code" shortname="histogram" param="VISION_EXTRACT_DISTRIBUTION" values="FALSE|TRUE"/>
       <dl_setting var="snapshot" min="0" step="1" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/opticflow_code" shortname="photo" param="VISION_SNAPSHOT" values="FALSE|TRUE"/>
     </dl_settings>
 

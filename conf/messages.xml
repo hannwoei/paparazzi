@@ -2078,17 +2078,12 @@
    </message>
    
    <message name="VISION_STABILIZATION" id="229">
-    <field name="ins_z" type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
-    <field name="baro_z"    type="float" unit="m"/>
-    <field name="sonar_z"    type="float" unit="m"/>
-    <field name="phi" type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
-    <field name="theta" type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
-    <field name="psi" type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
-    <field name="cmd_phi" type="int32"/>
+    <field name="velx"      type="float"/>    
+    <field name="vely"      type="float"/>
+    <field name="velx_i"    type="float"/>    
+    <field name="vely_i"    type="float"/>
+    <field name="cmd_phi"   type="int32"/>
     <field name="cmd_theta" type="int32"/>
-	<field name="x"    type="float" unit="m"/>
-	<field name="y"    type="float" unit="m"/>
-	<field name="dt"    type="float" unit="s"/>
    </message>
 
  	

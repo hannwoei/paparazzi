@@ -37,13 +37,10 @@
   </modules>
 
    <section name="VISION" prefix="VISION_">
-    <define name="PHI_PGAIN" value="5"/>
-    <define name="PHI_DGAIN" value="0"/>
-    <define name="THETA_PGAIN" value="5"/>
-    <define name="THETA_DGAIN" value="0"/>
-    <define name="LAND_PGAIN" value="0.01"/>
-    <define name="LAND_DGAIN" value="1"/>
-    <define name="DIV_CONST" value="0.15"/>
+    <define name="PHI_PGAIN" value="12"/>
+    <define name="PHI_IGAIN" value="6"/>
+    <define name="THETA_PGAIN" value="12"/>
+    <define name="THETA_IGAIN" value="6"/>
     <define name="SNAPSHOT" value="FALSE"/>
    </section>
 
@@ -53,12 +50,6 @@
     <axis name="YAW" failsafe_value="0"/>
     <axis name="THRUST" failsafe_value="3000"/>
   </commands>
-
-  <section name="GUIDANCE_H_VISION" prefix="GUIDANCE_H_VISION_">
-    <define name="PGAIN" value="0"/>
-    <define name="DGAIN" value="0"/>
-    <define name="IGAIN" value="0"/>
-  </section>
 
   <servos driver="Default">
     <servo name="TOP_LEFT" no="0" min="0" neutral="1" max="500"/>

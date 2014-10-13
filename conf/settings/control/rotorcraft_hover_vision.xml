@@ -1,0 +1,16 @@
+<!DOCTYPE settings SYSTEM "../settings.dtd">
+
+<settings>
+  <dl_settings>
+
+	<dl_settings NAME="Vision Loop">
+		<dl_setting var="vision_phi_pgain" min="0" step="1" max="10000" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="kp_v_phi" param="VISION_PHI_PGAIN"/>
+		<dl_setting var="vision_phi_igain" min="0" step="1" max="1000" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="kd_v_phi" param="VISION_PHI_IGAIN"/>
+		<dl_setting var="vision_theta_pgain" min="0" step="1" max="10000" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="kp_v_theta" param="VISION_THETA_PGAIN"/>
+		<dl_setting var="vision_theta_igain" min="0" step="1" max="1000" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="kd_v_theta" param="VISION_THETA_IGAIN"/>
+      <dl_setting var="snapshot" min="0" step="1" max="1" module="../ext/ardrone2_vision/modules/OpticFlow/opticflow_code" shortname="photo" param="VISION_SNAPSHOT" values="FALSE|TRUE"/>
+		<dl_setting var="fast_tune" min="0" step="1" max="100" module="../ext/ardrone2_vision/modules/OpticFlow/opticflow_code" shortname="FAST" param="VISION_FAST_THRES"/>
+    </dl_settings>
+
+  </dl_settings>
+</settings>

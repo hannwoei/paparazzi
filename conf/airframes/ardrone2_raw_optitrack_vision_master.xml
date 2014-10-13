@@ -5,7 +5,7 @@
   <firmware name="rotorcraft">
     <target name="ap" board="ardrone2_raw">
       <define name="AUTOPILOT_DISABLE_AHRS_KILL"/>
-      <configure name="USE_MAGNETOMETER" value="1"/>
+      <configure name="USE_MAGNETOMETER" value="0"/>
       <subsystem name="telemetry" type="transparent_udp"/>
       <subsystem name="radio_control" type="datalink"/>
       <!--<define name="NO_RC_THRUST_LIMIT"/>-->
@@ -37,11 +37,12 @@
   </modules>
 
    <section name="VISION" prefix="VISION_">
-    <define name="PHI_PGAIN" value="12"/>
-    <define name="PHI_IGAIN" value="6"/>
-    <define name="THETA_PGAIN" value="12"/>
-    <define name="THETA_IGAIN" value="6"/>
+    <define name="PHI_PGAIN" value="200"/>
+    <define name="PHI_IGAIN" value="0"/>
+    <define name="THETA_PGAIN" value="200"/>
+    <define name="THETA_IGAIN" value="0"/>
     <define name="SNAPSHOT" value="FALSE"/>
+    <define name="VISION_FAST_THRES" value="15"/>
    </section>
 
   <commands>
@@ -117,7 +118,7 @@
     <define name="H_Z" value="0.9211303"/ -->
 
     <!-- Use GPS heading instead of magneto -->
-    <define name="USE_GPS_HEADING" value="0"/>
+    <define name="USE_GPS_HEADING" value="1"/>
   </section>
 
   <section name="INS" prefix="INS_">
@@ -237,7 +238,7 @@
   <section name="AUTOPILOT">
     <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
-    <define name="MODE_AUTO1" value="AP_MODE_ATTITUDE_Z_HOLD"/>
+    <define name="MODE_AUTO1" value="AP_MODE_VISION_HOVER"/>
     <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
   </section>
 

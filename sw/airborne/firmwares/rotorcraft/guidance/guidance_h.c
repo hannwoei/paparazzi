@@ -220,6 +220,7 @@ void guidance_h_mode_changed(uint8_t new_mode) {
       stabilization_attitude_reset_care_free_heading();
     case GUIDANCE_H_MODE_FORWARD:
     case GUIDANCE_H_MODE_ATTITUDE:
+    case GUIDANCE_H_MODE_VISION_HOVER:
 #if NO_ATTITUDE_RESET_ON_MODE_CHANGE
       /* reset attitude stabilization if previous mode was not using it */
       if (guidance_h_mode == GUIDANCE_H_MODE_KILL ||
@@ -291,6 +292,15 @@ void guidance_h_read_rc(bool_t  in_flight) {
 #endif
       break;
 
+//    case GUIDANCE_H_MODE_VISION_HOVER:
+//        if (radio_control.status == RC_OK) {
+//          stabilization_attitude_read_rc_setpoint_eulers(&guidance_h_rc_sp, in_flight, FALSE, FALSE);
+//        }
+//        else {
+//          INT_EULERS_ZERO(guidance_h_rc_sp);
+//        }
+//        break;
+
     case GUIDANCE_H_MODE_NAV:
       if (radio_control.status == RC_OK) {
         stabilization_attitude_read_rc_setpoint_eulers(&guidance_h_rc_sp, in_flight, FALSE, FALSE);
@@ -323,6 +333,7 @@ void guidance_h_run(bool_t  in_flight) {
       }
     case GUIDANCE_H_MODE_CARE_FREE:
     case GUIDANCE_H_MODE_ATTITUDE:
+    case GUIDANCE_H_MODE_VISION_HOVER:
       stabilization_attitude_run(in_flight);
       break;
 

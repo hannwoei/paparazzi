@@ -1950,6 +1950,10 @@
   	<field name="FPS"        type="float"/>
     <field name="dx"         type="float"/>
     <field name="dy"         type="float"/> 
+    <field name="dx_trans"   type="float"/>
+    <field name="dy_trans"   type="float"/> 
+    <field name="diff_roll"  type="float"/>
+    <field name="diff_pitch" type="float"/> 
  	<field name="velx"       type="float"/>
  	<field name="vely"       type="float"/>
  	<field name="velx_Ned"   type="float"/>

@@ -221,6 +221,11 @@ void guidance_v_mode_changed(uint8_t new_mode) {
     guidance_v_z_sum_err = 0;
     GuidanceVSetRef(stateGetPositionNed_i()->z, 0, 0);
     break;
+  case GUIDANCE_V_MODE_VISION_HOVER:
+    guidance_v_z_sp = -POS_BFP_OF_REAL(1); // set 1m as setpoint
+    guidance_v_z_sum_err = 0;
+    GuidanceVSetRef(-POS_BFP_OF_REAL(1), 0, 0);
+    break;
 
   case GUIDANCE_V_MODE_RC_CLIMB:
   case GUIDANCE_V_MODE_CLIMB:
@@ -288,6 +293,7 @@ void guidance_v_run(bool_t in_flight) {
     break;
 
   case GUIDANCE_V_MODE_HOVER:
+  case GUIDANCE_V_MODE_VISION_HOVER:
     guidance_v_zd_sp = 0;
     gv_update_ref_from_z_sp(guidance_v_z_sp);
     run_hover_loop(in_flight);

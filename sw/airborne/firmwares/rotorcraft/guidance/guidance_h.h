@@ -57,7 +57,7 @@
 #define GUIDANCE_H_MODE_RC_DIRECT   5
 #define GUIDANCE_H_MODE_CARE_FREE   6
 #define GUIDANCE_H_MODE_FORWARD     7
-
+#define GUIDANCE_H_MODE_VISION_HOVER 8
 
 extern uint8_t guidance_h_mode;
 extern bool_t guidance_h_use_ref;

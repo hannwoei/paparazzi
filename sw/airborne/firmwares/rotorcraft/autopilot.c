@@ -384,6 +384,9 @@ void autopilot_set_mode(uint8_t new_autopilot_mode) {
       case AP_MODE_NAV:
         guidance_h_mode_changed(GUIDANCE_H_MODE_NAV);
         break;
+      case AP_MODE_VISION_HOVER:
+        guidance_h_mode_changed(GUIDANCE_H_MODE_VISION_HOVER);
+    	break;
       default:
         break;
     }
@@ -421,6 +424,10 @@ void autopilot_set_mode(uint8_t new_autopilot_mode) {
       case AP_MODE_HOVER_Z_HOLD:
         guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
         break;
+      case AP_MODE_VISION_HOVER:
+        guidance_v_mode_changed(GUIDANCE_V_MODE_VISION_HOVER);
+        break;
+
       case AP_MODE_HOME:
       case AP_MODE_NAV:
         guidance_v_mode_changed(GUIDANCE_V_MODE_NAV);

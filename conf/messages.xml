@@ -1920,7 +1920,7 @@
     <field name="ref_z"     type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
     <field name="ref_zd"    type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
   </message>
-
+<!--
   <message name="MF_DAQ_STATE" id="214">
     <field name="flight_time" type="uint16" unit="s"/>
     <field name="p"           type="float"/>
@@ -1941,11 +1941,33 @@
     <field name="we"          type="float"/>
     <field name="wn"          type="float"/>
   </message>
+-->
 
  <!--215 is free -->
  <!--216 is free -->
  <!--217 is free -->
- 
+ <message name="OF_CHECK" id="214">
+  	<field name="FPS"        type="float"/>
+    <field name="dx"         type="float"/>
+    <field name="dy"         type="float"/> 
+    <field name="pitch"      type="float"/>
+    <field name="roll"       type="float"/> 
+    <field name="yaw"        type="float"/>
+    <field name="p"          type="float"/> 
+ 	<field name="q"          type="float"/>
+ 	<field name="r"          type="float"/>
+ 	<field name="velx_Ned"   type="float"/>
+ 	<field name="vely_Ned"   type="float"/>
+ 	<field name="velz_Ned"   type="float"/>
+ 	<field name="acc_x"      type="float"/>
+ 	<field name="acc_y"      type="float"/>
+ 	<field name="acc_z"      type="float"/>
+ 	<field name="z_sonar"    type="float"/>
+ 	<field name="count"      type="int32"/>
+    <field name="i_frame"    type="int32"/> 	
+ </message>
+ 	
+ 	
   <message name="OF_HOVER" id="215">
   	<field name="FPS"        type="float"/>
     <field name="dx"         type="float"/>

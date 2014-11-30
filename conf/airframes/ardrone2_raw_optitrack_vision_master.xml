@@ -42,8 +42,6 @@
     <define name="PHI_IGAIN" value="10"/>
     <define name="THETA_PGAIN" value="500"/>
     <define name="THETA_IGAIN" value="10"/>
-    <define name="SNAPSHOT" value="FALSE"/>
-    <define name="FAST_THRES" value="20"/>
    </section>
 
   <commands>

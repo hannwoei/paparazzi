@@ -1946,27 +1946,21 @@
  <!--215 is free -->
  <!--216 is free -->
  <!--217 is free -->
- <message name="OF_CHECK" id="214">
-  	<field name="FPS"        type="float"/>
-    <field name="dx"         type="float"/>
-    <field name="dy"         type="float"/> 
-    <field name="pitch"      type="float"/>
-    <field name="roll"       type="float"/> 
-    <field name="yaw"        type="float"/>
-    <field name="p"          type="float"/> 
- 	<field name="q"          type="float"/>
- 	<field name="r"          type="float"/>
- 	<field name="velx_Ned"   type="float"/>
- 	<field name="vely_Ned"   type="float"/>
- 	<field name="velz_Ned"   type="float"/>
- 	<field name="acc_x"      type="float"/>
- 	<field name="acc_y"      type="float"/>
- 	<field name="acc_z"      type="float"/>
- 	<field name="z_sonar"    type="float"/>
- 	<field name="count"      type="int32"/>
-    <field name="i_frame"    type="int32"/> 	
+ <message name="OF_LAND" id="214">
+  	<field name="zx"         type="float"/>
+    <field name="zy"         type="float"/>
+    <field name="3D"         type="float"/> 
+    <field name="POEx"       type="float"/>
+    <field name="POEy"       type="float"/> 
+    <field name="div"        type="float"/>
+    <field name="meanTTI"    type="float"/> 
+ 	<field name="medianTTI"  type="float"/>
+ 	<field name="dheading"   type="float"/>
+ 	<field name="dpitch"     type="float"/>
+ 	<field name="divError"   type="float"/>	
+ 	<field name="velzNed"    type="float"/>
+ 	<field name="zSonar"     type="float"/>
  </message>
- 	
  	
   <message name="OF_HOVER" id="215">
   	<field name="FPS"        type="float"/>

@@ -1949,7 +1949,7 @@
  <message name="OF_LAND" id="214">
   	<field name="zx"         type="float"/>
     <field name="zy"         type="float"/>
-    <field name="3D"         type="float"/> 
+    <field name="flatness"   type="float"/> 
     <field name="POEx"       type="float"/>
     <field name="POEy"       type="float"/> 
     <field name="div"        type="float"/>

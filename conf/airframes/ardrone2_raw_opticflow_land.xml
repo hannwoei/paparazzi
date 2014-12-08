@@ -34,12 +34,15 @@
     <load name="file_logger.xml"/>
     <!--  load name="../../sw/ext/ardrone2_vision/modules/Mjpeg/ViewVideo.xml"/-->
     <!--<load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlowHover.xml"/>-->
-    <load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlowLand.xml"/>
+    <load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlow.xml"/>
   </modules>
 
    <section name="VISION" prefix="VISION_">
-    <define name="PGAIN" value="500"/>
-    <define name="DGAIN" value="10"/>
+    <define name="HOVER" value="0"/>
+    <define name="PHI_PGAIN" value="500"/>
+    <define name="PHI_DGAIN" value="10"/>
+    <define name="THETA_PGAIN" value="500"/>
+    <define name="THETA_DGAIN" value="10"/>
     <define name="LAND_PGAIN" value="500"/>
     <define name="LAND_DGAIN" value="10"/>
    </section>

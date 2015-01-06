@@ -34,17 +34,17 @@
     <load name="file_logger.xml"/>
     <!--  load name="../../sw/ext/ardrone2_vision/modules/Mjpeg/ViewVideo.xml"/-->
     <!--<load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlowHover.xml"/>-->
-    <load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlow.xml"/>
+<load name="../../sw/ext/ardrone2_vision/modules/OpticFlow/OpticFlow.xml"/>
   </modules>
 
    <section name="VISION" prefix="VISION_">
-    <define name="HOVER" value="0"/>
+    <define name="HOVER" value="FALSE"/>
     <define name="PHI_PGAIN" value="500"/>
-    <define name="PHI_DGAIN" value="10"/>
+    <define name="PHI_IGAIN" value="10"/>
     <define name="THETA_PGAIN" value="500"/>
-    <define name="THETA_DGAIN" value="10"/>
-    <define name="LAND_PGAIN" value="500"/>
-    <define name="LAND_DGAIN" value="10"/>
+    <define name="THETA_IGAIN" value="10"/>
+    <define name="LAND_PGAIN" value="0.01"/>
+    <define name="DIV_CONST" value="0.15"/>
    </section>
 
   <commands>
@@ -247,7 +247,7 @@
     <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_AUTO1" value="AP_MODE_VISION_HOVER"/>
-    <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
+    <define name="MODE_AUTO2" value="AP_MODE_HOVER_CLIMB"/>
   </section>
 
   <section name="BAT">

@@ -9,6 +9,8 @@
 		<dl_setting var="vision_phi_igain" min="0" step="1" max="1000" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="ki_v_phi" param="VISION_PHI_IGAIN"/>
 		<dl_setting var="vision_theta_pgain" min="0" step="1" max="10000" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="kp_v_theta" param="VISION_THETA_PGAIN"/>
 		<dl_setting var="vision_theta_igain" min="0" step="1" max="1000" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="ki_v_theta" param="VISION_THETA_IGAIN"/>
+		<dl_setting var="vision_desired_vx" min="-5" step="0.01" max="5" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="desired_vx" param="VISION_DESIRED_VX"/>
+		<dl_setting var="vision_desired_vy" min="-5" step="0.01" max="5" module="../ext/ardrone2_vision/modules/OpticFlow/hover_stabilization" shortname="desired_vy" param="VISION_DESIRED_VY"/>
     </dl_settings>
 
   </dl_settings>

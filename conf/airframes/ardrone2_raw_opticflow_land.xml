@@ -16,8 +16,8 @@
       <subsystem name="radio_control" type="ppm"/>
     </target>
 
+<!--
     <define name="USE_SONAR" value="TRUE"/>
-
 	<!-- Subsystem section -->
     <subsystem name="motor_mixing"/>
     <subsystem name="actuators" type="ardrone2"/>
@@ -126,13 +126,13 @@
 
   <section name="INS" prefix="INS_">
     <!-- Use GPS altitude measurments and set the R gain -->
-<!--
+
     <define name="USE_GPS_ALT" value="1"/>
     <define name="VFF_R_GPS" value="0.01"/>
--->
-
+<!--
     <define name="SONAR_MAX_RANGE" value="3"/>
     <define name="SONAR_UPDATE_ON_AGL" value="TRUE"/>
+-->
   </section>
 
   <section name="STABILIZATION_RATE" prefix="STABILIZATION_RATE_">
@@ -228,7 +228,7 @@
     <define name="REF_OMEGA" value="RadOfDeg(190.)"/>
     <define name="REF_ZETA" value="0.9"/>
     <define name="REF_MAX_ACCEL" value="9.5"/> -->
-    <!--<define name="REF_MAX_SPEED" value="0.6"/--> <!--default:8.5--> <!--0.6 -->
+    <define name="REF_MAX_SPEED" value="0.6"/> <!--default:8.5--> <!--0.6 -->
 
     <!-- gains -->
     <define name="PGAIN" value="79"/>
@@ -247,7 +247,8 @@
     <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_AUTO1" value="AP_MODE_VISION_HOVER"/>
-    <define name="MODE_AUTO2" value="AP_MODE_HOVER_CLIMB"/>
+    <!--<define name="MODE_AUTO2" value="AP_MODE_HOVER_CLIMB"/>-->
+    <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
   </section>
 
   <section name="BAT">

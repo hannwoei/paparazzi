@@ -98,6 +98,9 @@ struct GpsTimeSync {
 
 /** global GPS state */
 extern struct GpsState gps;
+#ifdef VISION_OBSTACLE
+extern struct GpsState obstacle;
+#endif
 
 /** initialize the global GPS state */
 extern void gps_init(void);

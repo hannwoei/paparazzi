@@ -40,6 +40,10 @@
 
 struct GpsState gps;
 
+#ifdef VISION_OBSTACLE
+struct GpsState obstacle;
+#endif
+
 struct GpsTimeSync gps_time_sync;
 
 #if PERIODIC_TELEMETRY

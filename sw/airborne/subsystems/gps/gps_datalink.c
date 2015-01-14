@@ -78,3 +78,46 @@ void parse_gps_datalink(uint8_t numsv, int32_t ecef_x, int32_t ecef_y, int32_t e
 #endif
 }
 
+// Additional Object Position
+#if defined VISION_OBSTACLE
+bool_t obstacle_available;
+/** Parse the REMOTE_GPS datalink packet */
+void parse_obstacle_datalink(uint8_t numsv, int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, int32_t lat, int32_t lon, int32_t alt,
+  int32_t hmsl, int32_t ecef_xd, int32_t ecef_yd, int32_t ecef_zd, uint32_t tow, int32_t course) {
+
+  obstacle.lla_pos.lat = lat;
+  obstacle.lla_pos.lon = lon;
+  obstacle.lla_pos.alt = alt;
+  obstacle.hmsl        = hmsl;
+
+  obstacle.ecef_pos.x = ecef_x;
+  obstacle.ecef_pos.y = ecef_y;
+  obstacle.ecef_pos.z = ecef_z;
+
+  obstacle.ecef_vel.x = ecef_xd;
+  obstacle.ecef_vel.y = ecef_yd;
+  obstacle.ecef_vel.z = ecef_zd;
+
+  obstacle.course = course;
+  obstacle.num_sv = numsv;
+  obstacle.tow = tow;
+  obstacle.fix = GPS_FIX_3D;
+  obstacle_available = TRUE;
+
+//#if GPS_USE_LATLONG
+//  // Computes from (lat, long) in the referenced UTM zone
+//  struct LlaCoor_f lla_f;
+//  LLA_FLOAT_OF_BFP(lla_f, obstacle.lla_pos);
+//  struct UtmCoor_f utm_f;
+//  utm_f.zone = nav_utm_zone0;
+//  // convert to utm
+//  utm_of_lla_f(&utm_f, &lla_f);
+//  // copy results of utm conversion
+//  obstacle.utm_pos.east = utm_f.east*100;
+//  obstacle.utm_pos.north = utm_f.north*100;
+//  obstacle.utm_pos.alt = obstacle.lla_pos.alt;
+//  obstacle.utm_pos.zone = nav_utm_zone0;
+//#endif
+}
+#endif
+

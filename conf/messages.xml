@@ -1953,14 +1953,14 @@
     <field name="POEx"       type="float"/>
     <field name="POEy"       type="float"/> 
     <field name="div"        type="float"/>
-    <field name="meanTTI"    type="float"/> 
- 	<field name="medianTTI"  type="float"/>
  	<field name="dheading"   type="float"/>
  	<field name="dpitch"     type="float"/>
- 	<field name="divError"   type="float"/>	
  	<field name="velzNed"    type="float"/>
  	<field name="zSonar"     type="float"/>
- </message>
+ 	<field name="accelx"     type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>
+ 	<field name="accely"     type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>
+    <field name="accelz"     type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>
+  </message>
  	
   <message name="OF_HOVER" id="215">
   	<field name="FPS"        type="float"/>
@@ -2043,13 +2043,26 @@
     <field name="three_dimensionality"  type="float"/>  
   </message>
 
-  <message name="OF_FITTING" id="218">
-    <field name="pu0"      type="float"/>
-    <field name="pu1"      type="float"/>
-    <field name="pu2"      type="float"/>
-    <field name="pv0"      type="float"/>
-    <field name="pv1"      type="float"/>
-    <field name="pv2"      type="float"/>    
+ <message name="OF_LAND_OBSTACLE" id="218">
+  	<field name="zx"         type="float"/>
+    <field name="zy"         type="float"/>
+    <field name="flatness"   type="float"/> 
+    <field name="POEx"       type="float"/>
+    <field name="POEy"       type="float"/> 
+    <field name="div"        type="float"/>
+ 	<field name="dheading"   type="float"/>
+ 	<field name="dpitch"     type="float"/>
+ 	<field name="velzNed"    type="float"/>
+ 	<field name="zSonar"     type="float"/>
+ 	<field name="xENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="pitch"      type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="roll"       type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="yaw"        type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="xOB1"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yOB1"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zOB1"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
   </message>
  	
   <message name="WEATHER" id="219">

@@ -2044,25 +2044,30 @@
   </message>
 
  <message name="OF_LAND_OBSTACLE" id="218">
+ 	<field name="FPS"        type="float"/>
   	<field name="zx"         type="float"/>
     <field name="zy"         type="float"/>
     <field name="flatness"   type="float"/> 
     <field name="POEx"       type="float"/>
     <field name="POEy"       type="float"/> 
     <field name="div"        type="float"/>
+ 	<field name="grdiv"      type="float"/>
  	<field name="dheading"   type="float"/>
  	<field name="dpitch"     type="float"/>
- 	<field name="velzNed"    type="float"/>
- 	<field name="zSonar"     type="float"/>
- 	<field name="xENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
- 	<field name="yENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
-    <field name="zENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+	<field name="count"      type="int32"/>
+	<field name="velBx"      type="float"/>
+	<field name="velBy"      type="float"/>	
+ 	<field name="velBz"      type="float"/>
+ 	<field name="z"          type="float"/>
  	<field name="pitch"      type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
  	<field name="roll"       type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
  	<field name="yaw"        type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
- 	<field name="xOB1"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
- 	<field name="yOB1"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
-    <field name="zOB1"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="xENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="xENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
   </message>
  	
   <message name="WEATHER" id="219">

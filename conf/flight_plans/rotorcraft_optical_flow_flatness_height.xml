@@ -46,7 +46,8 @@
       <stay climb="0.5" vmode="climb" wp="HOME"/>
     </block>
     <block key="S" name="Standby" strip_button="Standby" strip_icon="home.png">
-      <set value="ANGLE_BFP_OF_REAL(5.73515192)" var="nav_heading"/>
+      <set value="ANGLE_BFP_OF_REAL(5.73515192)" var="nav_heading"/> <!--forward-->
+      <!--<set value="ANGLE_BFP_OF_REAL(4.1643556)" var="nav_heading"/> --><!--sideward-->
       <stay wp="STDBY"/>
     </block>
     <block name="stay_p1">
@@ -58,6 +59,7 @@
     <block key="Q" name="stay_safe">
       <stay wp="safe"/>
     </block>
+<!--    
     <block key="R" name="route">
 	<go from="STDBY" hmode="route" wp="p1"/>
 	<for var="i" from="0" to="10">
@@ -68,6 +70,17 @@
 		<stay wp="p2" until="stage_time>8"/>
 		<set value="ANGLE_BFP_OF_REAL(2.5936)" var="nav_heading"/>
 		<stay wp="p2" until="stage_time>4"/>
+      		<go from="p2" hmode="route" wp="p1"/>
+  	</for>
+      <stay wp="p1"/>
+    </block>
+-->
+    <block key="R" name="route">
+	<go from="STDBY" hmode="route" wp="p1"/>
+	<for var="i" from="0" to="10">
+		<stay wp="p1" until="stage_time>8"/>
+      		<go from="p1" hmode="route" wp="p2"/>
+		<stay wp="p2" until="stage_time>8"/>
       		<go from="p2" hmode="route" wp="p1"/>
   	</for>
       <stay wp="p1"/>

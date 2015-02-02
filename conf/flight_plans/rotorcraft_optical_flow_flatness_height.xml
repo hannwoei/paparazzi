@@ -46,8 +46,9 @@
       <stay climb="0.5" vmode="climb" wp="HOME"/>
     </block>
     <block key="S" name="Standby" strip_button="Standby" strip_icon="home.png">
-      <set value="ANGLE_BFP_OF_REAL(5.73515192)" var="nav_heading"/> <!--forward-->
+      <set value="ANGLE_BFP_OF_REAL(5.73515192)" var="nav_heading"/><!--forward-->
       <!--<set value="ANGLE_BFP_OF_REAL(4.1643556)" var="nav_heading"/> --><!--sideward-->
+      <!--<set value="ANGLE_BFP_OF_REAL(2.59355927)" var="nav_heading"/>--><!--backward -->
       <stay wp="STDBY"/>
     </block>
     <block name="stay_p1">

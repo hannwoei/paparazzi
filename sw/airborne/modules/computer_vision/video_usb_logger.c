@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Freek van Tienen <freek.v.tienen@gmail.com>
+ * Copyright (C) 2015 The Paparazzi Community
  *
  * This file is part of paparazzi.
  *
@@ -26,18 +26,16 @@
 #include "video_usb_logger.h"
 
 #include <stdio.h>
-#include "subsystems/imu.h"
-#include "firmwares/rotorcraft/stabilization.h"
 #include "state.h"
 #include "viewvideo.h"
 
 /** Set the default File logger path to the USB drive */
-#ifndef FILE_LOGGER_PATH
-#define FILE_LOGGER_PATH "/data/video/usb0/"
+#ifndef VIDEO_USB_LOGGER_PATH
+#define VIDEO_USB_LOGGER_PATH "/data/video/usb/"
 #endif
 
 /** The file pointer */
-static FILE *file_logger;
+static FILE *video_usb_logger = NULL;
 
 /** Start the file logger and open a new file */
 void video_usb_logger_start(void)
@@ -46,58 +44,45 @@ void video_usb_logger_start(void)
   char filename[512];
 
   // Check for available files
-  sprintf(filename, "%s%05d.csv", FILE_LOGGER_PATH, counter);
-  while ((file_logger = fopen(filename, "r"))) {
-    fclose(file_logger);
+  sprintf(filename, "%s%05d.csv", VIDEO_USB_LOGGER_PATH, counter);
+  while ((video_usb_logger = fopen(filename, "r"))) {
+    fclose(video_usb_logger);
 
     counter++;
-    sprintf(filename, "%s%05d.csv", FILE_LOGGER_PATH, counter);
+    sprintf(filename, "%s%05d.csv", VIDEO_USB_LOGGER_PATH, counter);
   }
 
-  file_logger = fopen(filename, "w");
+  video_usb_logger = fopen(filename, "w");
 
-  if (file_logger != NULL) {
-    fprintf(
-      file_logger,
-      "counter,image,roll,pitch,yaw,x,y,z,sonar\n"
-    );
+  if (video_usb_logger != NULL) {
+    fprintf(video_usb_logger, "counter,image,roll,pitch,yaw,x,y,z,sonar\n");
   }
-
-  viewvideo_start();
-  viewvideo_SaveShot(0);
 }
 
 /** Stop the logger an nicely close the file */
 void video_usb_logger_stop(void)
 {
-  fclose(file_logger);
-  file_logger = NULL;
-  viewvideo_stop();
+  if (video_usb_logger != NULL) {
+    fclose(video_usb_logger);
+    video_usb_logger = NULL;
+  }
 }
 
 /** Log the values to a csv file */
 void video_usb_logger_periodic(void)
 {
-  if (file_logger == NULL) {
+  if (video_usb_logger == NULL) {
     return;
   }
-  static uint32_t counter;
+  static uint32_t counter = 0;
   struct NedCoor_i *ned = stateGetPositionNed_i();
   struct Int32Eulers *euler = stateGetNedToBodyEulers_i();
   static uint32_t sonar = 0;
 
-  fprintf(file_logger, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-          counter,
-          viewvideo_save_shot_number,
-          euler->phi,
-          euler->theta,
-          euler->psi,
-          ned->x,
-          ned->y,
-          ned->z,
-          sonar
-         );
+  fprintf(video_usb_logger, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n", counter,
+          viewvideo_save_shot_number, euler->phi, euler->theta, euler->psi, ned->x,
+          ned->y, ned->z, sonar);
   counter++;
-  // Ask for a new shot
+  // Save a new shot
   viewvideo_SaveShot(0);
 }

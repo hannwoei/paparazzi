@@ -99,13 +99,14 @@ void *computervision_thread_main(void *data)
 {
   // Video Input
   struct vid_struct vid;
-  vid.device = (char *)"/dev/video1";
-  vid.w = 1280;
-  vid.h = 720;
-#if BOTTOM_CAMERA == 1
+#if USE_BOTTOM_CAMERA
   vid.device = (char *)"/dev/video2";
   vid.w = 320;
   vid.h = 240;
+#else
+  vid.device = (char *)"/dev/video1";
+  vid.w = 1280;
+  vid.h = 720;
 #endif
   vid.n_buffers = 4;
   if (video_init(&vid) < 0) {
@@ -155,11 +156,11 @@ void *computervision_thread_main(void *data)
 
   while (computer_vision_thread_command > 0) {
     // compute usleep to have a more stable frame rate
-    struct timeval time;
-    gettimeofday(&time, NULL);
-    int dt = (int)(time.tv_sec - last_time.tv_sec) * 1000000 + (int)(time.tv_usec - last_time.tv_usec);
+    struct timeval vision_thread_sleep_time;
+    gettimeofday(&vision_thread_sleep_time, NULL);
+    int dt = (int)(vision_thread_sleep_time.tv_sec - last_time.tv_sec) * 1000000 + (int)(vision_thread_sleep_time.tv_usec - last_time.tv_usec);
     if (dt < microsleep) { usleep(microsleep - dt); }
-    last_time = time;
+    last_time = vision_thread_sleep_time;
 
     // Grab new frame
     video_grab_image(&vid, img_new);
@@ -170,15 +171,15 @@ void *computervision_thread_main(void *data)
       uint32_t size = end - (jpegbuf);
       FILE *save;
       char save_name[128];
-#if LOG_ON_USB == 1
-      if (system("mkdir -p /data/video/usb0/images") == 0) {
+#if LOG_ON_USB
+      if (system("mkdir -p /data/video/usb/images") == 0) {
 #else
       if (system("mkdir -p /data/video/images") == 0) {
 #endif
         // search available index (max is 99)
         for (; file_index < 99999; file_index++) {
           printf("search %d\n", file_index);
-#if LOG_ON_USB == 1
+#if LOG_ON_USB
           sprintf(save_name, "/data/video/usb/images/img_%05d.jpg", file_index);
 #else
           sprintf(save_name, "/data/video/images/img_%05d.jpg", file_index);
@@ -202,7 +203,8 @@ void *computervision_thread_main(void *data)
           }
         }
       }
-      computer_vision_thread_command = 1;
+      if (computer_vision_thread_command == 2)
+        computer_vision_thread_command = 1;
       viewvideo_shot = 0;
     }
 
@@ -223,7 +225,7 @@ void *computervision_thread_main(void *data)
       0,                // Format 422
       quality_factor,   // Jpeg-Quality
       dri_jpeg_header,  // DRI Header
-      1                 // 90kHz time increment
+      0                 // 90kHz time increment
     );
     // Extra note: when the time increment is set to 0,
     // it is automaticaly calculated by the send_rtp_frame function

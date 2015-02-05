@@ -171,7 +171,7 @@ void *computervision_thread_main(void *data)
       FILE *save;
       char save_name[128];
 #if LOG_ON_USB == 1
-      if (system("mkdir -p /data/video/usb/images") == 0) {
+      if (system("mkdir -p /data/video/usb0/images") == 0) {
 #else
       if (system("mkdir -p /data/video/images") == 0) {
 #endif

@@ -33,7 +33,7 @@
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
-#define FILE_LOGGER_PATH "/data/video/usb/"
+#define FILE_LOGGER_PATH "/data/video/usb0/"
 #endif
 
 /** The file pointer */

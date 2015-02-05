@@ -6,6 +6,12 @@
     <target name="ap" board="ardrone2_raw">
       <subsystem name="telemetry" type="transparent_udp"/>
       <subsystem name="radio_control" type="datalink"/>
+      <define name="AUTOPILOT_DISABLE_AHRS_KILL"/>
+      <!-- Add a delay amount of time it take for the bat to check and give back value, 
+      if not set, small sags could make ARDrone2 constantly give warning and react to that warning in flightplan evey split second -->
+      <define name="BAT_CHECKER_DELAY" value="40"/>
+      <!-- to avoid bat low spike detection when strong pullup withch draws short sudden power-->        
+      <define name="CATASTROPHIC_BATTERY_KILL_DELAY" value="40"/>
     </target>
 
     <target name="nps" board="pc">
@@ -29,6 +35,7 @@
     <load name="gps_ubx_ucenter.xml"/>
     <load name="send_imu_mag_current.xml"/>
     <load name="file_logger.xml"/>
+    <load name="video_usb_logger.xml"/>
     <!--  load name="../../sw/ext/ardrone2_vision/modules/Mjpeg/ViewVideo.xml"/-->
   </modules>
 
@@ -75,12 +82,21 @@
     <define name="ACCEL_Z_NEUTRAL" value="2048"/>
 
     <!-- Magneto calibration -->
+<!--
     <define name="MAG_X_NEUTRAL" value="0"/>
     <define name="MAG_Y_NEUTRAL" value="0"/>
     <define name="MAG_Z_NEUTRAL" value="-180"/>
     <define name="MAG_X_SENS" value="16." integer="16"/>
     <define name="MAG_Y_SENS" value="16." integer="16"/>
     <define name="MAG_Z_SENS" value="16." integer="16"/>
+-->
+<define name="MAG_X_NEUTRAL" value="51"/>
+<define name="MAG_Y_NEUTRAL" value="78"/>
+<define name="MAG_Z_NEUTRAL" value="58"/>
+<define name="MAG_X_SENS" value="14.5924594026" integer="16"/>
+<define name="MAG_Y_SENS" value="14.5764429189" integer="16"/>
+<define name="MAG_Z_SENS" value="15.7668513567" integer="16"/>
+
 
     <!-- Magneto current calibration -->
     <define name="MAG_X_CURRENT_COEF" value="0.0"/>
@@ -96,13 +112,13 @@
   <!-- http://wiki.paparazziuav.org/wiki/Subsystem/ahrs#Local_Magnetic_Field -->
   <section name="AHRS" prefix="AHRS_">
     <!-- Toulouse -->
-    <define name="H_X" value="0.513081"/>
+    <!--<define name="H_X" value="0.513081"/>
     <define name="H_Y" value="-0.00242783"/>
-    <define name="H_Z" value="0.858336"/>
+    <define name="H_Z" value="0.858336"/>-->
     <!-- Delft -->
-    <!--define name="H_X" value="0.3892503"/>
+    <define name="H_X" value="0.3892503"/>
     <define name="H_Y" value="0.0017972"/>
-    <define name="H_Z" value="0.9211303"/ -->
+    <define name="H_Z" value="0.9211303"/>
   </section>
 
   <section name="INS" prefix="INS_">
@@ -189,7 +205,7 @@
 
   <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
     <!-- Good weather -->
-    <define name="MAX_BANK" value="20" unit="deg"/>
+    <define name="MAX_BANK" value="10" unit="deg"/>
     <!-- Bad weather -->
     <!-- define name="MAX_BANK" value="32" unit="deg"/ -->
     <define name="PGAIN" value="79"/>

@@ -261,6 +261,7 @@
     <define name="MODE_AUTO1" value="AP_MODE_VISION_HOVER"/>
     <!--<define name="MODE_AUTO2" value="AP_MODE_HOVER_CLIMB"/>-->
     <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
+    <!--<define name="MODE_AUTO2" value="AP_MODE_ATTITUDE_Z_HOLD"/>-->
   </section>
 
   <section name="BAT">

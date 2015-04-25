@@ -1338,7 +1338,23 @@
     <field name="flight_time"   type="uint16" unit="s"/>
   </message>
 
-  <!-- 148 is free -->
+   <message name="OF_LAND_APPEARANCE" id="148">
+ 	<field name="FPS"        type="float"/>
+  	<field name="flatness"   type="float"/>
+	<field name="velBx"      type="float"/>
+	<field name="velBy"      type="float"/>	
+ 	<field name="velBz"      type="float"/>
+ 	<field name="z"          type="float"/>
+ 	<field name="pitch"      type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="roll"       type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="yaw"        type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="xENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="xENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+  </message>
 
   <message name="GUIDANCE_H_REF_INT" id="149">
     <field name="sp_x"    type="int32" alt_unit="m"     alt_unit_coef="0.0039063"/>
@@ -2087,7 +2103,33 @@
  <!--222 is free -->
  <!--223 is free -->
  <!--224 is free -->
-
+ 
+ <message name="OF_LAND_SUB_IMG" id="222">
+ 	<field name="FPS"       type="float"/>
+ 	<field name="F11"       type="float"/>
+  	<field name="F12"       type="float"/>
+    <field name="F13"       type="float"/>
+    <field name="F21"       type="float"/> 
+    <field name="F22"       type="float"/>
+    <field name="F23"       type="float"/> 
+    <field name="F31"       type="float"/>
+ 	<field name="F32"       type="float"/>
+ 	<field name="F33"       type="float"/>
+	<field name="velBx"      type="float"/>
+	<field name="velBy"      type="float"/>	
+ 	<field name="velBz"      type="float"/>
+ 	<field name="z"          type="float"/>
+ 	<field name="pitch"      type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="roll"       type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="yaw"        type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+ 	<field name="xENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zENU"       type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="xENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+ 	<field name="yENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="zENUob1"    type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+  </message>
+  
   <message name="VIDEO_SYNC" id="225">
     <field name="id" type="uint8"/>
   </message>

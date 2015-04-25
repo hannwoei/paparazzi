@@ -9,8 +9,9 @@
     <waypoint name="HOME" x="0.0" y="0.0"/>
     <waypoint height="2.0" name="STDBY" x="0.0" y="0.0"/>
     <waypoint height="2.0" name="p1" x="0" y="0"/>
-    <!--<waypoint height="2.0" name="p2" x="-2.0840" y="3.4142"/>--> <!-- move forward along y-axis -->
-    <waypoint height="2.0" name="p2" x="-3.414210" y="-2.084027"/> <!-- move sideward along x-axis -->
+    <waypoint height="2.0" name="p3" x="-2.0840" y="3.4142"/> <!-- move forward --> <!--forward:=from the user heading-->
+    <!--<waypoint height="2.0" name="p2" x="-3.414210" y="-2.084027"/>--> <!-- move sideward ./cyb2ENU 0 4 -121.4 -->
+    <waypoint height="2.0" name="p2" x="-2.986927" y="-1.824354"/><!--./cyb2ENU 0 3.5 -121.4-->
     <waypoint height="2.0" name="safe" x="0.6651" y="2.7491"/>
     <waypoint name="ob1" x="0.0" y="0.0"/>
   </waypoints>
@@ -58,6 +59,9 @@
     <block name="stay_p2">
       <stay wp="p2"/>
     </block>
+    <block name="stay_p3">
+      <stay wp="p3"/>
+    </block>
     <block key="Q" name="stay_safe">
       <stay wp="safe"/>
     </block>
@@ -79,7 +83,7 @@
 -->
     <block key="R" name="route">
 	<go from="STDBY" hmode="route" wp="p1"/>
-	<for var="i" from="0" to="10">
+	<for var="i" from="0" to="5">
 		<stay wp="p1" until="stage_time>8"/>
       		<go from="p1" hmode="route" wp="p2"/>
 		<stay wp="p2" until="stage_time>8"/>

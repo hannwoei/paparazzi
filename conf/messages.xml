@@ -2115,6 +2115,8 @@
     <field name="F31"       type="float"/>
  	<field name="F32"       type="float"/>
  	<field name="F33"       type="float"/>
+    <field name="sub_min"    type="float"/> 
+    <field name="in_sub"     type="int32"/>	
 	<field name="velBx"      type="float"/>
 	<field name="velBy"      type="float"/>	
  	<field name="velBz"      type="float"/>

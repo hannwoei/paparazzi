@@ -42,6 +42,17 @@ struct opticflow_result_t {
 
   float vel_x;            ///< The velocity in the x direction
   float vel_y;            ///< The velocity in the y direction
+
+  float divergence;       ///< Divergence
+  float TTI;			  ///< Time-to-contact
+  float flatness;		  ///< Flatness Measure
+  float zx;
+  float zy;
+  float d_heading;
+  float d_pitch;
+  float min_error;
+  int16_t n_inlier;
+  int16_t fit_uncertainty;
 };
 
 /* The state of the drone when it took an image */
@@ -49,6 +60,10 @@ struct opticflow_state_t {
   float phi;      ///< roll [rad]
   float theta;    ///< pitch [rad]
   float agl;      ///< height above ground [m]
+  float V_body_x; ///< body velocity x,y,z [m/s]
+  float V_body_y;
+  float V_body_z;
+  float gps_z;    ///<  alt from GPS [m]
 };
 
 #endif

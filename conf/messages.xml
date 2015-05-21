@@ -1976,16 +1976,32 @@
     <field name="fps"         type="float"/>
     <field name="corner_cnt"  type="uint16"/>
     <field name="tracked_cnt" type="uint16"/>
-    <field name="flow_x"      type="int16" unit="subpixels"/>
+<!--    
+	<field name="flow_x"      type="int16" unit="subpixels"/>
     <field name="flow_y"      type="int16" unit="subpixels"/>
     <field name="flow_der_x"  type="int16" unit="subpixels"/>
-    <field name="flow_der_y"  type="int16" unit="subpixels"/>
+    <field name="flow_der_y"  type="int16" unit="subpixels"/> 
+ -->
     <field name="vel_x"       type="float" unit="cm/s"/>
     <field name="vel_y"       type="float" unit="cm/s"/>
+    <field name="flatness"    type="float"/>
+    <field name="DIV"         type="float"/>
+    <field name="TTI"         type="float"/>   
+    <field name="d_heading"   type="float"/>
+    <field name="d_pitch"     type="float"/>
+    <field name="n_inlier"    type="int16"/> 
+    <field name="min_error"   type="float"/>
+    <field name="uncertainty" type="int16"/> 	 
+<!--
     <field name="cmd_phi"     type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
     <field name="cmd_theta"   type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
+-->
+    <field name="v_body_x"    type="float" unit="m/s"/>
+    <field name="v_body_y"    type="float" unit="m/s"/>
+    <field name="v_body_z"    type="float" unit="m/s"/>
+    <field name="gps_z"       type="float" unit="m"/>
   </message>
-
+  
   <!--229 is free -->
 
   <message name="AHRS_ARDRONE2" id="230">

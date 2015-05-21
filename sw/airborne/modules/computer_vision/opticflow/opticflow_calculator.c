@@ -39,6 +39,7 @@
 #include "lib/vision/image.h"
 #include "lib/vision/lucas_kanade.h"
 #include "lib/vision/fast_rosten.h"
+#include "lib/vision/opticflow_fitting.h"
 
 // Camera parameters (defaults are from an ARDrone 2)
 #ifndef OPTICFLOW_FOV_W
@@ -106,6 +107,11 @@ PRINT_CONFIG_VAR(OPTICFLOW_FAST9_MIN_DISTANCE)
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
 static int cmp_flow(const void *a, const void *b);
 
+
+// flow fitting
+float *pu, *pv, z_x, z_y, flatness, divergence, TTI, d_heading, d_pitch, min_error_u, min_error_v;
+int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
+
 /**
  * Initialize the opticflow calculator
  * @param[out] *opticflow The new optical flow calculator
@@ -133,6 +139,21 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   opticflow->fast9_adaptive = OPTICFLOW_FAST9_ADAPTIVE;
   opticflow->fast9_threshold = OPTICFLOW_FAST9_THRESHOLD;
   opticflow->fast9_min_distance = OPTICFLOW_FAST9_MIN_DISTANCE;
+
+  // flow fitting
+  USE_LINEAR_FIT = 1;
+  if(USE_LINEAR_FIT == 1)
+  {
+	  no_parameter = 3;
+  }
+  else
+  {
+	  no_parameter = 5;
+  }
+  pu = (float *) calloc (no_parameter,sizeof(float));
+  pv = (float *) calloc (no_parameter,sizeof(float));
+  z_x = 0.0, z_y = 0.0, flatness = 0.0, divergence = 0.0, TTI = 0.0, d_heading = 0.0, d_pitch = 0.0, min_error_u = 0.0, min_error_v = 0.0;
+  n_inlier_minu = 0, n_inlier_minv = 0, FIT_UNCERTAINTY = 0;
 }
 
 /**
@@ -234,6 +255,30 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   // Velocity calculation
   result->vel_x = -result->flow_der_x * result->fps * state->agl/ opticflow->subpixel_factor * img->w / OPTICFLOW_FX;
   result->vel_y =  result->flow_der_y * result->fps * state->agl/ opticflow->subpixel_factor * img->h / OPTICFLOW_FY;
+
+  // *************************************************************************************
+  // Flow Field Fitting
+  // *************************************************************************************
+  for(int i=0; i<no_parameter; i++)
+  {
+	  pu[i] = 0.0;
+	  pv[i] = 0.0;
+  }
+
+  analyseTTI(pu, pv, &z_x, &z_y, &flatness, &divergence, &TTI, &d_heading, &d_pitch,
+  		&n_inlier_minu, &n_inlier_minv, &min_error_u, &min_error_v, &FIT_UNCERTAINTY,
+  		vectors, result->tracked_cnt, opticflow->subpixel_factor, img->w, img->h, USE_LINEAR_FIT);
+
+  result->zx = z_x;
+  result->zy = z_y;
+  result->flatness = flatness;
+  result->divergence = divergence;
+  result->TTI = TTI;
+  result->d_heading = d_heading;
+  result->d_pitch = d_pitch;
+  result->n_inlier = n_inlier_minu + n_inlier_minv;
+  result->min_error = min_error_u + min_error_v;
+  result->fit_uncertainty = FIT_UNCERTAINTY;
 
   // *************************************************************************************
   // Next Loop Preparation

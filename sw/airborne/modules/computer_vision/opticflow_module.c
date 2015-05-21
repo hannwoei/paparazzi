@@ -72,6 +72,8 @@ static abi_event opticflow_agl_ev;                 ///< The altitude ABI event
 static pthread_t opticflow_calc_thread;            ///< The optical flow calculation thread
 static bool_t opticflow_got_result;                ///< When we have an optical flow calculation
 static pthread_mutex_t opticflow_mutex;            ///< Mutex lock fo thread safety
+struct FloatVect3 V_Ned, V_body;
+struct FloatRMat Rmat_Ned2Body;
 
 /* Static functions */
 static void *opticflow_module_calc(void *data);                   ///< The main optical flow calculation thread
@@ -89,11 +91,21 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
   pthread_mutex_lock(&opticflow_mutex);
   pprz_msg_send_OPTIC_FLOW_EST(trans, dev, AC_ID,
                                &opticflow_result.fps, &opticflow_result.corner_cnt,
-                               &opticflow_result.tracked_cnt, &opticflow_result.flow_x,
-                               &opticflow_result.flow_y, &opticflow_result.flow_der_x,
-                               &opticflow_result.flow_der_y, &opticflow_result.vel_x,
-                               &opticflow_result.vel_y,
-                               &opticflow_stab.cmd.phi, &opticflow_stab.cmd.theta);
+                               &opticflow_result.tracked_cnt,
+                               // &opticflow_result.flow_x, &opticflow_result.flow_y,
+                               // &opticflow_result.flow_der_x, &opticflow_result.flow_der_y,
+                               &opticflow_result.vel_x, &opticflow_result.vel_y,
+                               &opticflow_result.flatness,
+                               &opticflow_result.divergence,
+                               &opticflow_result.TTI,
+                               &opticflow_result.d_heading,
+                               &opticflow_result.d_pitch,
+                               &opticflow_result.n_inlier,
+                               &opticflow_result.min_error,
+                               &opticflow_result.fit_uncertainty,
+                               // &opticflow_stab.cmd.phi, &opticflow_stab.cmd.theta,
+                               &opticflow_state.V_body_x,&opticflow_state.V_body_y,
+                               &opticflow_state.V_body_z,&opticflow_state.gps_z);
   pthread_mutex_unlock(&opticflow_mutex);
 }
 #endif
@@ -110,6 +122,10 @@ void opticflow_module_init(void)
   opticflow_state.phi = 0;
   opticflow_state.theta = 0;
   opticflow_state.agl = 0;
+  opticflow_state.V_body_x = 0.0;
+  opticflow_state.V_body_y = 0.0;
+  opticflow_state.V_body_z = 0.0;
+  opticflow_state.gps_z = 0.0;
 
   // Initialize the opticflow calculation
   opticflow_calc_init(&opticflow, 320, 240);
@@ -147,6 +163,19 @@ void opticflow_module_run(void)
   // Send Updated data to thread
   opticflow_state.phi = stateGetNedToBodyEulers_f()->phi;
   opticflow_state.theta = stateGetNedToBodyEulers_f()->theta;
+
+  // Compute body velocities from ENU
+  V_Ned.x = stateGetSpeedNed_f()->x;
+  V_Ned.y = stateGetSpeedNed_f()->y;
+  V_Ned.z = stateGetSpeedNed_f()->z;
+
+  struct FloatQuat* BodyQuaternions = stateGetNedToBodyQuat_f();
+  FLOAT_RMAT_OF_QUAT(Rmat_Ned2Body,*BodyQuaternions);
+  RMAT_VECT3_MUL(V_body, Rmat_Ned2Body, V_Ned);
+  opticflow_state.V_body_x = V_body.x;
+  opticflow_state.V_body_y = V_body.y;
+  opticflow_state.V_body_z = V_body.z;
+  opticflow_state.gps_z = stateGetPositionEnu_f()->z;
 
   // Update the stabilization loops on the current calculation
   if (opticflow_got_result) {

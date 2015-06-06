@@ -103,14 +103,23 @@ PRINT_CONFIG_VAR(OPTICFLOW_FAST9_THRESHOLD)
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_FAST9_MIN_DISTANCE)
 
+#ifndef OPTICFLOW_SNAPSHOT
+#define OPTICFLOW_SNAPSHOT FALSE
+#endif
+PRINT_CONFIG_VAR(OPTICFLOW_SNAPSHOT)
+
 /* Functions only used here */
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
 static int cmp_flow(const void *a, const void *b);
 
-
 // flow fitting
 float *pu, *pv, z_x, z_y, flatness, divergence, TTI, d_heading, d_pitch, min_error_u, min_error_v;
 int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
+
+// snapshot
+char filename[100];
+int i_frame;
+bool_t snapshot;
 
 /**
  * Initialize the opticflow calculator
@@ -154,6 +163,10 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   pv = (float *) calloc (no_parameter,sizeof(float));
   z_x = 0.0, z_y = 0.0, flatness = 0.0, divergence = 0.0, TTI = 0.0, d_heading = 0.0, d_pitch = 0.0, min_error_u = 0.0, min_error_v = 0.0;
   n_inlier_minu = 0, n_inlier_minv = 0, FIT_UNCERTAINTY = 0;
+
+	// snapshot
+	i_frame = 0;
+	snapshot = OPTICFLOW_SNAPSHOT;
 }
 
 /**
@@ -267,7 +280,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
 
   analyseTTI(pu, pv, &z_x, &z_y, &flatness, &divergence, &TTI, &d_heading, &d_pitch,
   		&n_inlier_minu, &n_inlier_minv, &min_error_u, &min_error_v, &FIT_UNCERTAINTY,
-  		vectors, result->tracked_cnt, opticflow->subpixel_factor, img->w, img->h, USE_LINEAR_FIT);
+  		vectors, result->tracked_cnt, opticflow->subpixel_factor, result->fps, img->w, img->h, USE_LINEAR_FIT);
 
   result->zx = z_x;
   result->zy = z_y;
@@ -279,6 +292,22 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   result->n_inlier = n_inlier_minu + n_inlier_minv;
   result->min_error = min_error_u + min_error_v;
   result->fit_uncertainty = FIT_UNCERTAINTY;
+
+	// **********************************************************************************************************************
+	// Save an image
+	// **********************************************************************************************************************
+//	if(snapshot)
+//	{
+//		snapshot = FALSE;
+//
+//		sprintf(filename, "/data/video/image_%d.dat", i_frame);
+//		saveSingleImageDataFile(img->buf, img->w, img->h, filename);
+//
+//	}
+//	else
+//	{
+//
+//	}
 
   // *************************************************************************************
   // Next Loop Preparation

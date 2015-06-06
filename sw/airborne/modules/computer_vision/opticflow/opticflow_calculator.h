@@ -53,6 +53,8 @@ struct opticflow_t {
   uint16_t fast9_min_distance;      ///< Minimum distance in pixels between corners
 };
 
+// Snapshot
+extern bool_t snapshot;
 
 void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h);
 void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_t *state, struct image_t *img, struct opticflow_result_t *result);

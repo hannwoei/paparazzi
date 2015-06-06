@@ -39,12 +39,12 @@
 #define CMD_DIV 1500
 
 #ifndef VISION_DIV_PGAIN
-#define VISION_DIV_PGAIN 50
+#define VISION_DIV_PGAIN 10
 #endif
 PRINT_CONFIG_VAR(VISION_DIV_PGAIN)
 
 #ifndef VISION_DIV_IGAIN
-#define VISION_DIV_IGAIN 10
+#define VISION_DIV_IGAIN 0
 #endif
 PRINT_CONFIG_VAR(VISION_DIV_IGAIN)
 
@@ -52,6 +52,11 @@ PRINT_CONFIG_VAR(VISION_DIV_IGAIN)
 #define VISION_DESIRED_DIV 1
 #endif
 PRINT_CONFIG_VAR(VISION_DESIRED_DIV)
+
+#ifndef VISION_CONTROLLER
+#define VISION_CONTROLLER 1
+#endif
+PRINT_CONFIG_VAR(VISION_CONTROLLER)
 
 /* Check the control gains */
 #if (VISION_DIV_PGAIN < 0)      ||  \
@@ -63,7 +68,8 @@ PRINT_CONFIG_VAR(VISION_DESIRED_DIV)
 struct DivPilot_landing_t DivPilot_landing = {
   .div_pgain = VISION_DIV_PGAIN,
   .div_igain = VISION_DIV_IGAIN,
-  .desired_div = VISION_DESIRED_DIV
+  .desired_div = VISION_DESIRED_DIV,
+  .controller = VISION_CONTROLLER
 };
 
 /**
@@ -115,21 +121,32 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
   float err_div = 0;
 
   if (result->tracked_cnt > 0) {
-    err_div = (-DivPilot_landing.desired_div/2 - result->divergence);
+    err_div = (-DivPilot_landing.desired_div/3 - result->divergence);
   }
 
   /* Calculate the integrated errors (TODO: bound??) */
   DivPilot_landing.err_div_int += err_div;
 
   /* Calculate the commands */
-//  if (opticflow_state->gps_z > 0.5)
+//  if (result->divergence < -1.0)
 //  {
-	  DivPilot_landing.div_thrust += (int32_t) ((DivPilot_landing.div_pgain*err_div +DivPilot_landing.div_igain * DivPilot_landing.err_div_int)/100);
+//	  DivPilot_landing.desired_div = 2.0;
 //  }
 //  else
 //  {
-//	  DivPilot_landing.div_thrust += (int32_t) (DivPilot_landing.div_pgain*(-opticflow_state->gps_z)/100);
+//	  DivPilot_landing.desired_div = 0.33;
 //  }
+    if (opticflow_state->gps_z < 0.2)
+    {
+  	  DivPilot_landing.desired_div = 6.0;
+    }
+    else
+    {
+  	  DivPilot_landing.desired_div = 1;
+    }
+
+  DivPilot_landing.div_thrust += (int32_t) ((DivPilot_landing.div_pgain*err_div +DivPilot_landing.div_igain * DivPilot_landing.err_div_int));
+
 
 //  Bound(DivPilot_landing.div_thrust,-100, 100);
 

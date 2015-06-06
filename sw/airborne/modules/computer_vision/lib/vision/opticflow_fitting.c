@@ -1025,6 +1025,33 @@ void fitQuadFlowField(float* pu, float* pv, float* min_error_u, float* min_error
 		free(sample_indices);
 }
 
+void quick_sort (float *a, int n)
+{
+    if (n < 2)
+        return;
+    float p = a[n / 2];
+    float *l = a;
+    float *r = a + n - 1;
+    while (l <= r)
+    {
+        if (*l < p)
+        {
+            l++;
+            continue;
+        }
+        if (*r > p)
+        {
+            r--;
+            continue; // we need to check the condition (l <= r) every time we change the value of l or r
+        }
+        float t = *l;
+        *l++ = *r;
+        *r-- = t;
+    }
+    quick_sort(a, r - a + 1);
+    quick_sort(l, a + n - l);
+}
+
 unsigned int mov_block = 15; //default: 30
 float div_buf[30];
 unsigned int div_point = 0;
@@ -1040,13 +1067,13 @@ float ofs_filter_val_dx_prev_prev = 0.0;
 float temp_divergence = 0.0;
 
 void extractInformationFromLinearFlowField(float *flatness, float *divergence, float *TTI, float *d_heading, float *d_pitch,
-		float* pu, float* pv, float min_error_u, float min_error_v, int count, int imgWidth, int imgHeight)
+		float* pu, float* pv, float min_error_u, float min_error_v, int count, float FPS, int imgWidth, int imgHeight)
 {
 
 		*flatness = (min_error_u + min_error_v) / (2 * count);
 
 		// divergence:
-		*divergence = pu[0] + pv[1];
+		*divergence = -(pu[0] + pv[1])*FPS;
 		// minimal measurable divergence:
 //		float minimal_divergence = 2E-3;
 //		if(abs(*divergence) > minimal_divergence)
@@ -1082,16 +1109,14 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 		*d_heading = (-(pu[2] + (imgWidth/2.0f) * pu[0] + (imgHeight/2.0f) * pu[1]));
 		*d_pitch = (-(pv[2] + (imgWidth/2.0f) * pv[0] + (imgHeight/2.0f) * pv[1]));
 
-//		//apply a moving average
-//		int medianfilter = 1;
+		//apply a moving average
+//		int medianfilter = 0;
 //		int averagefilter = 0;
 //		int butterworthfilter = 0;
-//		int kalmanfilter = 0;
 //		float div_avg = 0.0f;
 //
 //		if(averagefilter == 1)
 //		{
-//			*DIV_FILTER = 1;
 //			if (*divergence < 3.0 && *divergence > -3.0) {
 //				div_buf[div_point] = *divergence;
 //				div_point = (div_point+1) %mov_block; // index starts from 0 to mov_block
@@ -1105,7 +1130,6 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 //		}
 //		else if(medianfilter == 1)
 //		{
-//			*DIV_FILTER = 2;
 //			//apply a median filter
 ////			if (*divergence < 3.0 && *divergence > -3.0) {
 //				div_buf[div_point] = *divergence;
@@ -1116,7 +1140,6 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 //		}
 //		else if(butterworthfilter == 1)
 //		{
-//			*DIV_FILTER = 3;
 //			temp_divergence = *divergence;
 //			*divergence = OFS_BUTTER_NUM_1* (*divergence) + OFS_BUTTER_NUM_2*ofs_meas_dx_prev+ OFS_BUTTER_NUM_3*ofs_meas_dx_prev_prev- OFS_BUTTER_DEN_2*ofs_filter_val_dx_prev- OFS_BUTTER_DEN_3*ofs_filter_val_dx_prev_prev;
 //		    ofs_meas_dx_prev_prev = ofs_meas_dx_prev;
@@ -1124,16 +1147,14 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 //		    ofs_filter_val_dx_prev_prev = ofs_filter_val_dx_prev;
 //		    ofs_filter_val_dx_prev = *divergence;
 //		}
-//		else if(kalmanfilter == 1)
+//		else
 //		{
-//			*DIV_FILTER = 4;
+//
 //		}
-
-
 }
 
 void extractInformationFromQuadFlowField(float *z_x, float *z_y, float *flatness, float *divergence, float *TTI, float *d_heading, float *d_pitch,
-		float* puq, float* pvq, float min_error_u, float min_error_v, int count, int imgWidth, int imgHeight)
+		float* puq, float* pvq, float min_error_u, float min_error_v, int count, float FPS, int imgWidth, int imgHeight)
 {
 	float threshold_flow_translational = 1.0;
 	float threshold_rel_vert = 0.0;
@@ -1227,7 +1248,7 @@ void extractInformationFromQuadFlowField(float *z_x, float *z_y, float *flatness
 
 	float ux = puq[1] + 2 * puq[3] * (imgWidth/2.0) + puq[4] * (imgHeight/2.0);
 	float vy = pvq[2] + 2 * pvq[3] * (imgHeight/2) + pvq[4] * (imgWidth/2);
-	*divergence = ((ux)+(vy))/2.0;
+	*divergence = -((ux)+(vy))/2.0*FPS;
 	*TTI = 1.0/(*divergence);
 
     if(invalid_zx) *z_x = 0.0;
@@ -1314,7 +1335,7 @@ void slopeEstimation(float *z_x, float *z_y, float *flatness, float *POE_x, floa
 void analyseTTI(float *pu, float *pv, float *z_x, float *z_y, float *flatness, float *divergence,
 		float *TTI, float *d_heading, float *d_pitch,
 		int *n_inlier_minu, int *n_inlier_minv, float *min_error_u, float *min_error_v, int *FIT_UNCERTAINTY,
-		struct flow_t *vectors, int count, int subpixel_factor, int imW, int imH, int USE_LINEAR_FIT)
+		struct flow_t *vectors, int count, int subpixel_factor, float FPS, int imW, int imH, int USE_LINEAR_FIT)
 {
 		// new data
 		float *x, *y, *dx, *dy;
@@ -1393,7 +1414,7 @@ void analyseTTI(float *pu, float *pv, float *z_x, float *z_y, float *flatness, f
 			else
 			{
 				extractInformationFromLinearFlowField(flatness, divergence, TTI, d_heading, d_pitch,
-						pu, pv, *min_error_u, *min_error_v, count, imW, imH);
+						pu, pv, *min_error_u, *min_error_v, count, FPS, imW, imH);
 			}
 		}
 		else
@@ -1420,7 +1441,7 @@ void analyseTTI(float *pu, float *pv, float *z_x, float *z_y, float *flatness, f
 			}
 			else
 			{
-				extractInformationFromQuadFlowField(z_x, z_y, flatness, divergence, TTI,  d_heading, d_pitch, pu, pv, *min_error_u, *min_error_v, count, imW, imH);
+				extractInformationFromQuadFlowField(z_x, z_y, flatness, divergence, TTI,  d_heading, d_pitch, pu, pv, *min_error_u, *min_error_v, count, FPS, imW, imH);
 			}
 		}
 }
@@ -1480,4 +1501,47 @@ int MatRank(float **mat, int row, int col)
         }
     }
     return col;
+}
+
+void saveSingleImageDataFile(struct image_t *input, int width, int height, char filename[100])
+{
+
+	uint8_t *frame_buf = (uint8_t *)input->buf;
+	FILE *fp;
+
+	fp=fopen(filename, "w");
+
+	// convert to grayscale image (verified)
+//	unsigned char *grayframe;
+//	grayframe = (unsigned char*) calloc(width*height,sizeof(unsigned char));
+//	CvtYUYV2Gray(grayframe, frame_buf, width, height);
+
+	// convert to rgb
+//	unsigned char *RGB;
+//	RGB = (unsigned char *)calloc(width*height*3,sizeof(unsigned char));
+//	unsigned char *grayframe;
+//	grayframe = (unsigned char*) calloc(width*height,sizeof(unsigned char));
+//	YUV422TORGB(frame_buf, RGB, grayframe, width, height);
+//	uyvy_to_rgb24 (width, height, frame_buf, RGB);
+	if(fp == NULL)
+	{
+		perror("Error while opening the file.\n");
+	}
+	else
+	{
+		for(int i = 0; i<height; i++)
+		{
+	//		for(int j = 0; j<width*3; j++) //for RGB
+			for(int j = 0; j<width*2; j++) // for UYVY
+	//		for(int j = 0; j<width; j++)   // for grayscale
+			{
+	//			fprintf(fp, "%u\n",RGB[i * width * 3 + j]); // for RGB
+				fprintf(fp, "%u\n",frame_buf[i * width * 2 + j]); // for UYVY
+	//			fprintf(fp, "%u\n",grayframe[i * width + j]); // use "mat2gray()" to convert it to grayscale image and then show it with "imshow()"
+			}
+		}
+		fclose(fp);
+	}
+//	free(grayframe);
+//	free(RGB);
 }

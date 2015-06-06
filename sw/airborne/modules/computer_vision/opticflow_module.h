@@ -30,7 +30,8 @@
 
 // Include opticflow calculator and stabilization loops
 #include "opticflow/opticflow_calculator.h"
-#include "opticflow/stabilization_opticflow.h"
+//#include "opticflow/stabilization_opticflow.h"
+#include "opticflow/landing_DivPilot.h"
 
 // Needed for settings
 extern struct opticflow_t opticflow;

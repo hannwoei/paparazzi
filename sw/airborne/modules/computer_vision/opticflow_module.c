@@ -103,6 +103,8 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
                                &opticflow_result.n_inlier,
                                &opticflow_result.min_error,
                                &opticflow_result.fit_uncertainty,
+                               &DivPilot_landing.div_thrust, &opticflow_state.agl,//&DivPilot_landing.err_div_int,
+                               &DivPilot_landing.desired_div,
                                // &opticflow_stab.cmd.phi, &opticflow_stab.cmd.theta,
                                &opticflow_state.V_body_x,&opticflow_state.V_body_y,
                                &opticflow_state.V_body_z,&opticflow_state.gps_z);
@@ -179,7 +181,7 @@ void opticflow_module_run(void)
 
   // Update the stabilization loops on the current calculation
   if (opticflow_got_result) {
-    stabilization_opticflow_update(&opticflow_result);
+	landing_DivPilot_update(&opticflow_result, &opticflow_state);
     opticflow_got_result = FALSE;
   }
   pthread_mutex_unlock(&opticflow_mutex);

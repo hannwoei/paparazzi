@@ -1991,7 +1991,10 @@
     <field name="d_pitch"     type="float"/>
     <field name="n_inlier"    type="int16"/> 
     <field name="min_error"   type="float"/>
-    <field name="uncertainty" type="int16"/> 	 
+    <field name="uncertainty" type="int16"/> 
+    <field name="thrust"      type="int32"/> 
+    <field name="div_acc"     type="float"/>	
+    <field name="div_sp"      type="float"/> 
 <!--
     <field name="cmd_phi"     type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
     <field name="cmd_theta"   type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>

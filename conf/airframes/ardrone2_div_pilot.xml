@@ -6,6 +6,7 @@
     <target name="ap" board="ardrone2_raw">
       <subsystem name="telemetry" type="transparent_udp"/>
       <subsystem name="radio_control" type="datalink"/>
+      <configure name="USE_MAGNETOMETER" value="0"/>
     </target>
 
     <!--target name="nps" board="pc">
@@ -29,9 +30,10 @@
     <!--<load name="gps_ubx_ucenter.xml"/>-->
     <load name="send_imu_mag_current.xml"/>
     <load name="logger_file.xml"/>
-    <load name="cv_opticflow.xml">
+    <load name="cv_DivPilot.xml"/>
+    	<!--<load name="cv_opticflow.xml">-->
     	<!--<define name="OPTICFLOW_DEBUG" value="TRUE"/>-->
-    </load>
+        <!--</load>-->
 <!--
     <load name="video_rtp_stream.xml">
       <define name="VIEWVIDEO_FPS" value="4"/>
@@ -119,16 +121,20 @@
   <!-- http://wiki.paparazziuav.org/wiki/Subsystem/ahrs#Local_Magnetic_Field -->
   <section name="AHRS" prefix="AHRS_">
     <!-- Toulouse -->
-    <define name="H_X" value="0.513081"/>
+    <!--<define name="H_X" value="0.513081"/>
     <define name="H_Y" value="-0.00242783"/>
-    <define name="H_Z" value="0.858336"/>
+    <define name="H_Z" value="0.858336"/>-->
     <!-- Delft -->
-    <!--define name="H_X" value="0.3892503"/>
+    <define name="H_X" value="0.3892503"/>
     <define name="H_Y" value="0.0017972"/>
-    <define name="H_Z" value="0.9211303"/ -->
+    <define name="H_Z" value="0.9211303"/>
+    <define name="USE_GPS_HEADING" value="1"/>
   </section>
 
+
   <section name="INS" prefix="INS_">
+    <define name="USE_GPS_ALT" value="1"/>
+    <define name="VFF_R_GPS" value="0.01"/>
     <define name="SONAR_MAX_RANGE" value="2.2"/>
     <define name="SONAR_UPDATE_ON_AGL" value="TRUE"/>
   </section>
@@ -218,6 +224,7 @@
     <define name="PGAIN" value="79"/>
     <define name="DGAIN" value="100"/>
     <define name="IGAIN" value="30"/>
+    <define name="REF_MAX_SPEED" value="0.6"/> <!--default:8.5--> <!--0.6 -->
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">
@@ -229,7 +236,8 @@
   <section name="AUTOPILOT">
     <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
-    <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
+    <!--<define name="MODE_AUTO1" value="AP_MODE_MODULE"/>-->
+	<define name="MODE_AUTO1" value="AP_MODE_HOVER_CLIMB"/>
     <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
   </section>
 

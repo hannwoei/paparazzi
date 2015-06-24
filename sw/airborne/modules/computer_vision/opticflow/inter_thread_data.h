@@ -44,6 +44,8 @@ struct opticflow_result_t {
   float vel_y;            ///< The velocity in the y direction
 
   float divergence;       ///< Divergence
+  float Div_f;			  ///< Filtered Divergence
+  float Div_d;			  ///< Derivatives of Divergence
   float TTI;			  ///< Time-to-contact
   float flatness;		  ///< Flatness Measure
   float zx;

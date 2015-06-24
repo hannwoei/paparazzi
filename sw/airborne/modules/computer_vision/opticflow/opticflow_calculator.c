@@ -116,6 +116,9 @@ static int cmp_flow(const void *a, const void *b);
 float *pu, *pv, z_x, z_y, flatness, divergence, TTI, d_heading, d_pitch, min_error_u, min_error_v;
 int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
 
+// washout filter
+float Div_dd, Div_f_prev, w_n, Div_d_prev, Div_d, t_step, Div_f;
+
 // snapshot
 char filename[100];
 int i_frame;
@@ -164,9 +167,12 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   z_x = 0.0, z_y = 0.0, flatness = 0.0, divergence = 0.0, TTI = 0.0, d_heading = 0.0, d_pitch = 0.0, min_error_u = 0.0, min_error_v = 0.0;
   n_inlier_minu = 0, n_inlier_minv = 0, FIT_UNCERTAINTY = 0;
 
-	// snapshot
-	i_frame = 0;
-	snapshot = OPTICFLOW_SNAPSHOT;
+  // washout filter
+  Div_dd = 0.0, Div_f_prev = 0.0, w_n = 10, Div_d_prev = 0.0, Div_d = 0.0, t_step = 0.0, Div_f = 0.0;
+
+  // snapshot
+  i_frame = 0;
+  snapshot = OPTICFLOW_SNAPSHOT;
 }
 
 /**
@@ -282,6 +288,23 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   		&n_inlier_minu, &n_inlier_minv, &min_error_u, &min_error_v, &FIT_UNCERTAINTY,
   		vectors, result->tracked_cnt, opticflow->subpixel_factor, result->fps, img->w, img->h, USE_LINEAR_FIT);
 
+  // washout filter on divergence
+  if (result->fps == 0)
+  {
+	  t_step = 0.0;
+  }
+  else
+  {
+	  t_step = 1/result->fps;
+  }
+
+  Div_dd = ((divergence-Div_f_prev)*w_n/2-Div_d_prev)*2*w_n;
+  Div_d = Div_dd*t_step + Div_d_prev;
+  Div_f = Div_d*t_step + Div_f_prev;
+
+  Div_d_prev = Div_d;
+  Div_f_prev = Div_f;
+
   result->zx = z_x;
   result->zy = z_y;
   result->flatness = flatness;
@@ -292,6 +315,8 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   result->n_inlier = n_inlier_minu + n_inlier_minv;
   result->min_error = min_error_u + min_error_v;
   result->fit_uncertainty = FIT_UNCERTAINTY;
+  result->Div_f = Div_f;
+  result->Div_d = Div_d;
 
 	// **********************************************************************************************************************
 	// Save an image

@@ -136,14 +136,14 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 //  {
 //	  DivPilot_landing.desired_div = 0.33;
 //  }
-    if (opticflow_state->gps_z < 0.2)
-    {
-  	  DivPilot_landing.desired_div = 6.0;
-    }
-    else
-    {
-  	  DivPilot_landing.desired_div = 1;
-    }
+//    if (opticflow_state->gps_z < 0.2)
+//    {
+//  	  DivPilot_landing.desired_div = 6.0;
+//    }
+//    else
+//    {
+//  	  DivPilot_landing.desired_div = 1;
+//    }
 
   DivPilot_landing.div_thrust += (int32_t) ((DivPilot_landing.div_pgain*err_div +DivPilot_landing.div_igain * DivPilot_landing.err_div_int));
 

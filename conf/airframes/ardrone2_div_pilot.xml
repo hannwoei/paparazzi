@@ -4,6 +4,10 @@
 
   <firmware name="rotorcraft">
     <target name="ap" board="ardrone2_raw">
+<!-- For connecting to the router - settings : ~/paparazzi/sw/tools/parrot/ardrone2.py
+      <configure name="HOST" value="192.168.209.222"/>
+      <define name="LINK_HOST" value="\\\"192.168.209.17\\\""/>
+-->
       <subsystem name="telemetry" type="transparent_udp"/>
       <subsystem name="radio_control" type="datalink"/>
       <configure name="USE_MAGNETOMETER" value="0"/>
@@ -236,8 +240,8 @@
   <section name="AUTOPILOT">
     <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
-    <!--<define name="MODE_AUTO1" value="AP_MODE_MODULE"/>-->
-	<define name="MODE_AUTO1" value="AP_MODE_HOVER_CLIMB"/>
+    <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
+	<!--<define name="MODE_AUTO1" value="AP_MODE_HOVER_CLIMB"/>-->
     <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
   </section>
 

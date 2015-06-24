@@ -37,6 +37,8 @@
 #include "lib/encoding/jpeg.h"
 #include "lib/encoding/rtp.h"
 
+#include "subsystems/imu.h"
+
 /* Default sonar/agl to use in opticflow visual_estimator */
 #ifndef OPTICFLOW_AGL_ID
 #define OPTICFLOW_AGL_ID ABI_BROADCAST    ///< Default sonar/agl to use in opticflow visual_estimator
@@ -107,7 +109,9 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
                                &DivPilot_landing.desired_div,
                                // &opticflow_stab.cmd.phi, &opticflow_stab.cmd.theta,
                                &opticflow_state.V_body_x,&opticflow_state.V_body_y,
-                               &opticflow_state.V_body_z,&opticflow_state.gps_z);
+                               &opticflow_state.V_body_z,&opticflow_state.gps_z,
+                               &opticflow_result.Div_f, &opticflow_result.Div_d,
+                               &imu.accel.z);
   pthread_mutex_unlock(&opticflow_mutex);
 }
 #endif

@@ -1052,8 +1052,8 @@ void quick_sort (float *a, int n)
     quick_sort(l, a + n - l);
 }
 
-unsigned int mov_block = 15; //default: 30
-float div_buf[30];
+unsigned int mov_block = 5; //default: 15
+float div_buf[10];
 unsigned int div_point = 0;
 float OFS_BUTTER_NUM_1 = 0.0004260;
 float OFS_BUTTER_NUM_2 = 0.0008519;
@@ -1109,8 +1109,8 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 		*d_heading = (-(pu[2] + (imgWidth/2.0f) * pu[0] + (imgHeight/2.0f) * pu[1]));
 		*d_pitch = (-(pv[2] + (imgWidth/2.0f) * pv[0] + (imgHeight/2.0f) * pv[1]));
 
-		//apply a moving average
-//		int medianfilter = 0;
+//		//apply a moving average
+//		int medianfilter = 1;
 //		int averagefilter = 0;
 //		int butterworthfilter = 0;
 //		float div_avg = 0.0f;
@@ -1133,10 +1133,10 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 //			//apply a median filter
 ////			if (*divergence < 3.0 && *divergence > -3.0) {
 //				div_buf[div_point] = *divergence;
-//				div_point = (div_point+1) %15;
+//				div_point = (div_point+1) %5;
 ////			}
-//			quick_sort(div_buf,15);
-//			*divergence  = div_buf[8];
+//			quick_sort(div_buf,5);
+//			*divergence  = div_buf[2];
 //		}
 //		else if(butterworthfilter == 1)
 //		{

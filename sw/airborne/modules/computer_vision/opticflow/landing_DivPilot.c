@@ -121,11 +121,12 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
   float err_div = 0;
 
   if (result->tracked_cnt > 0) {
-    err_div = (-DivPilot_landing.desired_div/3 - result->divergence);
+//    err_div = (-DivPilot_landing.desired_div/3 - result->divergence);
+	  err_div = (-DivPilot_landing.desired_div/3 - result->Div_f);
   }
 
   /* Calculate the integrated errors (TODO: bound??) */
-  DivPilot_landing.err_div_int += err_div;
+//  DivPilot_landing.err_div_int += err_div;
 
   /* Calculate the commands */
 //  if (result->divergence < -1.0)
@@ -145,8 +146,8 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 //  	  DivPilot_landing.desired_div = 1;
 //    }
 
-  DivPilot_landing.div_thrust += (int32_t) ((DivPilot_landing.div_pgain*err_div +DivPilot_landing.div_igain * DivPilot_landing.err_div_int));
-
+//  DivPilot_landing.div_thrust += (int32_t) ((DivPilot_landing.div_pgain*err_div +DivPilot_landing.div_igain * DivPilot_landing.err_div_int));
+  DivPilot_landing.div_thrust += (int32_t) ((DivPilot_landing.div_pgain*err_div +DivPilot_landing.div_igain * result->Div_d));
 
 //  Bound(DivPilot_landing.div_thrust,-100, 100);
 

@@ -1053,7 +1053,7 @@ void quick_sort (float *a, int n)
 }
 
 unsigned int mov_block = 5; //default: 15
-float div_buf[10];
+float div_buf[5];
 unsigned int div_point = 0;
 float OFS_BUTTER_NUM_1 = 0.0004260;
 float OFS_BUTTER_NUM_2 = 0.0008519;
@@ -1074,6 +1074,11 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 
 		// divergence:
 		*divergence = -(pu[0] + pv[1])*FPS;
+
+		// bound
+//		if(*divergence>50.0) *divergence = 50.0;
+//		if(*divergence<-50.0) *divergence = -50.0;
+
 		// minimal measurable divergence:
 //		float minimal_divergence = 2E-3;
 //		if(abs(*divergence) > minimal_divergence)
@@ -1109,48 +1114,48 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 		*d_heading = (-(pu[2] + (imgWidth/2.0f) * pu[0] + (imgHeight/2.0f) * pu[1]));
 		*d_pitch = (-(pv[2] + (imgWidth/2.0f) * pv[0] + (imgHeight/2.0f) * pv[1]));
 
-//		//apply a moving average
-//		int medianfilter = 1;
-//		int averagefilter = 0;
-//		int butterworthfilter = 0;
-//		float div_avg = 0.0f;
-//
-//		if(averagefilter == 1)
-//		{
+		//apply a moving average
+		int medianfilter = 1;
+		int averagefilter = 0;
+		int butterworthfilter = 0;
+		float div_avg = 0.0f;
+
+		if(averagefilter == 1)
+		{
+			if (*divergence < 3.0 && *divergence > -3.0) {
+				div_buf[div_point] = *divergence;
+				div_point = (div_point+1) %mov_block; // index starts from 0 to mov_block
+			}
+
+			int im;
+			for (im=0;im<mov_block;im++) {
+				div_avg+=div_buf[im];
+			}
+			*divergence = div_avg/ mov_block;
+		}
+		else if(medianfilter == 1)
+		{
+			//apply a median filter
 //			if (*divergence < 3.0 && *divergence > -3.0) {
-//				div_buf[div_point] = *divergence;
-//				div_point = (div_point+1) %mov_block; // index starts from 0 to mov_block
+				div_buf[div_point] = *divergence;
+				div_point = (div_point+1) %5;
 //			}
-//
-//			int im;
-//			for (im=0;im<mov_block;im++) {
-//				div_avg+=div_buf[im];
-//			}
-//			*divergence = div_avg/ mov_block;
-//		}
-//		else if(medianfilter == 1)
-//		{
-//			//apply a median filter
-////			if (*divergence < 3.0 && *divergence > -3.0) {
-//				div_buf[div_point] = *divergence;
-//				div_point = (div_point+1) %5;
-////			}
-//			quick_sort(div_buf,5);
-//			*divergence  = div_buf[2];
-//		}
-//		else if(butterworthfilter == 1)
-//		{
-//			temp_divergence = *divergence;
-//			*divergence = OFS_BUTTER_NUM_1* (*divergence) + OFS_BUTTER_NUM_2*ofs_meas_dx_prev+ OFS_BUTTER_NUM_3*ofs_meas_dx_prev_prev- OFS_BUTTER_DEN_2*ofs_filter_val_dx_prev- OFS_BUTTER_DEN_3*ofs_filter_val_dx_prev_prev;
-//		    ofs_meas_dx_prev_prev = ofs_meas_dx_prev;
-//		    ofs_meas_dx_prev = temp_divergence;
-//		    ofs_filter_val_dx_prev_prev = ofs_filter_val_dx_prev;
-//		    ofs_filter_val_dx_prev = *divergence;
-//		}
-//		else
-//		{
-//
-//		}
+			quick_sort(div_buf,5);
+			*divergence  = div_buf[2];
+		}
+		else if(butterworthfilter == 1)
+		{
+			temp_divergence = *divergence;
+			*divergence = OFS_BUTTER_NUM_1* (*divergence) + OFS_BUTTER_NUM_2*ofs_meas_dx_prev+ OFS_BUTTER_NUM_3*ofs_meas_dx_prev_prev- OFS_BUTTER_DEN_2*ofs_filter_val_dx_prev- OFS_BUTTER_DEN_3*ofs_filter_val_dx_prev_prev;
+		    ofs_meas_dx_prev_prev = ofs_meas_dx_prev;
+		    ofs_meas_dx_prev = temp_divergence;
+		    ofs_filter_val_dx_prev_prev = ofs_filter_val_dx_prev;
+		    ofs_filter_val_dx_prev = *divergence;
+		}
+		else
+		{
+
+		}
 }
 
 void extractInformationFromQuadFlowField(float *z_x, float *z_y, float *flatness, float *divergence, float *TTI, float *d_heading, float *d_pitch,

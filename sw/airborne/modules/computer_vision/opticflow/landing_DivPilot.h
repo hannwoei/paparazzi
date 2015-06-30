@@ -42,6 +42,7 @@ struct DivPilot_landing_t {
 
   float err_div_int;        ///< The integrated divergence error
   int32_t div_thrust;       ///< The commands that are send to thrust
+  int32_t div_thrust_int;       ///< Hover thrust
 };
 extern struct DivPilot_landing_t DivPilot_landing;
 

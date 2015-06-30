@@ -30,7 +30,7 @@
   </header>
 
   <init fun="viewvideo_init()"/>
-  <periodic fun="viewvideo_periodic()" freq="1" start="viewvideo_start()" stop="viewvideo_stop()" autorun="TRUE"/>
+  <periodic fun="viewvideo_periodic()" freq="1" start="viewvideo_start()" stop="viewvideo_stop()" autorun="FALSE"/>
   <makefile target="ap">
 
     <file name="viewvideo.c"/>

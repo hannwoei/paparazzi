@@ -47,7 +47,8 @@ struct opticflow_result_t {
   float Div_f;			  ///< Filtered Divergence
   float Div_d;			  ///< Derivatives of Divergence
   float TTI;			  ///< Time-to-contact
-  float flatness;		  ///< Flatness Measure
+  float flatness;		  ///< Flatness from OF
+  float flatness_SSL;	  ///< flatness from SSL
   float zx;
   float zy;
   float d_heading;
@@ -55,17 +56,28 @@ struct opticflow_result_t {
   float min_error;
   int16_t n_inlier;
   int16_t fit_uncertainty;
+
+  uint8_t USE_SSL;
+  uint8_t land_safe;
+  uint32_t land_safe_count;
+  uint32_t active_3D;
+
+//  float *texton;
+  float texton[30]; // change the size according to number of words
 };
 
 /* The state of the drone when it took an image */
 struct opticflow_state_t {
   float phi;      ///< roll [rad]
   float theta;    ///< pitch [rad]
+  float psi;	  ///< yaw [rad]
   float agl;      ///< height above ground [m]
   float V_body_x; ///< body velocity x,y,z [m/s]
   float V_body_y;
   float V_body_z;
-  float gps_z;    ///<  alt from GPS [m]
+  float gps_x;    ///<  x_ENU from GPS [m]
+  float gps_y;    ///<  y_ENU from GPS [m]
+  float gps_z;    ///<  z_ENU from GPS [m]
 };
 
 #endif

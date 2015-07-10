@@ -156,13 +156,20 @@ void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribut
 		 * Dictionary:
 		 * Location:
 		 */
-		*flatness_SSL = 2294.5
-				+ word_distribution[0]*(-2145.1) + word_distribution[1]*(583.7) + word_distribution[2]*(-2166.2) + word_distribution[3]*(1624.4) + word_distribution[4]*(1012)
-				+ word_distribution[5]*(-2860.2) + word_distribution[6]*(-790.6) + word_distribution[7]*(5165.1) + word_distribution[8]*(226.8) + word_distribution[9]*(-3481.1)
-				+ word_distribution[10]*(-1765.4) + word_distribution[11]*(-3412) + word_distribution[12]*(-1787.9) + word_distribution[13]*(-2698.2) + word_distribution[14]*(67.6)
-				+ word_distribution[15]*(-6578.4) + word_distribution[16]*(-2859.1) + word_distribution[17]*(-8525.5) + word_distribution[18]*(4740.1) + word_distribution[19]*(37066.1)
-				+ word_distribution[20]*(-2455.2) + word_distribution[21]*(-459) + word_distribution[22]*(8448.4) + word_distribution[23]*(-2449) + word_distribution[24]*(-1939.3)
-				+ word_distribution[25]*(-482.3) + word_distribution[26]*(-6793.7) + word_distribution[27]*(552.6) + word_distribution[28]*(-2314.5) + word_distribution[29]*(-1205.5);
+//		*flatness_SSL = 2294.5
+//				+ word_distribution[0]*(-2145.1) + word_distribution[1]*(583.7) + word_distribution[2]*(-2166.2) + word_distribution[3]*(1624.4) + word_distribution[4]*(1012)
+//				+ word_distribution[5]*(-2860.2) + word_distribution[6]*(-790.6) + word_distribution[7]*(5165.1) + word_distribution[8]*(226.8) + word_distribution[9]*(-3481.1)
+//				+ word_distribution[10]*(-1765.4) + word_distribution[11]*(-3412) + word_distribution[12]*(-1787.9) + word_distribution[13]*(-2698.2) + word_distribution[14]*(67.6)
+//				+ word_distribution[15]*(-6578.4) + word_distribution[16]*(-2859.1) + word_distribution[17]*(-8525.5) + word_distribution[18]*(4740.1) + word_distribution[19]*(37066.1)
+//				+ word_distribution[20]*(-2455.2) + word_distribution[21]*(-459) + word_distribution[22]*(8448.4) + word_distribution[23]*(-2449) + word_distribution[24]*(-1939.3)
+//				+ word_distribution[25]*(-482.3) + word_distribution[26]*(-6793.7) + word_distribution[27]*(552.6) + word_distribution[28]*(-2314.5) + word_distribution[29]*(-1205.5);
+		*flatness_SSL = 91.4758175317669
+				+ word_distribution[0]*(129.357361232921) + word_distribution[1]*(-641.491873893695) + word_distribution[2]*(77.2734585281937) + word_distribution[3]*(-29.9900469831447) + word_distribution[4]*(789.515148155958)
+				+ word_distribution[5]*(1254.94150199362) + word_distribution[6]*(370.037883269326) + word_distribution[7]*(265.984201205625) + word_distribution[8]*(49.7583117986851) + word_distribution[9]*(822.776729536144)
+				+ word_distribution[10]*(1139.60762360203) + word_distribution[11]*(-1665.33975802238) + word_distribution[12]*(571.507584720294) + word_distribution[13]*(1563.54129647641) + word_distribution[14]*(-340.047442298264)
+				+ word_distribution[15]*(-566.618658650005) + word_distribution[16]*(516.447108259413) + word_distribution[17]*(-1531.81703260333) + word_distribution[18]*(-997.874692217590) + word_distribution[19]*(-822.953250053615)
+				+ word_distribution[20]*(-918.588189508986) + word_distribution[21]*(371.505728609769) + word_distribution[22]*(261.424387906646) + word_distribution[23]*(-63.3673731800899) + word_distribution[24]*(62.6078564312148)
+				+ word_distribution[25]*(-18.7211516319433) + word_distribution[26]*(162.941563750614) + word_distribution[27]*(-514.504213274695) + word_distribution[28]*(-156.997391098565) + word_distribution[29]*(55.5512625758230);
 
 	}
 }

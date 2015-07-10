@@ -65,6 +65,12 @@ PRINT_CONFIG_MSG("OPTICFLOW_DEVICE_SIZE = " _SIZE_HELPER(OPTICFLOW_DEVICE_SIZE))
 #endif
 PRINT_CONFIG_VAR(VIEWVIDEO_DEVICE_BUFFERS)
 
+// The place where the shots are saved (without slash on the end)
+#ifndef SAVE_VIDEO_PATH
+#define SAVE_VIDEO_PATH "/data/video/usb"
+#endif
+PRINT_CONFIG_VAR(SAVE_VIDEO_PATH)
+
 /* The main opticflow variables */
 struct opticflow_t opticflow;                      ///< Opticflow calculations
 static struct opticflow_result_t opticflow_result; ///< The opticflow result
@@ -76,6 +82,17 @@ static bool_t opticflow_got_result;                ///< When we have an optical 
 static pthread_mutex_t opticflow_mutex;            ///< Mutex lock fo thread safety
 struct FloatVect3 V_Ned, V_body;
 struct FloatRMat Rmat_Ned2Body;
+struct logvideo_data_t logvideo_data;
+
+// Initialize the viewvideo structure with the defaults
+struct logvideo_t logvideo = {
+//  .is_streaming = FALSE,
+//  .downsize_factor = LOGVIDEO_DOWNSIZE_FACTOR,
+//  .quality_factor = LOGVIDEO_QUALITY_FACTOR,
+//  .fps = VIEWVIDEO_FPS,
+  .take_shot = FALSE,
+  .shot_number = 0
+};
 
 /* Static functions */
 static void *opticflow_module_calc(void *data);                   ///< The main optical flow calculation thread
@@ -92,26 +109,42 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
 {
   pthread_mutex_lock(&opticflow_mutex);
   pprz_msg_send_OPTIC_FLOW_EST(trans, dev, AC_ID,
-                               &opticflow_result.fps, &opticflow_result.corner_cnt,
-                               &opticflow_result.tracked_cnt,
-                               // &opticflow_result.flow_x, &opticflow_result.flow_y,
-                               // &opticflow_result.flow_der_x, &opticflow_result.flow_der_y,
-                               &opticflow_result.vel_x, &opticflow_result.vel_y,
+                               &opticflow_result.fps,
+                               &opticflow_state.V_body_x,
+							   &opticflow_state.V_body_y,
+                               &opticflow_state.V_body_z,
+							   &opticflow_state.agl,
                                &opticflow_result.flatness,
-                               &opticflow_result.divergence,
-                               &opticflow_result.TTI,
-                               &opticflow_result.d_heading,
-                               &opticflow_result.d_pitch,
-                               &opticflow_result.n_inlier,
-                               &opticflow_result.min_error,
-                               &opticflow_result.fit_uncertainty,
-                               &SSL_landing.div_thrust, &opticflow_state.agl,//&SSL_landing.err_div_int,
-                               &SSL_landing.desired_div,
-                               // &opticflow_stab.cmd.phi, &opticflow_stab.cmd.theta,
-                               &opticflow_state.V_body_x,&opticflow_state.V_body_y,
-                               &opticflow_state.V_body_z,&opticflow_state.gps_z,
-                               &opticflow_result.Div_f, &opticflow_result.Div_d,
-                               &imu.accel.z);
+                               &opticflow_result.flatness_SSL,
+							   &opticflow_state.gps_x,
+							   &opticflow_state.gps_y,
+							   &opticflow_state.gps_z,
+							   &opticflow_state.phi,
+							   &opticflow_state.theta,
+							   &opticflow_state.psi,
+							   &opticflow_result.corner_cnt,
+                               &opticflow_result.tracked_cnt,
+							   &opticflow_result.land_safe_count,
+							   &opticflow_result.active_3D
+  	  	  	  	  	  	  	   );
+  pthread_mutex_unlock(&opticflow_mutex);
+}
+static void SSL_telem_send(struct transport_tx *trans, struct link_device *dev)
+{
+  pthread_mutex_lock(&opticflow_mutex);
+  pprz_msg_send_SSL_TEXTON(trans, dev, AC_ID,
+                               &opticflow_result.flatness,
+							   &opticflow_result.texton[0], &opticflow_result.texton[1], &opticflow_result.texton[2],
+							   &opticflow_result.texton[3], &opticflow_result.texton[4], &opticflow_result.texton[5],
+							   &opticflow_result.texton[6], &opticflow_result.texton[7], &opticflow_result.texton[8],
+							   &opticflow_result.texton[9], &opticflow_result.texton[10], &opticflow_result.texton[11],
+							   &opticflow_result.texton[12], &opticflow_result.texton[13], &opticflow_result.texton[14],
+							   &opticflow_result.texton[15], &opticflow_result.texton[16], &opticflow_result.texton[17],
+							   &opticflow_result.texton[18], &opticflow_result.texton[19], &opticflow_result.texton[20],
+							   &opticflow_result.texton[21], &opticflow_result.texton[22], &opticflow_result.texton[23],
+							   &opticflow_result.texton[24], &opticflow_result.texton[25], &opticflow_result.texton[26],
+							   &opticflow_result.texton[27], &opticflow_result.texton[28], &opticflow_result.texton[29]
+  	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
 #endif
@@ -121,17 +154,40 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
  */
 void SSL_module_init(void)
 {
+
+  landing_SSL_init();
+
   // Subscribe to the altitude above ground level ABI messages
   AbiBindMsgAGL(OPTICFLOW_AGL_ID, &opticflow_agl_ev, opticflow_agl_cb);
 
   // Set the opticflow state to 0
   opticflow_state.phi = 0;
   opticflow_state.theta = 0;
+  opticflow_state.psi = 0;
   opticflow_state.agl = 0;
   opticflow_state.V_body_x = 0.0;
   opticflow_state.V_body_y = 0.0;
   opticflow_state.V_body_z = 0.0;
+  opticflow_state.gps_x = 0.0;
+  opticflow_state.gps_y = 0.0;
   opticflow_state.gps_z = 0.0;
+
+  // Set the log data to 0
+  logvideo_data.FPS = 0.0;
+  logvideo_data.V_body_x = 0.0;
+  logvideo_data.V_body_y = 0.0;
+  logvideo_data.V_body_z = 0.0;
+  logvideo_data.agl = 0.0;
+  logvideo_data.flatness = 0.0;
+  logvideo_data.flatness_SSL = 0.0;
+  logvideo_data.gps_x = 0.0;
+  logvideo_data.gps_y = 0.0;
+  logvideo_data.gps_z = 0.0;
+  logvideo_data.phi = 0.0;
+  logvideo_data.theta = 0.0;
+  logvideo_data.psi = 0.0;
+  logvideo_data.corner_cnt = 0;
+  logvideo_data.tracked_cnt = 0;
 
   // Initialize the opticflow calculation
   opticflow_SSL_init(&opticflow, 320, 240);
@@ -156,6 +212,7 @@ void SSL_module_init(void)
 
 #if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "OPTIC_FLOW_EST", opticflow_telem_send);
+  register_periodic_telemetry(DefaultPeriodic, "SSL_TEXTON", SSL_telem_send);
 #endif
 }
 
@@ -169,6 +226,7 @@ void SSL_module_run(void)
   // Send Updated data to thread
   opticflow_state.phi = stateGetNedToBodyEulers_f()->phi;
   opticflow_state.theta = stateGetNedToBodyEulers_f()->theta;
+  opticflow_state.psi = stateGetNedToBodyEulers_f()->psi;
 
   // Compute body velocities from ENU
   V_Ned.x = stateGetSpeedNed_f()->x;
@@ -181,6 +239,8 @@ void SSL_module_run(void)
   opticflow_state.V_body_x = V_body.x;
   opticflow_state.V_body_y = V_body.y;
   opticflow_state.V_body_z = V_body.z;
+  opticflow_state.gps_x = stateGetPositionEnu_f()->x;
+  opticflow_state.gps_y = stateGetPositionEnu_f()->y;
   opticflow_state.gps_z = stateGetPositionEnu_f()->z;
 
   // Update the stabilization loops on the current calculation
@@ -238,6 +298,8 @@ static void *opticflow_module_calc(void *data __attribute__((unused)))
   // Create a new JPEG image
   struct image_t img_jpeg;
   image_create(&img_jpeg, opticflow_dev->w, opticflow_dev->h, IMAGE_JPEG);
+  struct UdpSocket video_sock;
+  udp_socket_create(&video_sock, STRINGIFY(VIEWVIDEO_HOST), VIEWVIDEO_PORT_OUT, -1, VIEWVIDEO_BROADCAST);
 #endif
 
   /* Main loop of the optical flow calculation */
@@ -265,7 +327,7 @@ static void *opticflow_module_calc(void *data __attribute__((unused)))
 #if OPTICFLOW_DEBUG
     jpeg_encode_image(&img, &img_jpeg, 70, FALSE);
     rtp_frame_send(
-      &VIEWVIDEO_DEV,           // UDP device
+      &video_sock,           // UDP device
       &img_jpeg,
       0,                        // Format 422
       70, // Jpeg-Quality
@@ -273,6 +335,40 @@ static void *opticflow_module_calc(void *data __attribute__((unused)))
       0                         // 90kHz time increment
     );
 #endif
+
+    // Check if we need to take a shot
+    if (logvideo.take_shot)
+    {
+      // Create a high quality image (99% JPEG encoded)
+      struct image_t jpeg_hr;
+      image_create(&jpeg_hr, img.w, img.h, IMAGE_JPEG);
+      jpeg_encode_image(&img, &jpeg_hr, 99, TRUE);
+
+      // Search for a file where we can write to
+      char save_name[128];
+      for (; logvideo.shot_number < 99999; logvideo.shot_number++)
+      {
+        sprintf(save_name, "%s/img_%05d.jpg", SAVE_VIDEO_PATH, logvideo.shot_number);
+        // Check if file exists or not
+        if (access(save_name, F_OK) == -1) {
+          FILE *fp = fopen(save_name, "w");
+          if (fp == NULL) {
+            printf("[viewvideo-thread] Could not write shot %s.\n", save_name);
+          } else {
+            // Save it to the file and close it
+            fwrite(jpeg_hr.buf, sizeof(uint8_t), jpeg_hr.buf_size, fp);
+            fclose(fp);
+          }
+
+          // We don't need to seek for a next index anymore
+          break;
+        }
+      }
+
+      // We finished the shot
+      image_free(&jpeg_hr);
+      logvideo.take_shot = FALSE;
+    }
 
     // Free the image
     v4l2_image_free(opticflow_dev, &img);
@@ -294,4 +390,28 @@ static void opticflow_agl_cb(uint8_t sender_id __attribute__((unused)), float di
   if (distance > 0) {
     opticflow_state.agl = distance;
   }
+}
+
+/**
+ * Take a shot and save it
+ * This will only work when the streaming is enabled
+ */
+void log_video_start(bool_t take)
+{
+  logvideo.take_shot = take;
+  logvideo_data.FPS = opticflow_result.fps;
+  logvideo_data.V_body_x = opticflow_state.V_body_x;
+  logvideo_data.V_body_y = opticflow_state.V_body_y;
+  logvideo_data.V_body_z = opticflow_state.V_body_z;
+  logvideo_data.agl = opticflow_state.agl;
+  logvideo_data.flatness = opticflow_result.flatness;
+  logvideo_data.flatness_SSL = opticflow_result.flatness_SSL;
+  logvideo_data.gps_x = opticflow_state.gps_x;
+  logvideo_data.gps_y = opticflow_state.gps_y;
+  logvideo_data.gps_z = opticflow_state.gps_z;
+  logvideo_data.phi = opticflow_state.phi;
+  logvideo_data.theta = opticflow_state.theta;
+  logvideo_data.psi = opticflow_state.psi;
+  logvideo_data.corner_cnt = opticflow_result.corner_cnt;
+  logvideo_data.tracked_cnt = opticflow_result.tracked_cnt;
 }

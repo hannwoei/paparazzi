@@ -32,26 +32,17 @@
 #include "lib/v4l/v4l2.h"
 #include "inter_thread_data.h"
 #include "math/pprz_algebra_int.h"
-//
-///* The opticflow landing */
-struct SSL_landing_t {
-  int32_t div_pgain;        ///< The divergence P gain on the err_div
-  int32_t div_igain;        ///< The divergence I gain on the err_div_int
-  float desired_div;        ///< The desired divergence
-  int32_t controller;		///< The controller switch
 
-  float err_div_int;        ///< The integrated divergence error
-  int32_t div_thrust;       ///< The commands that are send to thrust
-  int32_t div_thrust_int;       ///< Hover thrust
-};
-extern struct SSL_landing_t SSL_landing;
-//
-//// Implement own Horizontal loops
+// Implement own Horizontal loops
 extern void guidance_v_module_enter(void);
 extern void guidance_v_module_read_rc(void);
 extern void guidance_v_module_run(bool_t in_flight);
-//
-//// Update the stabiliztion commands based on a vision result
+
+// Update the stabiliztion commands based on a vision result
+extern void landing_SSL_init(void);
 void landing_SSL_update(struct opticflow_result_t *result,  struct opticflow_state_t *opticflow_state);
+
+extern unsigned int stay_waypoint_3D;
+extern unsigned int land_distribution;
 
 #endif /* CV_LANDING_SSL_V_ */

@@ -62,6 +62,9 @@ extern uint8_t snapshot;
 // washout filter
 extern float w_n;
 
+// fitting
+extern uint8_t USE_DEROTATION;
+
 // SSL
 extern uint8_t USE_SSL, dictionary_ready, load_dictionary;
 

@@ -2,25 +2,35 @@
 <flight_plan alt="152" ground_alt="147" lat0="51.990634" lon0="4.376769" max_dist_from_home="10" name="Optical Flow 3D" security_height="1">
   <header>
 #include "autopilot.h"
+#include "../../../airborne/modules/computer_vision/opticflow/landing_SSL.h"
 </header>
   <waypoints>
     <waypoint name="HOME" x="0.0" y="0.0"/>
-    <waypoint height="1.0" name="STDBY" x="0.0" y="0.0"/>
-    <waypoint height="4.0" name="p1" x="0" y="0"/>
-    <waypoint height="4.0" name="p2" x="1" y="1"/>
-    <waypoint height="2.0" name="safe" x="0.6651" y="2.7491"/>
-    <waypoint name="ob1" x="1.0" y="1.0"/>
-  </waypoints>
 <!--
-  <sectors>
-    <sector color="red" name="Flight_Area">
-      <corner name="F4"/>
-      <corner name="F3"/>
-      <corner name="F2"/>
-      <corner name="F1"/>
-    </sector>
-  </sectors>
+    <waypoint height="2.0" name="STDBY" x="0.0" y="0.0"/>
+    <waypoint height="2.0" name="p1" x="0.521244" y="-0.853408"/>
+    <waypoint height="2.0" name="p2" x="3.934875" y="1.231569"/>
+    <waypoint height="2.0" name="p3" x="3.413631" y="2.084976"/>
+    <waypoint height="2.0" name="p4" x="0.0" y="0.0"/>
+    <waypoint height="2.0" name="p5" x="-0.521244" y="0.853408"/>
+    <waypoint height="2.0" name="p6" x="2.892387" y="2.938384"/>
+    <waypoint height="2.0" name="p7" x="2.371143" y="3.791791"/>
+    <waypoint height="2.0" name="p8" x="-1.042488" y="1.706815"/>
+    <waypoint height="2.0" name="safe" x="0.0" y="0.0"/>
 -->
+    <waypoint height="1.5" name="STDBY" x="0.0" y="0.0"/>
+    <waypoint height="1.5" name="p1" x="0.521244" y="-0.853408"/>
+    <waypoint height="1.5" name="p2" x="3.934875" y="1.231569"/>
+    <waypoint height="1.5" name="p3" x="3.413631" y="2.084976"/>
+    <waypoint height="1.5" name="p4" x="0.0" y="0.0"/>
+    <waypoint height="1.5" name="p5" x="-0.521244" y="0.853408"/>
+    <waypoint height="1.5" name="p6" x="2.892387" y="2.938384"/>
+    <waypoint height="1.5" name="p7" x="2.371143" y="3.791791"/>
+    <waypoint height="1.5" name="p8" x="-1.042488" y="1.706815"/>
+    <waypoint height="1.5" name="safe" x="0.0" y="0.0"/>
+
+  </waypoints>
+
   <blocks>
     <block name="Wait GPS">
       <call fun="NavKillThrottle()"/>
@@ -44,7 +54,9 @@
       <stay climb="0.5" vmode="climb" wp="HOME"/>
     </block>
     <block key="S" name="Standby" strip_button="Standby" strip_icon="home.png">
-      <set value="ANGLE_BFP_OF_REAL(5.73515192)" var="nav_heading"/>
+      <!--<set value="ANGLE_BFP_OF_REAL(5.73515192)" var="nav_heading"/>--><!--forward-->
+      <set value="ANGLE_BFP_OF_REAL(4.1643556)" var="nav_heading"/> <!--sideward-->
+      <!--<set value="ANGLE_BFP_OF_REAL(2.59355927)" var="nav_heading"/>--><!--backward -->
       <stay wp="STDBY"/>
     </block>
     <block name="stay_p1">
@@ -53,9 +65,48 @@
     <block name="stay_p2">
       <stay wp="p2"/>
     </block>
-    <block key="Q" name="stay_safe">
+    <block name="stay_p3">
+      <stay wp="p3"/>
+    </block>
+    <block name="stay_p4">
+      <stay wp="p4"/>
+    </block>
+    <block name="stay_p5">
+      <stay wp="p5"/>
+    </block>
+    <block name="stay_p6">
+      <stay wp="p6"/>
+    </block>
+    <block name="stay_p7">
+      <stay wp="p7"/>
+    </block>
+    <block name="stay_p8">
+      <stay wp="p8"/>
+      <!--<deroute block="safe_landing"/>-->
+    </block>
+    <block key="p" name="stay_safe">
+      <set value="1" var="stay_waypoint_3D"/>
       <stay wp="safe"/>
     </block>
+    <block key="R" name="route">
+      <go from="STDBY" hmode="route" wp="p1"/>
+<stay wp="p1" until="stage_time>3"/>
+      <go from="p1" hmode="route" wp="p2"/>
+<stay wp="p2" until="stage_time>8"/>
+      <go from="p2" hmode="route" wp="p3"/>
+<stay wp="p3" until="stage_time>3"/>
+      <go from="p3" hmode="route" wp="p4"/>
+<stay wp="p4" until="stage_time>8"/>
+      <go from="p4" hmode="route" wp="p5"/>
+<stay wp="p5" until="stage_time>3"/>
+      <go from="p5" hmode="route" wp="p6"/>
+<stay wp="p6" until="stage_time>8"/>
+      <go from="p6" hmode="route" wp="p7"/>
+<stay wp="p7" until="stage_time>3"/>
+      <go from="p7" hmode="route" wp="p8"/>
+      <deroute block="stay_p8"/>
+    </block>
+
     <block key="L" name="land here" strip_button="Land Here" strip_icon="land-right.png">
       <call fun="NavSetWaypointHere(WP_HOME)"/>
     </block>

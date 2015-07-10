@@ -1054,7 +1054,9 @@ void quick_sort (float *a, int n)
 
 unsigned int mov_block = 5; //default: 15
 float div_buf[5];
+float flat_buf[5];
 unsigned int div_point = 0;
+unsigned int flat_point = 0;
 float OFS_BUTTER_NUM_1 = 0.0004260;
 float OFS_BUTTER_NUM_2 = 0.0008519;
 float OFS_BUTTER_NUM_3 = 0.0004260;
@@ -1118,30 +1120,41 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 		int medianfilter = 1;
 		int averagefilter = 0;
 		int butterworthfilter = 0;
-		float div_avg = 0.0f;
+//		float div_avg = 0.0f;
+		float flat_avg = 0.0f;
 
 		if(averagefilter == 1)
 		{
-			if (*divergence < 3.0 && *divergence > -3.0) {
-				div_buf[div_point] = *divergence;
-				div_point = (div_point+1) %mov_block; // index starts from 0 to mov_block
-			}
+//			if (*divergence < 3.0 && *divergence > -3.0) {
+//				div_buf[div_point] = *divergence;
+//				div_point = (div_point+1) %mov_block; // index starts from 0 to mov_block
+//			}
+//
+//			int im;
+//			for (im=0;im<mov_block;im++) {
+//				div_avg+=div_buf[im];
+//			}
+//			*divergence = div_avg/ mov_block;
 
-			int im;
-			for (im=0;im<mov_block;im++) {
-				div_avg+=div_buf[im];
+			flat_buf[flat_point] = *flatness;
+			flat_point = (flat_point+1) %mov_block; // index starts from 0 to mov_block
+			for (int im=0;im<mov_block;im++) {
+				flat_avg+=flat_buf[im];
 			}
-			*divergence = div_avg/ mov_block;
+			*flatness = flat_avg/ mov_block;
 		}
 		else if(medianfilter == 1)
 		{
 			//apply a median filter
-//			if (*divergence < 3.0 && *divergence > -3.0) {
-				div_buf[div_point] = *divergence;
-				div_point = (div_point+1) %5;
-//			}
-			quick_sort(div_buf,5);
-			*divergence  = div_buf[2];
+			flat_buf[flat_point] = *flatness;
+			flat_point = (flat_point+1) %5;
+			quick_sort(flat_buf,5);
+			*flatness  = flat_buf[2];
+
+//			div_buf[div_point] = *divergence;
+//			div_point = (div_point+1) %5;
+//			quick_sort(div_buf,5);
+//			*divergence  = div_buf[2];
 		}
 		else if(butterworthfilter == 1)
 		{

@@ -35,6 +35,7 @@
     <load name="send_imu_mag_current.xml"/>
     <!--<load name="logger_file.xml"/>-->
     <load name="cv_SSL.xml"/>
+    <load name="video_usb_logger.xml"/>
     	<!--<load name="cv_opticflow.xml">-->
     	<!--<define name="OPTICFLOW_DEBUG" value="TRUE"/>-->
         <!--</load>-->
@@ -45,10 +46,9 @@
       <define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="4"/>
       <define name="VIEWVIDEO_DEVICE" value="/dev/video2"/>
       <define name="VIEWVIDEO_DEVICE_SIZE" value="320,240"/>
-      <define name="VIEWVIDEO_DEVICE_BUFFERS" value="15"/>
+      <define name="VIEWVIDEO_DEVICE_BUFFERS" value="15"/>  
     </load>
-
--->
+-->  
   </modules>
 
   <commands>

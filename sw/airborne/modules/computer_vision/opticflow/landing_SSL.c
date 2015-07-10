@@ -27,126 +27,133 @@
 
 // Own Header
 #include "landing_SSL.h"
-
+#include "state.h"
 // Landing
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 //#include "firmwares/rotorcraft/guidance/guidance_v.h"
 //#include "autopilot.h"
-//#include "subsystems/datalink/downlink.h"
+#include "subsystems/datalink/downlink.h"
 //
-//#define CMD_OF_SAT  1500 // 40 deg = 2859.1851
-//
-//#define CMD_DIV 1500
-//
-//#ifndef VISION_DIV_PGAIN
-//#define VISION_DIV_PGAIN 10
-//#endif
-//PRINT_CONFIG_VAR(VISION_DIV_PGAIN)
-//
-//#ifndef VISION_DIV_IGAIN
-//#define VISION_DIV_IGAIN 0
-//#endif
-//PRINT_CONFIG_VAR(VISION_DIV_IGAIN)
-//
-//#ifndef VISION_DESIRED_DIV
-//#define VISION_DESIRED_DIV 1
-//#endif
-//PRINT_CONFIG_VAR(VISION_DESIRED_DIV)
-//
-//#ifndef VISION_CONTROLLER
-//#define VISION_CONTROLLER 1
-//#endif
-//PRINT_CONFIG_VAR(VISION_CONTROLLER)
-//
-///* Check the control gains */
-//#if (VISION_DIV_PGAIN < 0)      ||  \
-//  (VISION_DIV_IGAIN < 0)
-//#error "ALL control gains have to be positive!!!"
-//#endif
-//
-///* Initialize the default gains and settings */
-struct SSL_landing_t SSL_landing = {
-  .div_pgain = 0,
-  .div_igain = 0,
-  .desired_div = 0,
-  .controller = 0
-};
-//
-///**
-// * Horizontal guidance mode enter resets the errors
-// * and starts the controller.
-// */
-//
+// waypoint
+#include "navigation.h"
+#include "generated/flight_plan.h"
+#define win_3D 300
+struct EnuCoor_i waypoints_3D[win_3D];
+struct EnuCoor_i waypoints_Distribution;
+uint32_t buf_point_3D, stay_waypoint_3D, land_safe_count, max_safe, active_3D, land_distribution_count, land_distribution;
+/**
+ * Horizontal guidance mode enter resets the errors
+ * and starts the controller.
+ */
+
 void guidance_v_module_enter(void)
 {
-//  /* Reset the integrated errors */
-//  SSL_landing.err_div_int = 0;
-//
-//  /* Set div thrust to 0 */
-//  SSL_landing.div_thrust_int = stabilization_cmd[COMMAND_THRUST];
+
 }
-//
-///**
-// * Read the RC commands
-// */
+
+/**
+ * Read the RC commands
+ */
 void guidance_v_module_read_rc(void)
 {
-  // TODO: change the desired vx/vy
+
 }
-//
-///**
-// * Main guidance loop
-// * @param[in] in_flight Whether we are in flight or not
-// */
-//
+
+/**
+ * Main guidance loop
+ * @param[in] in_flight Whether we are in flight or not
+ */
+
 void guidance_v_module_run(bool_t in_flight)
 {
-//  stabilization_cmd[COMMAND_THRUST] = SSL_landing.div_thrust; //trim: guidance_v_delta_t
+
 }
-//
-///**
-// * Update the controls based on a vision result
-// * @param[in] *result The opticflow calculation result used for control
-// */
-//
-//
+
+/**
+ * Update the controls based on a vision result
+ * @param[in] *result The opticflow calculation result used for control
+ */
+void landing_SSL_init(void)
+{
+	//waypoints
+	buf_point_3D = 0;
+	stay_waypoint_3D = 0;
+	land_safe_count = 0;
+	max_safe = 0;
+	active_3D = 0;
+	land_distribution_count = 0;
+	land_distribution = 0;
+}
+
 void landing_SSL_update(struct opticflow_result_t *result,  struct opticflow_state_t *opticflow_state)
 {
-//  /* Check if we are in the correct AP_MODE before setting commands */
-//  if (autopilot_mode != AP_MODE_MODULE) {
-//    return;
-//  }
+	// *********************************************
+	// move way point to the safe location
+	// *********************************************
+
+//	if(result->USE_SSL)
+//	{
+//		if((!stay_waypoint_3D) && ((abs(stateGetSpeedEnu_i()->x) < SPEED_BFP_OF_REAL(0.1)) && (abs(stateGetSpeedEnu_i()->y) < SPEED_BFP_OF_REAL(0.1))))
+//		{
+//			if(land_distribution)
+//			{
+//				land_distribution_count++;
+//			}
+//			else
+//			{
+//				land_distribution_count = 0;
+//			}
 //
-//  // Force landing
-////  if (result->Div_f<-5)
-////  {
-////	  SSL_landing.desired_div = 6.0;
-////  }
+//			if(land_distribution_count > 120) // stay there 2 seconds
+//			{
+//				waypoints_Distribution.x = stateGetPositionEnu_i()->x;
+//				waypoints_Distribution.y = stateGetPositionEnu_i()->y;
+//				waypoints_Distribution.z = stateGetPositionEnu_i()->z;
+//				nav_move_waypoint_enu_i(WP_safe, &waypoints_Distribution);
+//			}
+//		}
+//		else
+//		{
+//			land_distribution_count = 0;
+//		}
+//	}
+//	else
+//	{
+//		if((!stay_waypoint_3D) && ((abs(stateGetSpeedEnu_i()->x) > SPEED_BFP_OF_REAL(0.3)) || (abs(stateGetSpeedEnu_i()->y) > SPEED_BFP_OF_REAL(0.3))))
+//		{
+//			active_3D = 1;
+//			if(result->land_safe == 1)
+//			{
+//				waypoints_3D[buf_point_3D].x = stateGetPositionEnu_i()->x;
+//				waypoints_3D[buf_point_3D].y = stateGetPositionEnu_i()->y;
+//				waypoints_3D[buf_point_3D].z = stateGetPositionEnu_i()->z;
+//				buf_point_3D = (buf_point_3D+1) %win_3D; // index starts from 0 to mov_block
 //
-//  /* Calculate the error if we have enough flow */
-//  float err_div = 0;
-//
-//  if (result->tracked_cnt > 3) {
-////    err_div = (-SSL_landing.desired_div/3 - result->divergence);
-//	  err_div = (-SSL_landing.desired_div - result->Div_f);
-//  }
-//
-////  /* Calculate the integrated errors (TODO: bound??) */
-//  SSL_landing.err_div_int += err_div;
-//
-//  /* Calculate the commands */
-//  // PD
-////  SSL_landing.div_thrust = (int32_t) (SSL_landing.div_thrust_int + (SSL_landing.div_pgain*err_div*10 +
-////		  SSL_landing.div_igain*result->Div_d));
-//  // PI
-//  SSL_landing.div_thrust = (int32_t) (SSL_landing.div_thrust_int + (SSL_landing.div_pgain*err_div*10 +
-//		  SSL_landing.div_igain*SSL_landing.err_div_int));
-//
-////  Bound(SSL_landing.div_thrust,-100, 100);
-//
-////  SSL_landing.div_thrust = (int32_t) ((SSL_landing.div_pgain*err_div
-////								  +SSL_landing.div_igain * SSL_landing.err_div_int))*CMD_DIV;
-//
-//  /* Bound the roll and pitch commands */
-//  //Bound(SSL_landing.div_thrust,-CMD_DIV, CMD_DIV);
+//				land_safe_count ++;
+//			}
+//			else
+//			{
+//				if(land_safe_count > max_safe) //land with the largest possibility of safe region
+//				{
+//					max_safe = land_safe_count;
+//					if (buf_point_3D > 2) nav_move_waypoint_enu_i(WP_safe, &waypoints_3D[buf_point_3D/2]); // save the waypoint having the minimum 3D value
+//				}
+//				land_safe_count = 0;
+//				buf_point_3D = 0;
+//			}
+//		}
+//		else
+//		{
+//			active_3D = 0;
+//			if(land_safe_count > max_safe)
+//			{
+//				max_safe = land_safe_count;
+//				if (buf_point_3D > 2) nav_move_waypoint_enu_i(WP_safe, &waypoints_3D[buf_point_3D/2]); // save the waypoint having the minimum 3D value
+//			}
+//			land_safe_count = 0;
+//			buf_point_3D = 0;
+//		}
+//		result->land_safe_count = land_safe_count;
+//		result->active_3D = active_3D;
+//	}
 }

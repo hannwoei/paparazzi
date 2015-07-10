@@ -1974,40 +1974,57 @@
 
   <message name="OPTIC_FLOW_EST" id="228">
     <field name="fps"         type="float"/>
-    <field name="corner_cnt"  type="uint16"/>
-    <field name="tracked_cnt" type="uint16"/>
-<!--    
-	<field name="flow_x"      type="int16" unit="subpixels"/>
-    <field name="flow_y"      type="int16" unit="subpixels"/>
-    <field name="flow_der_x"  type="int16" unit="subpixels"/>
-    <field name="flow_der_y"  type="int16" unit="subpixels"/> 
- -->
-    <field name="vel_x"       type="float" unit="cm/s"/>
-    <field name="vel_y"       type="float" unit="cm/s"/>
+    <field name="vx"    	  type="float" unit="m/s"/>
+    <field name="vy"    	  type="float" unit="m/s"/>
+    <field name="vz"    	  type="float" unit="m/s"/>
+    <field name="sonar"       type="float" unit="m"/>
     <field name="flatness"    type="float"/>
-    <field name="DIV"         type="float"/>
-    <field name="TTI"         type="float"/>   
-    <field name="d_heading"   type="float"/>
-    <field name="d_pitch"     type="float"/>
-    <field name="n_inlier"    type="int16"/> 
-    <field name="min_error"   type="float"/>
-    <field name="uncertainty" type="int16"/> 
-    <field name="thrust"      type="int32"/> 
-    <field name="sonar_z"     type="float"/>	
-    <field name="div_sp"      type="float"/> 
-<!--
-    <field name="cmd_phi"     type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
-    <field name="cmd_theta"   type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
--->
-    <field name="v_body_x"    type="float" unit="m/s"/>
-    <field name="v_body_y"    type="float" unit="m/s"/>
-    <field name="v_body_z"    type="float" unit="m/s"/>
+    <field name="flatness2"   type="float"/>
+    <field name="gps_x"       type="float" unit="m"/>
+    <field name="gps_y"       type="float" unit="m"/>
     <field name="gps_z"       type="float" unit="m"/>
-    <field name="DIV_f"       type="float"/>
-	<field name="DIV_d"       type="float"/>    
-	<field name="acc_z"       type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>
+    <field name="roll"        type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+	<field name="pitch"       type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/> 
+	<field name="yaw"         type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>     
+	<field name="corner_cnt"  type="uint16"/>
+    <field name="tracked_cnt" type="uint16"/>
+    <field name="safe_count"  type="uint32"/>
+    <field name="active_3D"   type="uint32"/>
   </message>
-  
+ 
+  <message name="SSL_TEXTON" id="229">
+    <field name="flatness"    type="float"/>
+    <field name="D1"          type="float"/>
+    <field name="D2"          type="float"/>
+    <field name="D3"          type="float"/>
+    <field name="D4"          type="float"/>
+    <field name="D5"          type="float"/>
+    <field name="D6"          type="float"/>
+    <field name="D7"          type="float"/>
+    <field name="D8"          type="float"/>
+    <field name="D9"          type="float"/>
+    <field name="D10"         type="float"/>
+    <field name="D11"         type="float"/>
+    <field name="D12"         type="float"/>
+    <field name="D13"         type="float"/>
+    <field name="D14"         type="float"/>
+    <field name="D15"         type="float"/>
+    <field name="D16"         type="float"/>
+    <field name="D17"         type="float"/>
+    <field name="D18"         type="float"/>
+    <field name="D19"         type="float"/>
+    <field name="D20"         type="float"/>
+    <field name="D21"         type="float"/>
+    <field name="D22"         type="float"/>
+    <field name="D23"         type="float"/>
+    <field name="D24"         type="float"/>
+    <field name="D25"         type="float"/>
+    <field name="D26"         type="float"/>
+    <field name="D27"         type="float"/>
+    <field name="D28"         type="float"/>
+    <field name="D29"         type="float"/>
+    <field name="D30"         type="float"/>
+  </message> 
   <!--229 is free -->
 
   <message name="AHRS_ARDRONE2" id="230">

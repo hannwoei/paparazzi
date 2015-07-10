@@ -51,13 +51,13 @@
 
 // The video device
 #ifndef VIEWVIDEO_DEVICE
-#define VIEWVIDEO_DEVICE /dev/video1
+#define VIEWVIDEO_DEVICE /dev/video2
 #endif
 PRINT_CONFIG_VAR(VIEWVIDEO_DEVICE)
 
 // The video device size (width, height)
 #ifndef VIEWVIDEO_DEVICE_SIZE
-#define VIEWVIDEO_DEVICE_SIZE 1280,720
+#define VIEWVIDEO_DEVICE_SIZE 320,240
 #endif
 #define __SIZE_HELPER(x, y) #x", "#y
 #define _SIZE_HELPER(x) __SIZE_HELPER(x)
@@ -95,7 +95,7 @@ PRINT_CONFIG_VAR(VIEWVIDEO_FPS)
 
 // The place where the shots are saved (without slash on the end)
 #ifndef VIEWVIDEO_SHOT_PATH
-#define VIEWVIDEO_SHOT_PATH "/data/video/images"
+#define VIEWVIDEO_SHOT_PATH "/data/video/usb"
 #endif
 PRINT_CONFIG_VAR(VIEWVIDEO_SHOT_PATH)
 

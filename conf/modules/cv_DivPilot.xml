@@ -10,14 +10,14 @@
         - Controller can hold position
     </description>
 
-    <!-- Satbilization parameters and gains -->
+    <!-- Satbilization parameters and gains 
     <section name="VISION" prefix="VISION_">
-      <define name="DIV_PGAIN"   value="10" description="Divergence proportional gain on the divergence error"/>
+      <define name="DIV_PGAIN"   value="1" description="Divergence proportional gain on the divergence error"/>
       <define name="DIV_IGAIN"   value="0" description="Divergence integrated gain on the summed divergence error"/>
       <define name="DESIRED_DIV" value="1" description="The desired divergence"/>
       <define name="CONTROLLER"  value="1" description="The controller switch"/>
     </section>
-
+-->
     <!-- Optical flow calculation parameters -->
     <section name="OPTICFLOW" prefix="OPTICFLOW_">
       <define name="AGL_ID" value="ABI_SENDER_ID" description="ABI sender id for AGL message (sonar measurement) (default: ABI_BROADCAST)"/>
@@ -56,7 +56,7 @@
         <dl_setting var="DivPilot_landing.div_pgain" module="computer_vision/opticflow_module" min="0" step="1" max="100" shortname="kp_div" param="VISION_DIV_PGAIN"/>
         <dl_setting var="DivPilot_landing.div_igain" module="computer_vision/opticflow_module" min="0" step="1" max="100" shortname="ki_div" param="VISION_DIV_IGAIN"/>
         <dl_setting var="DivPilot_landing.desired_div" module="computer_vision/opticflow_module" min="-20" step="0.1" max="20" shortname="desired_div" param="VISION_DESIRED_DIV"/>
-        <dl_setting var="DivPilot_landing.controller" module="computer_vision/opticflow_module" min="0" step="1" max="2" shortname="kp_div" param="VISION_CONTROLLER"/>        
+        <dl_setting var="DivPilot_landing.controller" module="computer_vision/opticflow_module" min="0" step="1" max="1" shortname="kp_div" param="VISION_CONTROLLER"/>        
       </dl_settings>
 
       <!-- Optical flow calculations parameters for Lucas Kanade and FAST9 -->
@@ -96,7 +96,11 @@
     <file name="opticflow_module.c"/>
     <file name="opticflow_calculator.c" dir="modules/computer_vision/opticflow"/>
     <file name="landing_DivPilot.c" dir="modules/computer_vision/opticflow"/>
-
+      <define name="VISION_DIV_PGAIN"   value="10" description="Divergence proportional gain on the divergence error"/>
+      <define name="VISION_DIV_IGAIN"   value="0" description="Divergence integrated gain on the summed divergence error"/>
+      <define name="VISION_DESIRED_DIV" value="1" description="The desired divergence"/>
+      <define name="VISION_CONTROLLER"  value="0" description="The controller switch"/>
+      
     <!-- Main vision calculations -->
     <file name="fast_rosten.c" dir="modules/computer_vision/lib/vision"/>
     <file name="lucas_kanade.c" dir="modules/computer_vision/lib/vision"/>

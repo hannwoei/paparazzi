@@ -53,4 +53,6 @@ void analyseTTI(float *pu, float *pv, float *z_x, float *z_y, float *flatness, f
 int MatRank(float **mat, int row, int col);
 void MatSwap(float **mat, int r1, int r2, int c);
 void saveSingleImageDataFile(struct image_t *input, int width, int height, char filename[100]);
+float CalcMean(float *arr, uint8_t size_arr);
+float CalcCov(float *arr1, float *arr2, uint8_t size_arr);
 #endif

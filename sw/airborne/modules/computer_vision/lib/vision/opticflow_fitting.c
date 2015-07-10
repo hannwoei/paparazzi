@@ -1550,3 +1550,33 @@ void saveSingleImageDataFile(struct image_t *input, int width, int height, char 
 //	free(grayframe);
 //	free(RGB);
 }
+
+/*
+ * Compute mean of an array
+ */
+float CalcMean(float *arr, uint8_t size_arr)
+{
+	float mean_arr = 0.0;
+	for(uint8_t i=0; i<size_arr; i++)
+	{
+		mean_arr += arr[i];
+	}
+	mean_arr /= size_arr;
+	return mean_arr;
+}
+
+/*
+ * Compute covariances of two arrays
+ */
+float CalcCov(float *arr1, float *arr2, uint8_t size_arr)
+{
+	float mean_arr1 = CalcMean(arr1,size_arr);
+	float mean_arr2 = CalcMean(arr2,size_arr);
+	float cov_arr = 0.0;
+	for(uint8_t i=0; i<size_arr; i++)
+	{
+		cov_arr += (arr1[i]-mean_arr1)*(arr2[i]-mean_arr2);
+	}
+	cov_arr /= size_arr;
+	return cov_arr;
+}

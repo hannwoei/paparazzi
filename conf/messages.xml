@@ -2006,6 +2006,9 @@
     <field name="DIV_f"       type="float"/>
 	<field name="DIV_d"       type="float"/>    
 	<field name="acc_z"       type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>
+	<field name="cov"		  type="float"/>
+	<field name="pgain"		  type="int32"/>
+	<field name="err_div"     type="float"/>
   </message>
   
   <!--229 is free -->

@@ -40,9 +40,12 @@ struct DivPilot_landing_t {
   float desired_div;        ///< The desired divergence
   int32_t controller;		///< The controller switch
 
+  float err_div;
   float err_div_int;        ///< The integrated divergence error
   int32_t div_thrust;       ///< The commands that are send to thrust
   int32_t div_thrust_int;       ///< Hover thrust
+
+  float div_cov;
 };
 extern struct DivPilot_landing_t DivPilot_landing;
 

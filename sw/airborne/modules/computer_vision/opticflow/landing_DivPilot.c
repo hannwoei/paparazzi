@@ -33,6 +33,7 @@
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
 #include "autopilot.h"
 #include "subsystems/datalink/downlink.h"
+#include "lib/vision/opticflow_fitting.h"
 
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
 
@@ -77,6 +78,10 @@ struct DivPilot_landing_t DivPilot_landing = {
  * and starts the controller.
  */
 
+#define NO_BUF 10
+float buf_div[NO_BUF], buf_thrust[NO_BUF];
+uint8_t n_buf;
+
 void guidance_v_module_enter(void)
 {
   /* Reset the integrated errors */
@@ -84,6 +89,11 @@ void guidance_v_module_enter(void)
 
   /* Set div thrust to 0 */
   DivPilot_landing.div_thrust_int = stabilization_cmd[COMMAND_THRUST];
+
+  DivPilot_landing.div_thrust = DivPilot_landing.div_thrust_int;
+
+  n_buf = 0;
+  DivPilot_landing.div_cov = 0.0;
 }
 
 /**
@@ -124,23 +134,39 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 //  }
 
   /* Calculate the error if we have enough flow */
-  float err_div = 0;
+  DivPilot_landing.err_div = 0;
 
   if (result->tracked_cnt > 3) {
 //    err_div = (-DivPilot_landing.desired_div/3 - result->divergence);
-	  err_div = (-DivPilot_landing.desired_div - result->Div_f);
+	  DivPilot_landing.err_div = (-DivPilot_landing.desired_div/3 - result->Div_f);
   }
 
 //  /* Calculate the integrated errors (TODO: bound??) */
-  DivPilot_landing.err_div_int += err_div;
+  DivPilot_landing.err_div_int += DivPilot_landing.err_div;
 
   /* Calculate the commands */
   // PD
 //  DivPilot_landing.div_thrust = (int32_t) (DivPilot_landing.div_thrust_int + (DivPilot_landing.div_pgain*err_div*10 +
 //		  DivPilot_landing.div_igain*result->Div_d));
   // PI
-  DivPilot_landing.div_thrust = (int32_t) (DivPilot_landing.div_thrust_int + (DivPilot_landing.div_pgain*err_div*10 +
-		  DivPilot_landing.div_igain*DivPilot_landing.err_div_int));
+//  DivPilot_landing.div_thrust = (int32_t) (DivPilot_landing.div_thrust_int + (DivPilot_landing.div_pgain*err_div*10 +
+//		  DivPilot_landing.div_igain*DivPilot_landing.err_div_int));
+  DivPilot_landing.div_thrust = (int32_t) (DivPilot_landing.div_thrust + DivPilot_landing.div_pgain*DivPilot_landing.err_div);
+	// **********************************************************************************************************************
+	// Oscillation Detection
+	// **********************************************************************************************************************
+
+	buf_div[n_buf] = result->Div_f;
+	buf_thrust[n_buf] = (float) DivPilot_landing.div_thrust;
+	DivPilot_landing.div_cov = CalcCov(buf_div,buf_thrust,n_buf+1);
+	n_buf = (n_buf+1) %NO_BUF;
+
+	if (DivPilot_landing.div_cov < -10 && DivPilot_landing.controller == 1)
+	{
+//		DivPilot_landing.div_pgain = DivPilot_landing.div_pgain/5;
+		DivPilot_landing.desired_div = DivPilot_landing.desired_div*10;
+		DivPilot_landing.controller = 0;
+	}
 
 //  Bound(DivPilot_landing.div_thrust,-100, 100);
 

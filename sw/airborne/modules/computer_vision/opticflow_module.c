@@ -111,7 +111,8 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
                                &opticflow_state.V_body_x,&opticflow_state.V_body_y,
                                &opticflow_state.V_body_z,&opticflow_state.gps_z,
                                &opticflow_result.Div_f, &opticflow_result.Div_d,
-                               &imu.accel.z);
+                               &imu.accel.z, &DivPilot_landing.div_cov, &DivPilot_landing.div_pgain,
+							   &DivPilot_landing.err_div);
   pthread_mutex_unlock(&opticflow_mutex);
 }
 #endif

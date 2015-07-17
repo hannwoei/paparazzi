@@ -66,7 +66,7 @@ extern float w_n;
 extern uint8_t USE_DEROTATION;
 
 // SSL
-extern uint8_t USE_SSL, dictionary_ready, load_dictionary, load_model;
+extern uint8_t USE_VISION_METHOD, dictionary_ready, load_dictionary, load_model;
 
 void opticflow_SSL_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h);
 void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t *state, struct image_t *img, struct opticflow_result_t *result);

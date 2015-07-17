@@ -1990,6 +1990,7 @@
     <field name="tracked_cnt" type="uint16"/>
     <field name="safe_count"  type="uint32"/>
     <field name="active_3D"   type="uint32"/>
+    <field name="vision"      type="uint8"/>
   </message>
  
   <message name="SSL_TEXTON" id="229">

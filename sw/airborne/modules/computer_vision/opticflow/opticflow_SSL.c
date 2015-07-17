@@ -114,10 +114,10 @@ PRINT_CONFIG_VAR(OPTICFLOW_SNAPSHOT)
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_W_N)
 
-#ifndef SSL_ON
-#define SSL_ON 0
+#ifndef VISION_METHOD
+#define VISION_METHOD 0
 #endif
-PRINT_CONFIG_VAR(SSL_ON)
+PRINT_CONFIG_VAR(VISION_METHOD)
 
 #ifndef SSL_DICTIONARY_READY
 #define SSL_DICTIONARY_READY 0
@@ -139,6 +139,8 @@ PRINT_CONFIG_VAR(SSL_LOAD_MODEL)
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_DEROTATION)
 
+
+
 /* Functions only used here */
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
 static int cmp_flow(const void *a, const void *b);
@@ -150,7 +152,7 @@ int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
 
 // SSL
 float flatness_SSL, ****dictionary, *word_distribution, *linear_map, alpha;
-uint8_t USE_SSL, dictionary_ready, load_dictionary, load_model, n_words, patch_size, filled, RANDOM_SAMPLES;
+uint8_t USE_VISION_METHOD, dictionary_ready, load_dictionary, load_model, n_words, patch_size, filled, RANDOM_SAMPLES;
 uint32_t n_samples, learned_samples, n_samples_image, border_width, border_height;
 
 // washout filter
@@ -210,7 +212,7 @@ void opticflow_SSL_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
 
   // SSL
   flatness_SSL = 0.0, alpha = 0.5;
-  USE_SSL = SSL_ON, dictionary_ready = SSL_DICTIONARY_READY, load_dictionary = SSL_LOAD_DICTIONARY,  load_model = SSL_LOAD_MODEL,
+  USE_VISION_METHOD = VISION_METHOD, dictionary_ready = SSL_DICTIONARY_READY, load_dictionary = SSL_LOAD_DICTIONARY,  load_model = SSL_LOAD_MODEL,
   n_words = 30, n_samples_image = 50, patch_size = 6, filled = 0, RANDOM_SAMPLES = 1;
   n_samples = 200000, learned_samples = 0, border_width = 0, border_height = 0;
 
@@ -251,231 +253,239 @@ void opticflow_SSL_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
  */
 void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t *state, struct image_t *img, struct opticflow_result_t *result)
 {
-  // Update FPS for information
-  result->fps = 1 / (timeval_diff(&opticflow->prev_timestamp, &img->ts) / 1000.);
-  memcpy(&opticflow->prev_timestamp, &img->ts, sizeof(struct timeval));
+	// Update FPS for information
+	result->fps = 1 / (timeval_diff(&opticflow->prev_timestamp, &img->ts) / 1000.);
+	memcpy(&opticflow->prev_timestamp, &img->ts, sizeof(struct timeval));
 
-  // Convert image to grayscale
-  image_to_grayscale(img, &opticflow->img_gray);
-
-  // Copy to previous image if not set
-  if (!opticflow->got_first_img) {
-    image_copy(&opticflow->img_gray, &opticflow->prev_img_gray);
-    opticflow->got_first_img = TRUE;result->texton[0] = word_distribution[0]; result->texton[1] = word_distribution[1]; result->texton[2] = word_distribution[2];
-  }
-
-  // *************************************************************************************
-  // Corner detection
-  // *************************************************************************************
-
-  // FAST corner detection (TODO: non fixed threashold)
-  struct point_t *corners = fast9_detect(img, opticflow->fast9_threshold, opticflow->fast9_min_distance,
-                                         20, 20, &result->corner_cnt);
-
-  // Adaptive threshold
-  if (opticflow->fast9_adaptive) {
-
-    // Decrease and increase the threshold based on previous values
-    if (result->corner_cnt < 40 && opticflow->fast9_threshold > 5) {
-      opticflow->fast9_threshold--;
-    } else if (result->corner_cnt > 50 && opticflow->fast9_threshold < 60) {
-      opticflow->fast9_threshold++;
-    }
-  }
-
-#if OPTICFLOW_DEBUG && OPTICFLOW_SHOW_CORNERS
-  image_show_points(img, corners, result->corner_cnt);
-#endif
-
-  // Check if we found some corners to track
-  if (result->corner_cnt < 1) {
-    free(corners);
-    image_copy(&opticflow->img_gray, &opticflow->prev_img_gray);
-    return;
-  }
-
-  // *************************************************************************************
-  // Corner Tracking
-  // *************************************************************************************
-
-  // Execute a Lucas Kanade optical flow
-  result->tracked_cnt = result->corner_cnt;
-  struct flow_t *vectors = opticFlowLK(&opticflow->img_gray, &opticflow->prev_img_gray, corners, &result->tracked_cnt,
-                                       opticflow->window_size / 2, opticflow->subpixel_factor, opticflow->max_iterations,
-                                       opticflow->threshold_vec, opticflow->max_track_corners);
-
-#if OPTICFLOW_DEBUG && OPTICFLOW_SHOW_FLOW
-  image_show_flow(img, vectors, result->tracked_cnt, opticflow->subpixel_factor);
-#endif
-
-
-  // Flow derotation for all tracked corners (used for flow fitting)
-	if(USE_DEROTATION == 1)
+	if(USE_VISION_METHOD == 0 || USE_VISION_METHOD == 2)
 	{
-		float diff_flow_x = (state->phi - opticflow->prev_phi) * img->w * opticflow->subpixel_factor/ OPTICFLOW_FOV_W;
-		float diff_flow_y = (state->theta - opticflow->prev_theta) * img->h * opticflow->subpixel_factor / OPTICFLOW_FOV_H;
-		float dx_trans = 0.0, dy_trans = 0.0;
+		// Convert image to grayscale
+		image_to_grayscale(img, &opticflow->img_gray);
 
-		for(int i=0; i<result->tracked_cnt; i++)
-		{
-			dx_trans = vectors[i].flow_x - diff_flow_x;
-			dy_trans = vectors[i].flow_y - diff_flow_y;
-			if((dx_trans<=0) != (vectors[i].flow_x<=0))
-			{
-				vectors[i].flow_x = 0;
-			}
-			else
-			{
-				vectors[i].flow_x = dx_trans;
-			}
-			if((dy_trans<=0) != (vectors[i].flow_y<=0))
-			{
-				vectors[i].flow_y = 0;
-			}
-			else
-			{
-				vectors[i].flow_y = dy_trans;
-			}
+		// Copy to previous image if not set
+		if (!opticflow->got_first_img) {
+		image_copy(&opticflow->img_gray, &opticflow->prev_img_gray);
+		opticflow->got_first_img = TRUE;
 		}
 
+		// *************************************************************************************
+		// Corner detection
+		// *************************************************************************************
+
+		// FAST corner detection (TODO: non fixed threashold)
+		struct point_t *corners = fast9_detect(img, opticflow->fast9_threshold, opticflow->fast9_min_distance,
+											 20, 20, &result->corner_cnt);
+
+		// Adaptive threshold
+		if (opticflow->fast9_adaptive) {
+
+		// Decrease and increase the threshold based on previous values
+		if (result->corner_cnt < 40 && opticflow->fast9_threshold > 5) {
+		  opticflow->fast9_threshold--;
+		} else if (result->corner_cnt > 50 && opticflow->fast9_threshold < 60) {
+		  opticflow->fast9_threshold++;
+		}
+		}
+
+		#if OPTICFLOW_DEBUG && OPTICFLOW_SHOW_CORNERS
+		image_show_points(img, corners, result->corner_cnt);
+		#endif
+
+		// Check if we found some corners to track
+		if (result->corner_cnt < 1) {
+		free(corners);
+		image_copy(&opticflow->img_gray, &opticflow->prev_img_gray);
+		return;
+		}
+
+		// *************************************************************************************
+		// Corner Tracking
+		// *************************************************************************************
+
+		// Execute a Lucas Kanade optical flow
+		result->tracked_cnt = result->corner_cnt;
+		struct flow_t *vectors = opticFlowLK(&opticflow->img_gray, &opticflow->prev_img_gray, corners, &result->tracked_cnt,
+										   opticflow->window_size / 2, opticflow->subpixel_factor, opticflow->max_iterations,
+										   opticflow->threshold_vec, opticflow->max_track_corners);
+
+		#if OPTICFLOW_DEBUG && OPTICFLOW_SHOW_FLOW
+		image_show_flow(img, vectors, result->tracked_cnt, opticflow->subpixel_factor);
+		#endif
+
+
+		// Flow derotation for all tracked corners (used for flow fitting)
+		if(USE_DEROTATION == 1)
+		{
+			float diff_flow_x = (state->phi - opticflow->prev_phi) * img->w * opticflow->subpixel_factor/ OPTICFLOW_FOV_W;
+			float diff_flow_y = (state->theta - opticflow->prev_theta) * img->h * opticflow->subpixel_factor / OPTICFLOW_FOV_H;
+			float dx_trans = 0.0, dy_trans = 0.0;
+
+			for(int i=0; i<result->tracked_cnt; i++)
+			{
+				dx_trans = vectors[i].flow_x - diff_flow_x;
+				dy_trans = vectors[i].flow_y - diff_flow_y;
+				if((dx_trans<=0) != (vectors[i].flow_x<=0))
+				{
+					vectors[i].flow_x = 0;
+				}
+				else
+				{
+					vectors[i].flow_x = dx_trans;
+				}
+				if((dy_trans<=0) != (vectors[i].flow_y<=0))
+				{
+					vectors[i].flow_y = 0;
+				}
+				else
+				{
+					vectors[i].flow_y = dy_trans;
+				}
+			}
+
+			opticflow->prev_phi = state->phi;
+			opticflow->prev_theta = state->theta;
+		}
+
+/* Only for velocity estimation using optical flow
+		// Get the median flow
+		qsort(vectors, result->tracked_cnt, sizeof(struct flow_t), cmp_flow);
+		if (result->tracked_cnt == 0) {
+		// We got no flow
+		result->flow_x = 0;
+		result->flow_y = 0;
+		} else if (result->tracked_cnt > 3) {
+		// Take the average of the 3 median points
+		result->flow_x = vectors[result->tracked_cnt / 2 - 1].flow_x;
+		result->flow_y = vectors[result->tracked_cnt / 2 - 1].flow_y;
+		result->flow_x += vectors[result->tracked_cnt / 2].flow_x;
+		result->flow_y += vectors[result->tracked_cnt / 2].flow_y;
+		result->flow_x += vectors[result->tracked_cnt / 2 + 1].flow_x;
+		result->flow_y += vectors[result->tracked_cnt / 2 + 1].flow_y;
+		result->flow_x /= 3;
+		result->flow_y /= 3;
+		} else {
+		// Take the median point
+		result->flow_x = vectors[result->tracked_cnt / 2].flow_x;
+		result->flow_y = vectors[result->tracked_cnt / 2].flow_y;
+		}
+
+		// Flow Derotation
+		float diff_flow_x = (state->phi - opticflow->prev_phi) * img->w / OPTICFLOW_FOV_W;
+		float diff_flow_y = (state->theta - opticflow->prev_theta) * img->h / OPTICFLOW_FOV_H;
+		result->flow_der_x = result->flow_x - diff_flow_x * opticflow->subpixel_factor;
+		result->flow_der_y = result->flow_y - diff_flow_y * opticflow->subpixel_factor;
 		opticflow->prev_phi = state->phi;
 		opticflow->prev_theta = state->theta;
+
+		// Velocity calculation
+		result->vel_x = -result->flow_der_x * result->fps * state->agl/ opticflow->subpixel_factor * img->w / OPTICFLOW_FX;
+		result->vel_y =  result->flow_der_y * result->fps * state->agl/ opticflow->subpixel_factor * img->h / OPTICFLOW_FY;
+*/
+
+		// *************************************************************************************
+		// Flow Field Fitting
+		// *************************************************************************************
+		for(int i=0; i<no_parameter; i++)
+		{
+		  pu[i] = 0.0;
+		  pv[i] = 0.0;
+		}
+
+		analyseTTI(pu, pv, &z_x, &z_y, &flatness, &divergence, &TTI, &d_heading, &d_pitch,
+				&n_inlier_minu, &n_inlier_minv, &min_error_u, &min_error_v, &FIT_UNCERTAINTY,
+				vectors, result->tracked_cnt, opticflow->subpixel_factor, result->fps, img->w, img->h, USE_LINEAR_FIT);
+
+		// washout filter on divergence
+		//  if (result->fps == 0)
+		//  {
+		//	  t_step = 0.0;
+		//  }
+		//  else
+		//  {
+		//	  t_step = 1.0/result->fps;
+		//  }
+		//
+		//  Div_dd = ((divergence-opticflow->Div_f_prev)*w_n/2.0-opticflow->Div_d_prev)*2.0*w_n;
+		//  Div_d = Div_dd*t_step + opticflow->Div_d_prev;
+		//  Div_f = Div_d*t_step + opticflow->Div_f_prev;
+		//
+		//  opticflow->Div_d_prev = Div_d;
+		//  opticflow->Div_f_prev = Div_f;
+
+		// *************************************************************************************
+		// Update results
+		// *************************************************************************************
+		if(flatness < threshold_flatness)
+		{
+			result->land_safe = 1;
+		}
+		else
+		{
+			result->land_safe = 0;
+		}
+
+		result->zx = z_x;
+		result->zy = z_y;
+		result->flatness = flatness;
+		result->divergence = divergence;
+		result->TTI = TTI;
+		result->d_heading = d_heading;
+		result->d_pitch = d_pitch;
+		result->n_inlier = n_inlier_minu + n_inlier_minv;
+		result->min_error = min_error_u + min_error_v;
+		result->fit_uncertainty = FIT_UNCERTAINTY;
+
+		//  result->Div_f = Div_f;
+		//  result->Div_d = Div_d;
+
+		// *************************************************************************************
+		// Next Loop Preparation
+		// *************************************************************************************
+		free(corners);
+		free(vectors);
+		image_switch(&opticflow->img_gray, &opticflow->prev_img_gray);
 	}
-//	qsort(vectors, result->tracked_cnt, sizeof(struct flow_t), cmp_flow);
-//
-//	result->flow_der_x = vectors[result->tracked_cnt / 2].flow_x;
-//	result->flow_der_y = vectors[result->tracked_cnt / 2].flow_y;
-//	result->vel_x = -result->flow_der_x * result->fps * state->agl/ opticflow->subpixel_factor * img->w / OPTICFLOW_FX;
-//	result->vel_y =  result->flow_der_y * result->fps * state->agl/ opticflow->subpixel_factor * img->h / OPTICFLOW_FY;
 
-  // Get the median flow
-//  qsort(vectors, result->tracked_cnt, sizeof(struct flow_t), cmp_flow);
-//  if (result->tracked_cnt == 0) {
-    // We got no flow
-//    result->flow_x = 0;
-//    result->flow_y = 0;
-//  } else if (result->tracked_cnt > 3) {
-    // Take the average of the 3 median points
-//    result->flow_x = vectors[result->tracked_cnt / 2 - 1].flow_x;
-//    result->flow_y = vectors[result->tracked_cnt / 2 - 1].flow_y;
-//    result->flow_x += vectors[result->tracked_cnt / 2].flow_x;
-//    result->flow_y += vectors[result->tracked_cnt / 2].flow_y;
-//    result->flow_x += vectors[result->tracked_cnt / 2 + 1].flow_x;
-//    result->flow_y += vectors[result->tracked_cnt / 2 + 1].flow_y;
-//    result->flow_x /= 3;
-//    result->flow_y /= 3;
-//  } else {
-    // Take the median point
-//    result->flow_x = vectors[result->tracked_cnt / 2].flow_x;
-//    result->flow_y = vectors[result->tracked_cnt / 2].flow_y;
-//  }
-//
-  // Flow Derotation
-//  float diff_flow_x = (state->phi - opticflow->prev_phi) * img->w / OPTICFLOW_FOV_W;
-//  float diff_flow_y = (state->theta - opticflow->prev_theta) * img->h / OPTICFLOW_FOV_H;
-//  result->flow_der_x = result->flow_x - diff_flow_x * opticflow->subpixel_factor;
-//  result->flow_der_y = result->flow_y - diff_flow_y * opticflow->subpixel_factor;
-//  opticflow->prev_phi = state->phi;
-//  opticflow->prev_theta = state->theta;
-//
-  // Velocity calculation
-//  result->vel_x = -result->flow_der_x * result->fps * state->agl/ opticflow->subpixel_factor * img->w / OPTICFLOW_FX;
-//  result->vel_y =  result->flow_der_y * result->fps * state->agl/ opticflow->subpixel_factor * img->h / OPTICFLOW_FY;
-
-  // *************************************************************************************
-  // Flow Field Fitting
-  // *************************************************************************************
-  for(int i=0; i<no_parameter; i++)
-  {
-	  pu[i] = 0.0;
-	  pv[i] = 0.0;
-  }
-
-  analyseTTI(pu, pv, &z_x, &z_y, &flatness, &divergence, &TTI, &d_heading, &d_pitch,
-	  		&n_inlier_minu, &n_inlier_minv, &min_error_u, &min_error_v, &FIT_UNCERTAINTY,
-	  		vectors, result->tracked_cnt, opticflow->subpixel_factor, result->fps, img->w, img->h, USE_LINEAR_FIT);
-
-  if(USE_SSL)
-  {
-	  SSL_Texton(&flatness_SSL, dictionary, word_distribution, linear_map,
+	if(USE_VISION_METHOD == 1 || USE_VISION_METHOD == 2)
+	{
+		// *************************************************************************************
+		// SSL
+		// *************************************************************************************
+		SSL_Texton(&flatness_SSL, dictionary, word_distribution, linear_map,
 			img, &dictionary_ready, &load_dictionary, &load_model, alpha, n_words, patch_size, n_samples,
-	  		&learned_samples, n_samples_image, &filled, RANDOM_SAMPLES, border_width, border_height);
-  }
-  result->flatness_SSL = flatness_SSL;
+			&learned_samples, n_samples_image, &filled, RANDOM_SAMPLES, border_width, border_height);
 
-  result->texton[0] = word_distribution[0]; result->texton[1] = word_distribution[1]; result->texton[2] = word_distribution[2];
-  result->texton[3] = word_distribution[3]; result->texton[4] = word_distribution[4]; result->texton[5] = word_distribution[5];
-  result->texton[6] = word_distribution[6]; result->texton[7] = word_distribution[7]; result->texton[8] = word_distribution[8];
-  result->texton[9] = word_distribution[9]; result->texton[10] = word_distribution[10]; result->texton[11] = word_distribution[11];
-  result->texton[12] = word_distribution[12]; result->texton[13] = word_distribution[13]; result->texton[14] = word_distribution[14];
-  result->texton[15] = word_distribution[15]; result->texton[16] = word_distribution[16]; result->texton[17] = word_distribution[17];
-  result->texton[18] = word_distribution[18]; result->texton[19] = word_distribution[19]; result->texton[20] = word_distribution[20];
-  result->texton[21] = word_distribution[21]; result->texton[22] = word_distribution[22]; result->texton[23] = word_distribution[23];
-  result->texton[24] = word_distribution[24]; result->texton[25] = word_distribution[25]; result->texton[26] = word_distribution[26];
-  result->texton[27] = word_distribution[27]; result->texton[28] = word_distribution[28]; result->texton[29] = word_distribution[29];
+		// *************************************************************************************
+		// Update results
+		// *************************************************************************************
+		result->flatness_SSL = flatness_SSL;
+#ifdef DOWNLINK_DISTRIBUTIONS
+		result->texton[0] = word_distribution[0]; result->texton[1] = word_distribution[1]; result->texton[2] = word_distribution[2];
+		result->texton[3] = word_distribution[3]; result->texton[4] = word_distribution[4]; result->texton[5] = word_distribution[5];
+		result->texton[6] = word_distribution[6]; result->texton[7] = word_distribution[7]; result->texton[8] = word_distribution[8];
+		result->texton[9] = word_distribution[9]; result->texton[10] = word_distribution[10]; result->texton[11] = word_distribution[11];
+		result->texton[12] = word_distribution[12]; result->texton[13] = word_distribution[13]; result->texton[14] = word_distribution[14];
+		result->texton[15] = word_distribution[15]; result->texton[16] = word_distribution[16]; result->texton[17] = word_distribution[17];
+		result->texton[18] = word_distribution[18]; result->texton[19] = word_distribution[19]; result->texton[20] = word_distribution[20];
+		result->texton[21] = word_distribution[21]; result->texton[22] = word_distribution[22]; result->texton[23] = word_distribution[23];
+		result->texton[24] = word_distribution[24]; result->texton[25] = word_distribution[25]; result->texton[26] = word_distribution[26];
+		result->texton[27] = word_distribution[27]; result->texton[28] = word_distribution[28]; result->texton[29] = word_distribution[29];
+#endif
+	}
 
-  if(flatness < threshold_flatness)
-  {
-	  result->land_safe = 1;
-  }
-  else
-  {
-	  result->land_safe = 0;
-  }
-
-  // washout filter on divergence
-//  if (result->fps == 0)
-//  {
-//	  t_step = 0.0;
-//  }
-//  else
-//  {
-//	  t_step = 1.0/result->fps;
-//  }
-//
-//  Div_dd = ((divergence-opticflow->Div_f_prev)*w_n/2.0-opticflow->Div_d_prev)*2.0*w_n;
-//  Div_d = Div_dd*t_step + opticflow->Div_d_prev;
-//  Div_f = Div_d*t_step + opticflow->Div_f_prev;
-//
-//  opticflow->Div_d_prev = Div_d;
-//  opticflow->Div_f_prev = Div_f;
-
-  result->zx = z_x;
-  result->zy = z_y;
-  result->flatness = flatness;
-  result->divergence = divergence;
-  result->TTI = TTI;
-  result->d_heading = d_heading;
-  result->d_pitch = d_pitch;
-  result->n_inlier = n_inlier_minu + n_inlier_minv;
-  result->min_error = min_error_u + min_error_v;
-  result->fit_uncertainty = FIT_UNCERTAINTY;
-  result->USE_SSL = USE_SSL;
-//  result->Div_f = Div_f;
-//  result->Div_d = Div_d;
+	result->USE_VISION_METHOD = USE_VISION_METHOD;
 
 	// **********************************************************************************************************************
 	// Save an image
 	// **********************************************************************************************************************
-//	if(snapshot)
-//	{
-//		snapshot = 0;
-//
-//		sprintf(filename, "/data/video/image_%d.dat", i_frame);
-//		saveSingleImageDataFile(img, img->w, img->h, filename);
-//
-//	}
-//	else
-//	{
-//
-//	}
+	if(snapshot)
+	{
+		snapshot = 0;
 
-  // *************************************************************************************
-  // Next Loop Preparation
-  // *************************************************************************************
-  free(corners);
-  free(vectors);
-  image_switch(&opticflow->img_gray, &opticflow->prev_img_gray);
+		sprintf(filename, "/data/video/image_%d.dat", i_frame);
+		saveSingleImageDataFile(img, img->w, img->h, filename);
+
+	}
 }
 
 /**

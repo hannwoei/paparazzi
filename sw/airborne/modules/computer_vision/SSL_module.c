@@ -125,10 +125,12 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
 							   &opticflow_result.corner_cnt,
                                &opticflow_result.tracked_cnt,
 							   &opticflow_result.land_safe_count,
-							   &opticflow_result.active_3D
+							   &opticflow_result.active_3D,
+							   &opticflow_result.USE_VISION_METHOD
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
+#ifdef DOWNLINK_DISTRIBUTIONS
 static void SSL_telem_send(struct transport_tx *trans, struct link_device *dev)
 {
   pthread_mutex_lock(&opticflow_mutex);
@@ -147,6 +149,7 @@ static void SSL_telem_send(struct transport_tx *trans, struct link_device *dev)
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
+#endif
 #endif
 
 /**
@@ -212,7 +215,9 @@ void SSL_module_init(void)
 
 #if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "OPTIC_FLOW_EST", opticflow_telem_send);
+#ifdef DOWNLINK_DISTRIBUTIONS
   register_periodic_telemetry(DefaultPeriodic, "SSL_TEXTON", SSL_telem_send);
+#endif
 #endif
 }
 

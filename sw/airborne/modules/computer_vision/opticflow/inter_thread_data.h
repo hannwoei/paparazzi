@@ -57,13 +57,14 @@ struct opticflow_result_t {
   int16_t n_inlier;
   int16_t fit_uncertainty;
 
-  uint8_t USE_SSL;
+  uint8_t USE_VISION_METHOD;
   uint8_t land_safe;
   uint32_t land_safe_count;
   uint32_t active_3D;
-
+#ifdef DOWNLINK_DISTRIBUTIONS
 //  float *texton;
   float texton[30]; // change the size according to number of words
+#endif
 };
 
 /* The state of the drone when it took an image */

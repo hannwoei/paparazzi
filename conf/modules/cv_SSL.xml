@@ -5,12 +5,7 @@
     <description>
         Optical flow for self-supervised landing of obstacle appearance
     </description>
-    <define name="DICTIONARY_PATH" value="/data/video/usb/" description="path where dictionary is saved."/>
-    <section name="SSL" prefix="SSL_">
-      <define name="ON"   value="0" description="Self-supervised learning of obstacle appearance"/>
-      <define name="DICTIONARY_READY"   value="0" description="Train a new dictionary"/>
-      <define name="LOAD_DICTIONARY"   value="0" description="Load a dictionary"/>
-    </section>
+
     <!-- Landing parameters and gains -->
     <!-- 
     <section name="VISION" prefix="VISION_">
@@ -56,7 +51,8 @@
       <dl_settings name="SSL">
         <dl_setting var="USE_SSL" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="1" shortname="SSL" param="SSL_ON"/>
         <dl_setting var="dictionary_ready" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="2" shortname="Dictionary ready" param="SSL_DICTIONARY_READY"/>       
-        <dl_setting var="load_dictionary" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="1" shortname="Load Dictionary" param="SSL_LOAD_DICTIONARY"/>             
+        <dl_setting var="load_dictionary" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="1" shortname="Load Dictionary" param="SSL_LOAD_DICTIONARY"/>   
+        <dl_setting var="load_model" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="1" shortname="Load Model" param="SSL_LOAD_MODEL"/>            
       </dl_settings>
       
       <!-- Satabilization loop parameters and gains -->
@@ -97,6 +93,11 @@
   <makefile target="ap">
     <!-- Include the needed Computer Vision files -->
     <define name="modules/computer_vision" type="include"/>
+    <define name="DICTIONARY_PATH" value="/data/video/SSL_files/" description="path where dictionary is saved."/>
+    <define name="SSL_ON"   value="0" description="Self-supervised learning of obstacle appearance"/>
+    <define name="SSL_DICTIONARY_READY"   value="0" description="Train a new dictionary"/>
+    <define name="SSL_LOAD_DICTIONARY"   value="0" description="Load a dictionary"/>
+    <define name="SSL_LOAD_MODEL"   value="0" description="Load a Model"/>
     <!-- <define name="OPTICFLOW_DEBUG"/> -->
     <!-- <define name="OPTICFLOW_SHOW_FLOW"/>--> <!--  problem: failed regularly converting to jpeg -->
     <file name="image.c" dir="modules/computer_vision/lib/vision"/>

@@ -1371,8 +1371,8 @@ void analyseTTI(float *pu, float *pv, float *z_x, float *z_y, float *flatness, f
 		}
 
 		// linear fit of the optic flow field
-		float error_threshold = 0.5; // 10
-		int n_iterations = 30; // 20
+		float error_threshold = 0.5; // 10, 0.5
+		int n_iterations = 30; // 20, 30
 		int min_samples;
 
 		// minimum = 3 for linear, and 5 for quadratic

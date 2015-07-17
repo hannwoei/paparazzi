@@ -29,9 +29,9 @@
 #ifndef TEXTON_H
 #define TEXTON_H
 #include "lib/vision/image.h"
-void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribution,
+void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribution, float *LinearMap,
 		struct image_t *input,
-		uint8_t *dictionary_ready, uint8_t *load_dictionary, float alpha, uint8_t n_words, uint8_t patch_size, uint32_t n_samples,
+		uint8_t *dictionary_ready, uint8_t *load_dictionary, uint8_t *load_model, float alpha, uint8_t n_words, uint8_t patch_size, uint32_t n_samples,
 		uint32_t *learned_samples, uint32_t n_samples_image, uint8_t *filled, uint8_t RANDOM_SAMPLES, uint32_t border_width,
 		uint32_t border_height);
 void DictionaryTrainingYUV(float ****color_words, uint8_t *frame, uint8_t n_words, uint8_t patch_size, uint32_t *learned_samples,
@@ -39,4 +39,7 @@ void DictionaryTrainingYUV(float ****color_words, uint8_t *frame, uint8_t n_word
 void DistributionExtraction(float ****color_words, uint8_t *frame, float* word_distribution, uint8_t n_words,
 		uint8_t patch_size, uint32_t n_samples_image, uint8_t RANDOM_SAMPLES, uint16_t Width, uint16_t Height,
 		uint32_t border_width, uint32_t border_height);
+void subimage_extraction(unsigned char *sub_frame,
+		unsigned char *frame,
+		int imgW, int imgH, int type, int n_reg, int in_reg_h, int in_reg_w);
 #endif

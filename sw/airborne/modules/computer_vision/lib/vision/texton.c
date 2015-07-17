@@ -39,6 +39,7 @@
 
 /** The file pointer */
 static FILE *dictionary_logger = NULL;
+static FILE *model_logger = NULL;
 
 // *********************************************
 // Dictionary Training and Texton Extraction
@@ -50,9 +51,9 @@ static FILE *dictionary_logger = NULL;
  *  load_dictionary: 1. load a dictionary
  *  alpha: update rate
  **/
-void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribution,
+void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribution, float *LinearMap,
 		struct image_t *input,
-		uint8_t *dictionary_ready, uint8_t *load_dictionary, float alpha, uint8_t n_words, uint8_t patch_size, uint32_t n_samples,
+		uint8_t *dictionary_ready, uint8_t *load_dictionary, uint8_t *load_model, float alpha, uint8_t n_words, uint8_t patch_size, uint32_t n_samples,
 		uint32_t *learned_samples, uint32_t n_samples_image, uint8_t *filled, uint8_t RANDOM_SAMPLES, uint32_t border_width,
 		uint32_t border_height)
 {
@@ -152,6 +153,35 @@ void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribut
 		DistributionExtraction(dictionary, frame, word_distribution, n_words, patch_size, n_samples_image, RANDOM_SAMPLES,
 				input->w, input->h, border_width, border_height);
 
+		if(*load_model == 1)
+		{
+			//load a model
+			uint8_t counter = 0;
+			char filename[512];
+
+			// Check for first 5 Dictionary files
+			sprintf(filename, "%s/LinearMap_%05d.dat", STRINGIFY(DICTIONARY_PATH), counter);
+
+			while (counter<5)
+			{
+				if((model_logger = fopen(filename, "r")))
+				{
+					for(int i = 0; i < n_words+1; i++)
+					{
+						if(fscanf(model_logger, "%f\n", &LinearMap[i]) == EOF) break;
+					}
+					fclose(model_logger);
+					break;
+				}
+				else
+				{
+					counter++;
+					sprintf(filename, "%s/LinearMap_%05d.dat", STRINGIFY(DICTIONARY_PATH), counter);
+				}
+			}
+			*load_model = 0;
+		}
+
 		/*
 		 * Dictionary:
 		 * Location:
@@ -163,14 +193,19 @@ void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribut
 //				+ word_distribution[15]*(-6578.4) + word_distribution[16]*(-2859.1) + word_distribution[17]*(-8525.5) + word_distribution[18]*(4740.1) + word_distribution[19]*(37066.1)
 //				+ word_distribution[20]*(-2455.2) + word_distribution[21]*(-459) + word_distribution[22]*(8448.4) + word_distribution[23]*(-2449) + word_distribution[24]*(-1939.3)
 //				+ word_distribution[25]*(-482.3) + word_distribution[26]*(-6793.7) + word_distribution[27]*(552.6) + word_distribution[28]*(-2314.5) + word_distribution[29]*(-1205.5);
-		*flatness_SSL = 91.4758175317669
-				+ word_distribution[0]*(129.357361232921) + word_distribution[1]*(-641.491873893695) + word_distribution[2]*(77.2734585281937) + word_distribution[3]*(-29.9900469831447) + word_distribution[4]*(789.515148155958)
-				+ word_distribution[5]*(1254.94150199362) + word_distribution[6]*(370.037883269326) + word_distribution[7]*(265.984201205625) + word_distribution[8]*(49.7583117986851) + word_distribution[9]*(822.776729536144)
-				+ word_distribution[10]*(1139.60762360203) + word_distribution[11]*(-1665.33975802238) + word_distribution[12]*(571.507584720294) + word_distribution[13]*(1563.54129647641) + word_distribution[14]*(-340.047442298264)
-				+ word_distribution[15]*(-566.618658650005) + word_distribution[16]*(516.447108259413) + word_distribution[17]*(-1531.81703260333) + word_distribution[18]*(-997.874692217590) + word_distribution[19]*(-822.953250053615)
-				+ word_distribution[20]*(-918.588189508986) + word_distribution[21]*(371.505728609769) + word_distribution[22]*(261.424387906646) + word_distribution[23]*(-63.3673731800899) + word_distribution[24]*(62.6078564312148)
-				+ word_distribution[25]*(-18.7211516319433) + word_distribution[26]*(162.941563750614) + word_distribution[27]*(-514.504213274695) + word_distribution[28]*(-156.997391098565) + word_distribution[29]*(55.5512625758230);
+//		*flatness_SSL = 91.4758175317669
+//				+ word_distribution[0]*(129.357361232921) + word_distribution[1]*(-641.491873893695) + word_distribution[2]*(77.2734585281937) + word_distribution[3]*(-29.9900469831447) + word_distribution[4]*(789.515148155958)
+//				+ word_distribution[5]*(1254.94150199362) + word_distribution[6]*(370.037883269326) + word_distribution[7]*(265.984201205625) + word_distribution[8]*(49.7583117986851) + word_distribution[9]*(822.776729536144)
+//				+ word_distribution[10]*(1139.60762360203) + word_distribution[11]*(-1665.33975802238) + word_distribution[12]*(571.507584720294) + word_distribution[13]*(1563.54129647641) + word_distribution[14]*(-340.047442298264)
+//				+ word_distribution[15]*(-566.618658650005) + word_distribution[16]*(516.447108259413) + word_distribution[17]*(-1531.81703260333) + word_distribution[18]*(-997.874692217590) + word_distribution[19]*(-822.953250053615)
+//				+ word_distribution[20]*(-918.588189508986) + word_distribution[21]*(371.505728609769) + word_distribution[22]*(261.424387906646) + word_distribution[23]*(-63.3673731800899) + word_distribution[24]*(62.6078564312148)
+//				+ word_distribution[25]*(-18.7211516319433) + word_distribution[26]*(162.941563750614) + word_distribution[27]*(-514.504213274695) + word_distribution[28]*(-156.997391098565) + word_distribution[29]*(55.5512625758230);
 
+		*flatness_SSL = LinearMap[0];
+		for(int i=0; i<n_words; i++)
+		{
+			*flatness_SSL += LinearMap[i+1]*word_distribution[i];
+		}
 	}
 }
 
@@ -550,3 +585,31 @@ void DistributionExtraction(float ****color_words, uint8_t *frame, float* word_d
 	free(buf);
 
 } // EXECUTION
+
+
+void subimage_extraction(unsigned char *sub_frame,
+		unsigned char *frame,
+		int imgW, int imgH, int type, int n_reg, int in_reg_h, int in_reg_w)
+{
+	int n_reg_ax, subframe_h, subframe_w, start_reg_h, start_reg_w, end_reg_h, end_reg_w, m, n, i, j;
+	n_reg_ax = (int) sqrt(n_reg);
+	subframe_h = (int) (imgH/n_reg_ax);
+	subframe_w = (int) (imgW/n_reg_ax);
+	start_reg_h = in_reg_h*subframe_h;
+	start_reg_w = in_reg_w*type*subframe_w;
+	end_reg_h = (in_reg_h+1)*subframe_h-1;
+	end_reg_w = (in_reg_w+1)*type*subframe_w-1;
+	m = 0;
+	n = 0;
+//	printf("sub_img_size:(%d,%d)\n",subframe_w,subframe_h);
+	for(i=start_reg_h; i<end_reg_h+1; i++)
+	{
+		for(j=start_reg_w; j<end_reg_w+1; j++)
+		{
+			sub_frame[m*type*subframe_w+n] = frame[type*i*imgW+j];
+			n++;
+		}
+		m++;
+		n = 0;
+	}
+}

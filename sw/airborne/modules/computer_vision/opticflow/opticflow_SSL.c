@@ -129,6 +129,11 @@ PRINT_CONFIG_VAR(SSL_DICTIONARY_READY)
 #endif
 PRINT_CONFIG_VAR(SSL_LOAD_DICTIONARY)
 
+#ifndef SSL_LOAD_MODEL
+#define SSL_LOAD_MODEL 0
+#endif
+PRINT_CONFIG_VAR(SSL_LOAD_MODEL)
+
 #ifndef OPTICFLOW_DEROTATION
 #define OPTICFLOW_DEROTATION 1
 #endif
@@ -144,8 +149,8 @@ float *pu, *pv, z_x, z_y, flatness, divergence, TTI, d_heading, d_pitch, min_err
 int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
 
 // SSL
-float flatness_SSL, ****dictionary, *word_distribution, alpha;
-uint8_t USE_SSL, dictionary_ready, load_dictionary, n_words, patch_size, filled, RANDOM_SAMPLES;
+float flatness_SSL, ****dictionary, *word_distribution, *linear_map, alpha;
+uint8_t USE_SSL, dictionary_ready, load_dictionary, load_model, n_words, patch_size, filled, RANDOM_SAMPLES;
 uint32_t n_samples, learned_samples, n_samples_image, border_width, border_height;
 
 // washout filter
@@ -205,8 +210,8 @@ void opticflow_SSL_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
 
   // SSL
   flatness_SSL = 0.0, alpha = 0.5;
-  USE_SSL = SSL_ON, dictionary_ready = SSL_DICTIONARY_READY,
-		  load_dictionary = SSL_LOAD_DICTIONARY, n_words = 30, n_samples_image = 50, patch_size = 6, filled = 0, RANDOM_SAMPLES = 1;
+  USE_SSL = SSL_ON, dictionary_ready = SSL_DICTIONARY_READY, load_dictionary = SSL_LOAD_DICTIONARY,  load_model = SSL_LOAD_MODEL,
+  n_words = 30, n_samples_image = 50, patch_size = 6, filled = 0, RANDOM_SAMPLES = 1;
   n_samples = 200000, learned_samples = 0, border_width = 0, border_height = 0;
 
   word_distribution = (float*)calloc(n_words,sizeof(float));
@@ -225,6 +230,8 @@ void opticflow_SSL_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
 		  }
 	  }
   }
+
+  linear_map = (float *)calloc(n_words+1,sizeof(float));
 
   // washout filter
   Div_dd = 0.0, Div_d = 0.0, t_step = 0.0, Div_f = 0.0;
@@ -390,8 +397,8 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 
   if(USE_SSL)
   {
-	  SSL_Texton(&flatness_SSL, dictionary, word_distribution,
-			img, &dictionary_ready, &load_dictionary, alpha, n_words, patch_size, n_samples,
+	  SSL_Texton(&flatness_SSL, dictionary, word_distribution, linear_map,
+			img, &dictionary_ready, &load_dictionary, &load_model, alpha, n_words, patch_size, n_samples,
 	  		&learned_samples, n_samples_image, &filled, RANDOM_SAMPLES, border_width, border_height);
   }
   result->flatness_SSL = flatness_SSL;

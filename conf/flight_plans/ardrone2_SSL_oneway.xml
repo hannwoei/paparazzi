@@ -1,0 +1,91 @@
+<!DOCTYPE flight_plan SYSTEM "flight_plan.dtd">
+<flight_plan alt="152" ground_alt="147" lat0="51.990634" lon0="4.376769" max_dist_from_home="10" name="Optical Flow 3D" security_height="1">
+  <header>
+#include "autopilot.h"
+#include "../../../airborne/modules/computer_vision/opticflow/landing_SSL.h"
+</header>
+  <waypoints>
+    <waypoint name="HOME" x="0.0" y="0.0"/>
+    <waypoint height="1.0" name="STDBY" x="0.0" y="0.0"/>
+    <waypoint height="2.0" name="p1" x="0.0" y="0.0"/>
+    <waypoint height="2.0" name="p2" x="-3.413631" y="-2.084976"/>
+    <waypoint height="2.0" name="safe" x="0.0" y="0.0"/>
+  </waypoints>
+
+  <blocks>
+    <block name="Wait GPS">
+      <call fun="NavKillThrottle()"/>
+      <while cond="!GpsFixValid()"/>
+    </block>
+    <block name="Geo init">
+      <while cond="LessThan(NavBlockTime(), 10)"/>
+      <call fun="NavSetGroundReferenceHere()"/>
+    </block>
+    <block name="Holding point">
+      <call fun="NavKillThrottle()"/>
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block key="E" name="Start Engine">
+      <call fun="NavResurrect()"/>
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block key="T" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
+      <exception cond="stateGetPositionEnu_f()->z > 1.0" deroute="Standby"/>
+      <call fun="NavSetWaypointHere(WP_HOME)"/>
+      <stay climb="0.5" vmode="climb" wp="HOME"/>
+    </block>
+    <block key="S" name="Standby" strip_button="Standby" strip_icon="home.png">
+      <!--<set value="ANGLE_BFP_OF_REAL(5.73515192)" var="nav_heading"/>--><!--forward-->
+      <set value="ANGLE_BFP_OF_REAL(4.1643556)" var="nav_heading"/> <!--sideward-->
+      <!--<set value="ANGLE_BFP_OF_REAL(2.59355927)" var="nav_heading"/>--><!--backward -->
+      <stay wp="STDBY"/>
+    </block>
+    <block name="stay_p1">
+      <stay wp="p1"/>
+    </block>
+    <block name="stay_p2">
+      <stay wp="p2"/>
+    </block>
+
+    <block key="p" name="stay_safe">
+      <set value="1" var="stay_waypoint_3D"/>
+      <stay wp="safe"/>
+    </block>
+<!--
+    <block key="R" name="route">
+      <go from="STDBY" hmode="route" wp="p1"/>
+<stay wp="p1" until="stage_time>3"/>
+      <go from="p1" hmode="route" wp="p2"/>
+<stay wp="p2" until="stage_time>8"/>
+      <go from="p2" hmode="route" wp="p3"/>
+<stay wp="p3" until="stage_time>3"/>
+      <go from="p3" hmode="route" wp="p4"/>
+<stay wp="p4" until="stage_time>8"/>
+      <go from="p4" hmode="route" wp="p5"/>
+<stay wp="p5" until="stage_time>3"/>
+      <go from="p5" hmode="route" wp="p6"/>
+<stay wp="p6" until="stage_time>8"/>
+      <go from="p6" hmode="route" wp="p7"/>
+<stay wp="p7" until="stage_time>3"/>
+      <go from="p7" hmode="route" wp="p8"/>
+      <deroute block="stay_p8"/>
+    </block>
+-->
+    <block key="L" name="land here" strip_button="Land Here" strip_icon="land-right.png">
+      <call fun="NavSetWaypointHere(WP_HOME)"/>
+    </block>
+    <block name="land">
+      <go wp="HOME"/>
+    </block>
+    <block name="flare">
+      <exception cond="NavDetectGround()" deroute="Holding point"/>
+      <exception cond="!nav_is_in_flight()" deroute="landed"/>
+      <call fun="NavStartDetectGround()"/>
+      <stay climb="-0.8" vmode="climb" wp="HOME"/>
+    </block>
+    <block name="landed">
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+  </blocks>
+</flight_plan>
+

@@ -61,9 +61,15 @@ struct opticflow_result_t {
   uint8_t land_safe;
   uint32_t land_safe_count;
   uint32_t active_3D;
+#ifdef SUB_IMG
+  uint8_t in_sub_min;
+  float sub_min;
+  float sub_flatness[9]; // set a maximum of 9 sub-images
+#else
 #ifdef DOWNLINK_DISTRIBUTIONS
 //  float *texton;
   float texton[30]; // change the size according to number of words
+#endif
 #endif
 };
 

@@ -105,6 +105,39 @@ static void opticflow_agl_cb(uint8_t sender_id, float distance);  ///< Callback 
  * @param[in] *trans The transport structure to send the information over
  * @param[in] *dev The link to send the data over
  */
+#ifdef SUB_IMG
+static void SSL_SUB_telem_send(struct transport_tx *trans, struct link_device *dev)
+{
+  pthread_mutex_lock(&opticflow_mutex);
+  pprz_msg_send_SSL_SUB(trans, dev, AC_ID,
+                               &opticflow_result.fps,
+							   &opticflow_result.sub_flatness[0],
+							   &opticflow_result.sub_flatness[1],
+							   &opticflow_result.sub_flatness[2],
+							   &opticflow_result.sub_flatness[3],
+							   &opticflow_result.sub_flatness[4],
+							   &opticflow_result.sub_flatness[5],
+							   &opticflow_result.sub_flatness[6],
+							   &opticflow_result.sub_flatness[7],
+							   &opticflow_result.sub_flatness[8],
+							   &opticflow_result.sub_min,
+							   &opticflow_result.in_sub_min,
+                               &opticflow_state.V_body_x,
+							   &opticflow_state.V_body_y,
+                               &opticflow_state.V_body_z,
+							   &opticflow_state.agl,
+							   &opticflow_state.gps_x,
+							   &opticflow_state.gps_y,
+							   &opticflow_state.gps_z,
+							   &opticflow_state.phi,
+							   &opticflow_state.theta,
+							   &opticflow_state.psi,
+							   &opticflow_result.active_3D,
+							   &opticflow_result.USE_VISION_METHOD
+  	  	  	  	  	  	  	   );
+  pthread_mutex_unlock(&opticflow_mutex);
+}
+#else
 static void opticflow_telem_send(struct transport_tx *trans, struct link_device *dev)
 {
   pthread_mutex_lock(&opticflow_mutex);
@@ -130,6 +163,8 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
+#endif
+
 #ifdef DOWNLINK_DISTRIBUTIONS
 static void SSL_telem_send(struct transport_tx *trans, struct link_device *dev)
 {
@@ -214,7 +249,11 @@ void SSL_module_init(void)
   }
 
 #if PERIODIC_TELEMETRY
+#ifdef SUB_IMG
+  register_periodic_telemetry(DefaultPeriodic, "SSL_SUB", SSL_SUB_telem_send);
+#else
   register_periodic_telemetry(DefaultPeriodic, "OPTIC_FLOW_EST", opticflow_telem_send);
+#endif
 #ifdef DOWNLINK_DISTRIBUTIONS
   register_periodic_telemetry(DefaultPeriodic, "SSL_TEXTON", SSL_telem_send);
 #endif

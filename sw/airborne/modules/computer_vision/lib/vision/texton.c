@@ -51,11 +51,21 @@ static FILE *model_logger = NULL;
  *  load_dictionary: 1. load a dictionary
  *  alpha: update rate
  **/
+
+#ifdef SUB_IMG
+void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribution, float *LinearMap,
+		uint8_t *sub_frame, float *sub_flatness, uint8_t *in_sub_min, float *sub_min,
+		struct image_t *input,
+		uint8_t *dictionary_ready, uint8_t *load_dictionary, uint8_t *load_model, float alpha, uint8_t n_words, uint8_t patch_size, uint32_t n_samples,
+		uint32_t *learned_samples, uint32_t n_samples_image, uint8_t *filled, uint8_t RANDOM_SAMPLES, uint32_t border_width,
+		uint32_t border_height, uint16_t n_reg_ax, uint16_t type, uint16_t subframe_h, uint16_t subframe_w)
+#else
 void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribution, float *LinearMap,
 		struct image_t *input,
 		uint8_t *dictionary_ready, uint8_t *load_dictionary, uint8_t *load_model, float alpha, uint8_t n_words, uint8_t patch_size, uint32_t n_samples,
 		uint32_t *learned_samples, uint32_t n_samples_image, uint8_t *filled, uint8_t RANDOM_SAMPLES, uint32_t border_width,
 		uint32_t border_height)
+#endif
 {
 	uint8_t *frame = (uint8_t *)input->buf;
 
@@ -149,13 +159,9 @@ void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribut
 
 	if(*dictionary_ready == 2)
 	{
-//		printf("Extracting\n");
-		DistributionExtraction(dictionary, frame, word_distribution, n_words, patch_size, n_samples_image, RANDOM_SAMPLES,
-				input->w, input->h, border_width, border_height);
-
+		//load a model
 		if(*load_model == 1)
 		{
-			//load a model
 			uint8_t counter = 0;
 			char filename[512];
 
@@ -182,6 +188,47 @@ void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribut
 			*load_model = 0;
 		}
 
+		// subimage analysis
+#ifdef SUB_IMG
+		*in_sub_min = 0;
+
+		for(int i = 0; i < n_reg_ax; i++)
+		{
+			for(int j = 0; j < n_reg_ax; j++)
+			{
+				subimage_extraction(sub_frame,
+						frame, input->w, input->h, type, subframe_h, subframe_w, i, j);
+
+				DistributionExtraction(dictionary, sub_frame, word_distribution, n_words, patch_size, n_samples_image, RANDOM_SAMPLES,
+						subframe_w, subframe_h, border_width, border_height);
+
+				*flatness_SSL = LinearMap[0];
+				for(int k=0; k<n_words; k++)
+				{
+					*flatness_SSL += LinearMap[k+1]*word_distribution[k];
+				}
+
+				sub_flatness[i*n_reg_ax+j] = *flatness_SSL;
+
+				if(i==0 && j==0)
+				{
+					*sub_min = *flatness_SSL;
+					*in_sub_min = 0;
+				}
+
+				if(*flatness_SSL<*sub_min)
+				{
+					*sub_min = *flatness_SSL;
+					*in_sub_min = i*n_reg_ax+j;
+				}
+			}
+		}
+#else
+
+		// Extract distributions
+		DistributionExtraction(dictionary, frame, word_distribution, n_words, patch_size, n_samples_image, RANDOM_SAMPLES,
+				input->w, input->h, border_width, border_height);
+
 		/*
 		 * Dictionary:
 		 * Location:
@@ -206,6 +253,7 @@ void SSL_Texton(float *flatness_SSL, float ****dictionary, float *word_distribut
 		{
 			*flatness_SSL += LinearMap[i+1]*word_distribution[i];
 		}
+#endif
 	}
 }
 
@@ -587,14 +635,11 @@ void DistributionExtraction(float ****color_words, uint8_t *frame, float* word_d
 } // EXECUTION
 
 
-void subimage_extraction(unsigned char *sub_frame,
-		unsigned char *frame,
-		int imgW, int imgH, int type, int n_reg, int in_reg_h, int in_reg_w)
+void subimage_extraction(uint8_t *sub_frame,
+		uint8_t *frame,
+		uint16_t imgW, uint16_t imgH, uint16_t type, uint16_t subframe_h, uint16_t subframe_w, uint16_t in_reg_h, uint16_t in_reg_w)
 {
-	int n_reg_ax, subframe_h, subframe_w, start_reg_h, start_reg_w, end_reg_h, end_reg_w, m, n, i, j;
-	n_reg_ax = (int) sqrt(n_reg);
-	subframe_h = (int) (imgH/n_reg_ax);
-	subframe_w = (int) (imgW/n_reg_ax);
+	uint16_t start_reg_h, start_reg_w, end_reg_h, end_reg_w, m, n, i, j;
 	start_reg_h = in_reg_h*subframe_h;
 	start_reg_w = in_reg_w*type*subframe_w;
 	end_reg_h = (in_reg_h+1)*subframe_h-1;

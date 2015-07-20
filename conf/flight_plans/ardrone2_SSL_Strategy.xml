@@ -22,12 +22,7 @@
     <waypoint height="1.5" name="p1" x="0.521244" y="-0.853408"/>
     <waypoint height="1.5" name="p2" x="3.934875" y="1.231569"/>
     <waypoint height="1.5" name="p3" x="3.413631" y="2.084976"/>
-    <waypoint height="1.5" name="p4" x="0.0" y="0.0"/>
-    <waypoint height="1.5" name="p5" x="-0.521244" y="0.853408"/>
-    <waypoint height="1.5" name="p6" x="2.892387" y="2.938384"/>
-    <waypoint height="1.5" name="p7" x="2.371143" y="3.791791"/>
-    <waypoint height="1.5" name="p8" x="-1.042488" y="1.706815"/>
-    <waypoint height="1.5" name="safe" x="-1.042488" y="1.706815"/>
+    <waypoint height="1.5" name="safe" x="0.0" y="0.0"/>
 
   </waypoints>
 
@@ -68,22 +63,6 @@
     <block name="stay_p3">
       <stay wp="p3"/>
     </block>
-    <block name="stay_p4">
-      <stay wp="p4"/>
-    </block>
-    <block name="stay_p5">
-      <stay wp="p5"/>
-    </block>
-    <block name="stay_p6">
-      <stay wp="p6"/>
-    </block>
-    <block name="stay_p7">
-      <stay wp="p7"/>
-    </block>
-    <block name="stay_p8">
-      <stay wp="p8"/>
-      <!--<deroute block="safe_landing"/>-->
-    </block>
     <block key="p" name="stay_safe">
       <set value="1" var="stay_waypoint_3D"/>
       <stay wp="safe"/>
@@ -95,16 +74,7 @@
 <stay wp="p2" until="stage_time>8"/>
       <go from="p2" hmode="route" wp="p3"/>
 <stay wp="p3" until="stage_time>3"/>
-      <go from="p3" hmode="route" wp="p4"/>
-<stay wp="p4" until="stage_time>8"/>
-      <go from="p4" hmode="route" wp="p5"/>
-<stay wp="p5" until="stage_time>3"/>
-      <go from="p5" hmode="route" wp="p6"/>
-<stay wp="p6" until="stage_time>8"/>
-      <go from="p6" hmode="route" wp="p7"/>
-<stay wp="p7" until="stage_time>3"/>
-      <go from="p7" hmode="route" wp="p8"/>
-      <deroute block="stay_p8"/>
+      <deroute block="stay_safe"/>
     </block>
 
     <block key="L" name="land here" strip_button="Land Here" strip_icon="land-right.png">

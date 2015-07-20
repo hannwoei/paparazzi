@@ -1956,7 +1956,32 @@
     <field name="AMSL_GPS" type="float" unit="ft" alt_unit="m"/>
   </message>
 
- <!--224 is free -->
+  <message name="SSL_SUB" id="224">
+    <field name="fps"         type="float"/>
+    <field name="F11"    	  type="float"/>
+    <field name="F12"    	  type="float"/>
+    <field name="F13"    	  type="float"/>
+    <field name="F21"    	  type="float"/>
+    <field name="F22"    	  type="float"/>
+    <field name="F23"    	  type="float"/>
+    <field name="F31"    	  type="float"/>
+    <field name="F32"    	  type="float"/>
+    <field name="F33"    	  type="float"/>
+    <field name="sub_min"     type="float"/> 
+    <field name="in_sub"      type="uint8"/>
+    <field name="vx"    	  type="float" unit="m/s"/>
+    <field name="vy"    	  type="float" unit="m/s"/>
+    <field name="vz"    	  type="float" unit="m/s"/>
+    <field name="sonar"       type="float" unit="m"/>
+    <field name="gps_x"       type="float" unit="m"/>
+    <field name="gps_y"       type="float" unit="m"/>
+    <field name="gps_z"       type="float" unit="m"/>
+    <field name="roll"        type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
+	<field name="pitch"       type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/> 
+	<field name="yaw"         type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>     
+    <field name="active_3D"   type="uint32"/>
+    <field name="vision"      type="uint8"/>
+  </message>
 
   <message name="VIDEO_SYNC" id="225">
     <field name="id" type="uint8"/>
@@ -2065,7 +2090,6 @@
      <field name="value" type="uint16"/>
    </message>
 
- <!--233 is free -->
    <message name="PX4FLOW" id="233">
      <!--field name="time_usec" type="uint64"/--> <!-- uint64 not supported yet -->
      <field name="sensor_id" type="uint8"/>

@@ -143,7 +143,7 @@ PRINT_CONFIG_VAR(OPTICFLOW_DEROTATION)
 
 /* Functions only used here */
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
-static int cmp_flow(const void *a, const void *b);
+//static int cmp_flow(const void *a, const void *b);
 
 // flow fitting
 uint8_t USE_DEROTATION;
@@ -154,6 +154,11 @@ int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
 float flatness_SSL, ****dictionary, *word_distribution, *linear_map, alpha;
 uint8_t USE_VISION_METHOD, dictionary_ready, load_dictionary, load_model, n_words, patch_size, filled, RANDOM_SAMPLES;
 uint32_t n_samples, learned_samples, n_samples_image, border_width, border_height;
+#ifdef SUB_IMG
+uint8_t in_sub_min, *sub_frame;
+uint16_t n_reg, n_reg_ax, type, subframe_h, subframe_w;
+float *sub_flatness, sub_min;
+#endif
 
 // washout filter
 float Div_dd, w_n, Div_d, t_step, Div_f;
@@ -235,6 +240,18 @@ void opticflow_SSL_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
 
   linear_map = (float *)calloc(n_words+1,sizeof(float));
 
+#ifdef SUB_IMG
+  type = 2; //1: Gray, 2: YUV, 3: RGB
+  n_reg = 9; // multiple of integer
+  n_reg_ax = (uint16_t) sqrt(n_reg);
+  subframe_h = (uint16_t) (h/n_reg_ax);
+  subframe_w = (uint16_t) (w/n_reg_ax);
+  sub_frame = (uint8_t *)calloc(type*subframe_h*subframe_w,sizeof(uint8_t));
+  in_sub_min = 0;
+  sub_flatness = (float *)calloc(n_reg,sizeof(float));
+  sub_min = 0.0;
+#endif
+
   // washout filter
   Div_dd = 0.0, Div_d = 0.0, t_step = 0.0, Div_f = 0.0;
 
@@ -257,7 +274,9 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 	result->fps = 1 / (timeval_diff(&opticflow->prev_timestamp, &img->ts) / 1000.);
 	memcpy(&opticflow->prev_timestamp, &img->ts, sizeof(struct timeval));
 
-	if(USE_VISION_METHOD == 0 || USE_VISION_METHOD == 2)
+	result->USE_VISION_METHOD = USE_VISION_METHOD;
+
+	if(result->USE_VISION_METHOD == 1 || result->USE_VISION_METHOD == 3)
 	{
 		// Convert image to grayscale
 		image_to_grayscale(img, &opticflow->img_gray);
@@ -278,24 +297,23 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 
 		// Adaptive threshold
 		if (opticflow->fast9_adaptive) {
-
-		// Decrease and increase the threshold based on previous values
-		if (result->corner_cnt < 40 && opticflow->fast9_threshold > 5) {
-		  opticflow->fast9_threshold--;
-		} else if (result->corner_cnt > 50 && opticflow->fast9_threshold < 60) {
-		  opticflow->fast9_threshold++;
-		}
+			// Decrease and increase the threshold based on previous values
+			if (result->corner_cnt < 40 && opticflow->fast9_threshold > 5) {
+			  opticflow->fast9_threshold--;
+			} else if (result->corner_cnt > 50 && opticflow->fast9_threshold < 60) {
+			  opticflow->fast9_threshold++;
+			}
 		}
 
 		#if OPTICFLOW_DEBUG && OPTICFLOW_SHOW_CORNERS
-		image_show_points(img, corners, result->corner_cnt);
+			image_show_points(img, corners, result->corner_cnt);
 		#endif
 
 		// Check if we found some corners to track
 		if (result->corner_cnt < 1) {
-		free(corners);
-		image_copy(&opticflow->img_gray, &opticflow->prev_img_gray);
-		return;
+			free(corners);
+			image_copy(&opticflow->img_gray, &opticflow->prev_img_gray);
+			return;
 		}
 
 		// *************************************************************************************
@@ -446,15 +464,30 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 		image_switch(&opticflow->img_gray, &opticflow->prev_img_gray);
 	}
 
-	if(USE_VISION_METHOD == 1 || USE_VISION_METHOD == 2)
+	if(result->USE_VISION_METHOD == 2 || result->USE_VISION_METHOD == 3)
 	{
 		// *************************************************************************************
 		// SSL
 		// *************************************************************************************
+#ifdef SUB_IMG
+		SSL_Texton(&flatness_SSL, dictionary, word_distribution, linear_map,
+				sub_frame, sub_flatness, &in_sub_min, &sub_min,
+				img,
+				&dictionary_ready, &load_dictionary, &load_model, alpha, n_words, patch_size, n_samples,
+				&learned_samples, n_samples_image, &filled, RANDOM_SAMPLES, border_width,
+				border_height, n_reg_ax, type, subframe_h, subframe_w);
+		// *************************************************************************************
+		// Update results
+		// *************************************************************************************
+		result->sub_flatness[0] = sub_flatness[0]; result->sub_flatness[1] = sub_flatness[1]; result->sub_flatness[2] = sub_flatness[2];
+		result->sub_flatness[3] = sub_flatness[3]; result->sub_flatness[4] = sub_flatness[4]; result->sub_flatness[5] = sub_flatness[5];
+		result->sub_flatness[6] = sub_flatness[6]; result->sub_flatness[7] = sub_flatness[7]; result->sub_flatness[8] = sub_flatness[8];
+		result->in_sub_min = in_sub_min;
+		result->sub_min = sub_min;
+#else
 		SSL_Texton(&flatness_SSL, dictionary, word_distribution, linear_map,
 			img, &dictionary_ready, &load_dictionary, &load_model, alpha, n_words, patch_size, n_samples,
 			&learned_samples, n_samples_image, &filled, RANDOM_SAMPLES, border_width, border_height);
-
 		// *************************************************************************************
 		// Update results
 		// *************************************************************************************
@@ -471,9 +504,8 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 		result->texton[24] = word_distribution[24]; result->texton[25] = word_distribution[25]; result->texton[26] = word_distribution[26];
 		result->texton[27] = word_distribution[27]; result->texton[28] = word_distribution[28]; result->texton[29] = word_distribution[29];
 #endif
+#endif
 	}
-
-	result->USE_VISION_METHOD = USE_VISION_METHOD;
 
 	// **********************************************************************************************************************
 	// Save an image
@@ -509,9 +541,9 @@ static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishti
  * @param[in] *b The second flow vector (should be vect flow_t)
  * @return Negative if b has more flow than a, 0 if the same and positive if a has more flow than b
  */
-static int cmp_flow(const void *a, const void *b)
-{
-  const struct flow_t *a_p = (const struct flow_t *)a;
-  const struct flow_t *b_p = (const struct flow_t *)b;
-  return (a_p->flow_x * a_p->flow_x + a_p->flow_y * a_p->flow_y) - (b_p->flow_x * b_p->flow_x + b_p->flow_y * b_p->flow_y);
-}
+//static int cmp_flow(const void *a, const void *b)
+//{
+//  const struct flow_t *a_p = (const struct flow_t *)a;
+//  const struct flow_t *b_p = (const struct flow_t *)b;
+//  return (a_p->flow_x * a_p->flow_x + a_p->flow_y * a_p->flow_y) - (b_p->flow_x * b_p->flow_x + b_p->flow_y * b_p->flow_y);
+//}

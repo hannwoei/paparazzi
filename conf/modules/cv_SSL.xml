@@ -49,10 +49,11 @@
   <settings>
   <dl_settings name="SSL landing">
       <dl_settings name="SSL">
-        <dl_setting var="USE_VISION_METHOD" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="2" shortname="SSL" param="VISION_METHOD"/>
+        <dl_setting var="USE_VISION_METHOD" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="3" shortname="Method" param="VISION_METHOD"/>
         <dl_setting var="dictionary_ready" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="2" shortname="Dictionary ready" param="SSL_DICTIONARY_READY"/>       
         <dl_setting var="load_dictionary" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="1" shortname="Load Dictionary" param="SSL_LOAD_DICTIONARY"/>   
-        <dl_setting var="load_model" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="1" shortname="Load Model" param="SSL_LOAD_MODEL"/>            
+        <dl_setting var="load_model" module="computer_vision/opticflow/opticflow_SSL" min="0" step="1" max="1" shortname="Load Model" param="SSL_LOAD_MODEL"/>
+        <dl_setting var="activate_landing" module="computer_vision/opticflow/landing_SSL" min="0" step="1" max="1" shortname="Landing_SSL" param="ACTIVATE_LANDING"/>            
       </dl_settings>
       
       <!-- Satabilization loop parameters and gains -->
@@ -94,10 +95,12 @@
     <!-- Include the needed Computer Vision files -->
     <define name="modules/computer_vision" type="include"/>
     <define name="DICTIONARY_PATH" value="/data/video/SSL_files/" description="path where dictionary is saved."/>
-    <define name="VISION_METHOD"   value="0" description="0-OF 1-SSL 2-OF & SSL"/>
+    <define name="VISION_METHOD"   value="0" description="0-Nth 1-OF 2-SSL 3-OF & SSL"/>
     <define name="SSL_DICTIONARY_READY"   value="0" description="Train a new dictionary"/>
-    <define name="SSL_LOAD_DICTIONARY"   value="0" description="Load a dictionary"/>
-    <define name="SSL_LOAD_MODEL"   value="0" description="Load a Model"/>
+    <define name="SSL_LOAD_DICTIONARY"   value="1" description="Load a dictionary"/>
+    <define name="SSL_LOAD_MODEL"   value="1" description="Load a Model"/>
+    <define name="SUB_IMG" description="Use sub-image for SSL"/> 
+    <define name="ACTIVATE_LANDING"   value="0" description="Land with SSL"/>
     <!-- <define name="DOWNLINK_DISTRIBUTIONS" description="Send distributions"/> -->
     <!-- <define name="OPTICFLOW_DEBUG"/> -->
     <!-- <define name="OPTICFLOW_SHOW_FLOW"/>--> <!--  problem: failed regularly converting to jpeg -->

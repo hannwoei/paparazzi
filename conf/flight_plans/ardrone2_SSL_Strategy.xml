@@ -18,11 +18,11 @@
     <waypoint height="2.0" name="p8" x="-1.042488" y="1.706815"/>
     <waypoint height="2.0" name="safe" x="-1.042488" y="1.706815"/>
 -->
-    <waypoint height="1.5" name="STDBY" x="0.0" y="0.0"/>
-    <waypoint height="1.5" name="p1" x="0.521244" y="-0.853408"/>
-    <waypoint height="1.5" name="p2" x="3.934875" y="1.231569"/>
-    <waypoint height="1.5" name="p3" x="3.413631" y="2.084976"/>
-    <waypoint height="1.5" name="safe" x="0.0" y="0.0"/>
+    <waypoint height="2.5" name="STDBY" x="0.0" y="0.0"/>
+    <waypoint height="2.5" name="p1" x="0.332164" y="1.374652"/>
+    <waypoint height="2.5" name="p2" x="3.934875" y="1.231569"/>
+    <waypoint height="2.5" name="p3" x="3.413631" y="2.084976"/>
+    <waypoint height="2.5" name="safe" x="0.0" y="0.0"/>
 
   </waypoints>
 

@@ -99,7 +99,8 @@
     <define name="SSL_DICTIONARY_READY"   value="0" description="Train a new dictionary"/>
     <define name="SSL_LOAD_DICTIONARY"   value="1" description="Load a dictionary"/>
     <define name="SSL_LOAD_MODEL"   value="1" description="Load a Model"/>
-    <define name="SUB_IMG" description="Use sub-image for SSL"/> 
+    <!-- <define name="SUB_IMG" description="Use sub-image for SSL"/>--> 
+    <define name="CHECK_CPU_TIME" description="Check CPU Time"/> 
     <define name="ACTIVATE_LANDING"   value="0" description="Land with SSL"/>
     <!-- <define name="DOWNLINK_DISTRIBUTIONS" description="Send distributions"/> -->
     <!-- <define name="OPTICFLOW_DEBUG"/> -->

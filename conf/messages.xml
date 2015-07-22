@@ -2051,7 +2051,6 @@
     <field name="D29"         type="float"/>
     <field name="D30"         type="float"/>
   </message> 
-  <!--229 is free -->
 
   <message name="AHRS_ARDRONE2" id="230">
     <field name="state" type="uint32" />
@@ -2175,6 +2174,17 @@
     <field name="vx"   type="float" unit="m/s"/>
     <field name="vy"   type="float" unit="m/s"/>
     <field name="vz"   type="float" unit="m/s"/>
+  </message>
+  
+  <message name="CPUTIME" id="245">
+    <field name="fps"         type="float"/>
+	<field name="corner_cnt"  type="uint16"/>
+    <field name="tracked_cnt" type="uint16"/>
+    <field name="vision"      type="uint8"/>
+    <field name="t1"         type="float"/>
+    <field name="t2"         type="float"/>
+    <field name="t3"         type="float"/>
+    <field name="t4"         type="float"/>
   </message>
 
   <!-- 245 is free -->

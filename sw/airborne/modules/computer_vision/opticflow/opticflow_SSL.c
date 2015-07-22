@@ -139,7 +139,9 @@ PRINT_CONFIG_VAR(SSL_LOAD_MODEL)
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_DEROTATION)
 
-
+#ifdef CHECK_CPU_TIME
+#include <time.h>
+#endif
 
 /* Functions only used here */
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
@@ -167,6 +169,11 @@ float Div_dd, w_n, Div_d, t_step, Div_f;
 char filename[100];
 int i_frame;
 uint8_t snapshot;
+
+#ifdef CHECK_CPU_TIME
+  clock_t t_fun1, t_fun2, t_fun3, t_fun4;
+  float time_taken1, time_taken2, time_taken3, time_taken4;
+#endif
 
 /**
  * Initialize the opticflow calculator
@@ -259,6 +266,11 @@ void opticflow_SSL_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   i_frame = 0;
   snapshot = OPTICFLOW_SNAPSHOT;
   w_n = OPTICFLOW_W_N;
+
+#ifdef CHECK_CPU_TIME
+  t_fun1 = 0, t_fun2 = 0, t_fun3 = 0, t_fun4 = 0;
+  time_taken1 = 0, time_taken2 = 0, time_taken3 = 0, time_taken4 = 0;
+#endif
 }
 
 /**
@@ -290,7 +302,9 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 		// *************************************************************************************
 		// Corner detection
 		// *************************************************************************************
-
+#ifdef CHECK_CPU_TIME
+		t_fun1 = clock();
+#endif
 		// FAST corner detection (TODO: non fixed threashold)
 		struct point_t *corners = fast9_detect(img, opticflow->fast9_threshold, opticflow->fast9_min_distance,
 											 20, 20, &result->corner_cnt);
@@ -315,11 +329,18 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 			image_copy(&opticflow->img_gray, &opticflow->prev_img_gray);
 			return;
 		}
-
+#ifdef CHECK_CPU_TIME
+		t_fun1 = clock()-t_fun1;
+		time_taken1 = ((float)t_fun1)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+		result->t1 = time_taken1;
+#endif
 		// *************************************************************************************
 		// Corner Tracking
 		// *************************************************************************************
-
+#ifdef CHECK_CPU_TIME
+		t_fun2 = clock();
+#endif
 		// Execute a Lucas Kanade optical flow
 		result->tracked_cnt = result->corner_cnt;
 		struct flow_t *vectors = opticFlowLK(&opticflow->img_gray, &opticflow->prev_img_gray, corners, &result->tracked_cnt,
@@ -399,10 +420,18 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 		result->vel_x = -result->flow_der_x * result->fps * state->agl/ opticflow->subpixel_factor * img->w / OPTICFLOW_FX;
 		result->vel_y =  result->flow_der_y * result->fps * state->agl/ opticflow->subpixel_factor * img->h / OPTICFLOW_FY;
 */
-
+#ifdef CHECK_CPU_TIME
+		t_fun2 = clock()-t_fun2;
+		time_taken2 = ((float)t_fun2)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+		result->t2 = time_taken2;
+#endif
 		// *************************************************************************************
 		// Flow Field Fitting
 		// *************************************************************************************
+#ifdef CHECK_CPU_TIME
+		t_fun3 = clock();
+#endif
 		for(int i=0; i<no_parameter; i++)
 		{
 		  pu[i] = 0.0;
@@ -429,7 +458,12 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 		//
 		//  opticflow->Div_d_prev = Div_d;
 		//  opticflow->Div_f_prev = Div_f;
-
+#ifdef CHECK_CPU_TIME
+		t_fun3 = clock()-t_fun3;
+		time_taken3 = ((float)t_fun3)/CLOCKS_PER_SEC; // in seconds
+//		printf("time: %f %f %f s \n", time_taken1, time_taken2, time_taken3);
+		result->t3 = time_taken3;
+#endif
 		// *************************************************************************************
 		// Update results
 		// *************************************************************************************
@@ -485,9 +519,18 @@ void opticflow_SSL_frame(struct opticflow_t *opticflow, struct opticflow_state_t
 		result->in_sub_min = in_sub_min;
 		result->sub_min = sub_min;
 #else
+#ifdef CHECK_CPU_TIME
+		t_fun4 = clock();
+#endif
 		SSL_Texton(&flatness_SSL, dictionary, word_distribution, linear_map,
 			img, &dictionary_ready, &load_dictionary, &load_model, alpha, n_words, patch_size, n_samples,
 			&learned_samples, n_samples_image, &filled, RANDOM_SAMPLES, border_width, border_height);
+#ifdef CHECK_CPU_TIME
+		t_fun4 = clock()-t_fun4;
+		time_taken4 = ((float)t_fun4)/CLOCKS_PER_SEC; // in seconds
+//		printf("time: %f %f %f %f s \n", time_taken1, time_taken2, time_taken3, time_taken4);
+		result->t4 = time_taken4;
+#endif
 		// *************************************************************************************
 		// Update results
 		// *************************************************************************************

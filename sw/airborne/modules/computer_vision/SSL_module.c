@@ -163,6 +163,23 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
+#ifdef CHECK_CPU_TIME
+static void cputime_telem_send(struct transport_tx *trans, struct link_device *dev)
+{
+  pthread_mutex_lock(&opticflow_mutex);
+  pprz_msg_send_CPUTIME(trans, dev, AC_ID,
+                               &opticflow_result.fps,
+							   &opticflow_result.corner_cnt,
+                               &opticflow_result.tracked_cnt,
+							   &opticflow_result.USE_VISION_METHOD,
+							   &opticflow_result.t1,
+							   &opticflow_result.t2,
+							   &opticflow_result.t3,
+							   &opticflow_result.t4
+  	  	  	  	  	  	  	   );
+  pthread_mutex_unlock(&opticflow_mutex);
+}
+#endif
 #endif
 
 #ifdef DOWNLINK_DISTRIBUTIONS
@@ -253,6 +270,9 @@ void SSL_module_init(void)
   register_periodic_telemetry(DefaultPeriodic, "SSL_SUB", SSL_SUB_telem_send);
 #else
   register_periodic_telemetry(DefaultPeriodic, "OPTIC_FLOW_EST", opticflow_telem_send);
+#ifdef CHECK_CPU_TIME
+  register_periodic_telemetry(DefaultPeriodic, "CPUTIME", cputime_telem_send);
+#endif
 #endif
 #ifdef DOWNLINK_DISTRIBUTIONS
   register_periodic_telemetry(DefaultPeriodic, "SSL_TEXTON", SSL_telem_send);

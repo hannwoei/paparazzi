@@ -18,7 +18,8 @@
       <subsystem name="radio_control" type="ppm"/>
     </target-->
 
-    <define name="USE_SONAR" value="TRUE"/>
+    <define name="USE_SONAR" value="FALSE"/>
+    <!-- <configure name="USE_BARO_BOARD" value="FALSE"/>-->
 
 	<!-- Subsystem section -->
     <subsystem name="motor_mixing"/>

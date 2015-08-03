@@ -8,10 +8,10 @@
     <waypoint name="HOME" x="0.0" y="0.0"/>
 
     <waypoint height="2.0" name="STDBY" x="0.0" y="0.0"/>
-    <waypoint height="2.0" name="p1" x="0.521244" y="-0.853408"/>
-    <waypoint height="2.0" name="p2" x="3.934875" y="1.231569"/>
-    <waypoint height="2.0" name="p3" x="3.413631" y="2.084976"/>
-    <waypoint height="2.0" name="p4" x="0.0" y="0.0"/>
+    <waypoint height="2.0" name="p1" x="2.228059" y="0.189080"/>
+    <waypoint height="2.0" name="p2" x="1.706815" y="1.042488"/>
+    <waypoint height="2.0" name="p3" x="1.185571" y="1.895896"/>
+    <waypoint height="2.0" name="p4" x="0.664327" y="2.749303"/>
     <waypoint height="2.0" name="p5" x="-0.521244" y="0.853408"/>
     <waypoint height="2.0" name="p6" x="2.892387" y="2.938384"/>
     <waypoint height="2.0" name="p7" x="2.371143" y="3.791791"/>
@@ -90,23 +90,27 @@
       <stay wp="safe"/>
     </block>
     <block key="R" name="route">
+<!--
 <stay wp="STDBY" until="stage_time>5"/>
       <go from="STDBY" hmode="route" wp="p1"/>
-<stay wp="p1" until="stage_time>3"/>
+<stay wp="p1" until="stage_time>8"/>
       <go from="p1" hmode="route" wp="p2"/>
-<stay wp="p2" until="stage_time>8"/>
-      <go from="p2" hmode="route" wp="p3"/>
-<stay wp="p3" until="stage_time>3"/>
-      <go from="p3" hmode="route" wp="p4"/>
+<stay wp="p2" until="stage_time>5"/>
+      <go from="p2" hmode="route" wp="p5"/>
+<stay wp="p5" until="stage_time>8"/>
+      <deroute block="land here"/>
+-->
+<stay wp="STDBY" until="stage_time>5"/>
+      <go from="STDBY" hmode="route" wp="p3"/>
+<stay wp="p3" until="stage_time>8"/>
+      <go from="p3" hmode="route" wp="p7"/>
+<stay wp="p7" until="stage_time>5"/>
+      <go from="p7" hmode="route" wp="p4"/>
 <stay wp="p4" until="stage_time>8"/>
-      <go from="p4" hmode="route" wp="p5"/>
-<stay wp="p5" until="stage_time>3"/>
-      <go from="p5" hmode="route" wp="p6"/>
-<stay wp="p6" until="stage_time>8"/>
-      <go from="p6" hmode="route" wp="p7"/>
-<stay wp="p7" until="stage_time>3"/>
-      <go from="p7" hmode="route" wp="p8"/>
-      <deroute block="stay_p8"/>
+      <go from="p4" hmode="route" wp="p7"/>
+<stay wp="p7" until="stage_time>8"/>
+      <deroute block="land here"/>
+
     </block>
 
     <block key="L" name="land here" strip_button="Land Here" strip_icon="land-right.png">

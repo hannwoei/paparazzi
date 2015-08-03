@@ -23,6 +23,7 @@
       <message name="STATE_FILTER_STATUS"    period="3.2"/>
       <message name="OPTIC_FLOW_EST"         period="0.05"/>
       <message name="SSL_SUB"                period="0.05"/>
+      <message name="SSL_TEXTON"                period="0.05"/>
     </mode>
 
     <mode name="ppm">

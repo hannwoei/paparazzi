@@ -133,7 +133,8 @@ static void SSL_SUB_telem_send(struct transport_tx *trans, struct link_device *d
 							   &opticflow_state.theta,
 							   &opticflow_state.psi,
 							   &opticflow_result.active_3D,
-							   &opticflow_result.USE_VISION_METHOD
+							   &opticflow_result.USE_VISION_METHOD,
+							   &logvideo.shot_number
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
@@ -159,7 +160,8 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
                                &opticflow_result.tracked_cnt,
 							   &opticflow_result.land_safe_count,
 							   &opticflow_result.active_3D,
-							   &opticflow_result.USE_VISION_METHOD
+							   &opticflow_result.USE_VISION_METHOD,
+							   &logvideo.shot_number
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
@@ -180,7 +182,8 @@ static void SSL_telem_send(struct transport_tx *trans, struct link_device *dev)
 							   &opticflow_result.texton[18], &opticflow_result.texton[19], &opticflow_result.texton[20],
 							   &opticflow_result.texton[21], &opticflow_result.texton[22], &opticflow_result.texton[23],
 							   &opticflow_result.texton[24], &opticflow_result.texton[25], &opticflow_result.texton[26],
-							   &opticflow_result.texton[27], &opticflow_result.texton[28], &opticflow_result.texton[29]
+							   &opticflow_result.texton[27], &opticflow_result.texton[28], &opticflow_result.texton[29],
+							   &logvideo.shot_number
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }

@@ -71,6 +71,9 @@ struct opticflow_result_t {
   float texton[30]; // change the size according to number of words
 #endif
 #endif
+#ifdef CHECK_CPU_TIME
+  float t1, t2, t3, t4;
+#endif
 };
 
 /* The state of the drone when it took an image */

@@ -100,8 +100,9 @@
     <define name="SSL_LOAD_DICTIONARY"   value="1" description="Load a dictionary"/>
     <define name="SSL_LOAD_MODEL"   value="1" description="Load a Model"/>
     <!-- <define name="SUB_IMG" description="Use sub-image for SSL"/>--> 
+    <define name="CHECK_CPU_TIME" description="Check CPU Time"/> 
     <!-- <define name="ACTIVATE_LANDING"   value="0" description="Land with SSL"/>-->
-    <define name="DOWNLINK_DISTRIBUTIONS" description="Send distributions"/>
+    <!-- <define name="DOWNLINK_DISTRIBUTIONS" description="Send distributions"/> -->
     <!-- <define name="OPTICFLOW_DEBUG"/> -->
     <!-- <define name="OPTICFLOW_SHOW_FLOW"/>--> <!--  problem: failed regularly converting to jpeg -->
     <file name="image.c" dir="modules/computer_vision/lib/vision"/>

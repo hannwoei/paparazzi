@@ -41,54 +41,54 @@ static FILE *video_usb_logger = NULL;
 /** Start the file logger and open a new file */
 void video_usb_logger_start(void)
 {
-  uint32_t counter = 0;
-  char filename[512];
-
-  // Check for available files
-  sprintf(filename, "%s%05d.csv", VIDEO_USB_LOGGER_PATH, counter);
-  while ((video_usb_logger = fopen(filename, "r"))) {
-    fclose(video_usb_logger);
-
-    counter++;
-    sprintf(filename, "%s%05d.csv", VIDEO_USB_LOGGER_PATH, counter);
-  }
-
-  video_usb_logger = fopen(filename, "w");
-
-  if (video_usb_logger != NULL) {
-    fprintf(video_usb_logger, "counter,image,FPS,vx,vy,vz,sonar,flat,flat2,x,y,z,roll,pitch,yaw,corner,flow\n");
-  }
+//  uint32_t counter = 0;
+//  char filename[512];
+//
+//  // Check for available files
+//  sprintf(filename, "%s%05d.csv", VIDEO_USB_LOGGER_PATH, counter);
+//  while ((video_usb_logger = fopen(filename, "r"))) {
+//    fclose(video_usb_logger);
+//
+//    counter++;
+//    sprintf(filename, "%s%05d.csv", VIDEO_USB_LOGGER_PATH, counter);
+//  }
+//
+//  video_usb_logger = fopen(filename, "w");
+//
+//  if (video_usb_logger != NULL) {
+//    fprintf(video_usb_logger, "counter,image,FPS,vx,vy,vz,sonar,flat,flat2,x,y,z,roll,pitch,yaw,corner,flow\n");
+//  }
 }
 
 /** Stop the logger an nicely close the file */
 void video_usb_logger_stop(void)
 {
-  if (video_usb_logger != NULL) {
-    fclose(video_usb_logger);
-    video_usb_logger = NULL;
-  }
+//  if (video_usb_logger != NULL) {
+//    fclose(video_usb_logger);
+//    video_usb_logger = NULL;
+//  }
 }
 
 /** Log the values to a csv file */
 void video_usb_logger_periodic(void)
 {
-  if (video_usb_logger == NULL) {
-    return;
-  }
-  static uint32_t counter = 0;
-//  struct NedCoor_i *ned = stateGetPositionNed_i();
-//  struct Int32Eulers *euler = stateGetNedToBodyEulers_i();
-//  static uint32_t sonar = 0;
-
-  // Take a new shot
+//  if (video_usb_logger == NULL) {
+//    return;
+//  }
+//  static uint32_t counter = 0;
+////  struct NedCoor_i *ned = stateGetPositionNed_i();
+////  struct Int32Eulers *euler = stateGetNedToBodyEulers_i();
+////  static uint32_t sonar = 0;
+//
+//  // Take a new shot
   log_video_start(TRUE);
-
-  // Save to the file
-  fprintf(video_usb_logger, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d\n", counter,
-          logvideo.shot_number, logvideo_data.FPS, logvideo_data.V_body_x, logvideo_data.V_body_y,
-		  logvideo_data.V_body_z, logvideo_data.agl, logvideo_data.flatness,
-		  logvideo_data.flatness_SSL, logvideo_data.gps_x, logvideo_data.gps_y,
-		  logvideo_data.gps_z, logvideo_data.phi, logvideo_data.theta,
-		  logvideo_data.psi, logvideo_data.corner_cnt, logvideo_data.tracked_cnt);
-  counter++;
+//
+//  // Save to the file
+//  fprintf(video_usb_logger, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d\n", counter,
+//          logvideo.shot_number, logvideo_data.FPS, logvideo_data.V_body_x, logvideo_data.V_body_y,
+//		  logvideo_data.V_body_z, logvideo_data.agl, logvideo_data.flatness,
+//		  logvideo_data.flatness_SSL, logvideo_data.gps_x, logvideo_data.gps_y,
+//		  logvideo_data.gps_z, logvideo_data.phi, logvideo_data.theta,
+//		  logvideo_data.psi, logvideo_data.corner_cnt, logvideo_data.tracked_cnt);
+//  counter++;
 }

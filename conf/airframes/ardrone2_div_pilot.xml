@@ -31,10 +31,13 @@
   </firmware>
 
   <modules main_freq="512">
-    <!--<load name="gps_ubx_ucenter.xml"/>-->
+    <!--
+    <load name="gps_ubx_ucenter.xml"/>
     <load name="send_imu_mag_current.xml"/>
     <load name="logger_file.xml"/>
+-->
     <load name="cv_DivPilot.xml"/>
+    <load name="video_usb_logger.xml"/>
     <load name="video_rtp_stream.xml"/>
     	<!--<load name="cv_opticflow.xml">-->
     	<!--<define name="OPTICFLOW_DEBUG" value="TRUE"/>-->

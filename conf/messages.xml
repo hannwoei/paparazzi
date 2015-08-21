@@ -2009,9 +2009,33 @@
 	<field name="cov"		  type="float"/>
 	<field name="pgain"		  type="int32"/>
 	<field name="err_div"     type="float"/>
+	<field name="div_size"    type="float" unit="1/s"/>
   </message>
-  
-  <!--229 is free -->
+
+  <message name="DIV_CMD" id="229">
+    <field name="ref_z"     type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="ref_div"   type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
+    <field name="ref_zdd"   type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>
+    <field name="zd_sp"     type="int32" alt_unit="m"    alt_unit_coef="0.0000019"/>
+    <field name="est_z"     type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="est_zd"    type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
+    <field name="est_zdd"   type="int32" alt_unit="m/s2" alt_unit_coef="0.0009766"/>
+    <field name="est_div"   type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
+    <field name="sum_err"   type="int32"/>
+    <field name="ff_cmd"    type="int32"/>
+    <field name="fb_cmd"    type="int32"/>
+    <field name="delta_t"   type="int32"/>
+    <field name="err_z"     type="int32" alt_unit="m"    alt_unit_coef="0.0039063"/>
+    <field name="err_zd"    type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
+    <field name="grd_div"   type="float"/>
+    <field name="kp"        type="int32"/>
+    <field name="kd"        type="int32"/>
+    <field name="ki"        type="int32"/>
+    <field name="Z_EKF"     type="float"/>
+    <field name="Vz_EKF"    type="float"/>
+    <field name="innov_EKF" type="float"/>
+    <field name="cov"       type="float"/>
+  </message>
 
   <message name="AHRS_ARDRONE2" id="230">
     <field name="state" type="uint32" />

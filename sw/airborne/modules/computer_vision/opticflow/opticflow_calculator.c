@@ -40,6 +40,7 @@
 #include "lib/vision/lucas_kanade.h"
 #include "lib/vision/fast_rosten.h"
 #include "lib/vision/opticflow_fitting.h"
+#include "size_divergence.h"
 
 // Camera parameters (defaults are from an ARDrone 2)
 #ifndef OPTICFLOW_FOV_W
@@ -124,6 +125,10 @@ int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
 // washout filter
 float Div_dd, w_n, Div_d, t_step, Div_f;
 
+// size divergence
+float size_divergence;
+int n_samples;
+
 // snapshot
 char filename[100];
 int i_frame;
@@ -174,6 +179,10 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
 
   // washout filter
   Div_dd = 0.0, Div_d = 0.0, t_step = 0.0, Div_f = 0.0;
+
+  // size divergence
+  size_divergence = 0.0;
+  n_samples = 100;
 
   // snapshot
   i_frame = 0;
@@ -313,6 +322,15 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   opticflow->Div_d_prev = Div_d;
   opticflow->Div_f_prev = Div_f;
 
+  // *************************************************************************************
+  // Size Divergence
+  // *************************************************************************************
+//  size_divergence = get_size_divergence(vectors, result->tracked_cnt, n_samples);
+
+
+  // *************************************************************************************
+  // thread data
+  // *************************************************************************************
   result->zx = z_x;
   result->zy = z_y;
   result->flatness = flatness;
@@ -325,7 +343,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   result->fit_uncertainty = FIT_UNCERTAINTY;
   result->Div_f = Div_f;
   result->Div_d = Div_d;
-
+  result->div_size = size_divergence;
 	// **********************************************************************************************************************
 	// Save an image
 	// **********************************************************************************************************************

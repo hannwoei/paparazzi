@@ -65,6 +65,12 @@ PRINT_CONFIG_MSG("OPTICFLOW_DEVICE_SIZE = " _SIZE_HELPER(OPTICFLOW_DEVICE_SIZE))
 #endif
 PRINT_CONFIG_VAR(VIEWVIDEO_DEVICE_BUFFERS)
 
+// The place where the shots are saved (without slash on the end)
+#ifndef SAVE_VIDEO_PATH
+#define SAVE_VIDEO_PATH "/data/video/usb"
+#endif
+PRINT_CONFIG_VAR(SAVE_VIDEO_PATH)
+
 /* The main opticflow variables */
 struct opticflow_t opticflow;                      ///< Opticflow calculations
 static struct opticflow_result_t opticflow_result; ///< The opticflow result
@@ -76,6 +82,17 @@ static bool_t opticflow_got_result;                ///< When we have an optical 
 static pthread_mutex_t opticflow_mutex;            ///< Mutex lock fo thread safety
 struct FloatVect3 V_Ned, V_body;
 struct FloatRMat Rmat_Ned2Body;
+struct logvideo_data_t logvideo_data;
+
+// Initialize the viewvideo structure with the defaults
+struct logvideo_t logvideo = {
+//  .is_streaming = FALSE,
+//  .downsize_factor = LOGVIDEO_DOWNSIZE_FACTOR,
+//  .quality_factor = LOGVIDEO_QUALITY_FACTOR,
+//  .fps = VIEWVIDEO_FPS,
+  .take_shot = FALSE,
+  .shot_number = 0
+};
 
 /* Static functions */
 static void *opticflow_module_calc(void *data);                   ///< The main optical flow calculation thread
@@ -112,7 +129,7 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
                                &opticflow_state.V_body_z,&opticflow_state.gps_z,
                                &opticflow_result.Div_f, &opticflow_result.Div_d,
                                &imu.accel.z, &DivPilot_landing.div_cov, &DivPilot_landing.div_pgain,
-							   &DivPilot_landing.err_div);
+							   &DivPilot_landing.err_div, &opticflow_result.div_size);
   pthread_mutex_unlock(&opticflow_mutex);
 }
 #endif
@@ -132,7 +149,30 @@ void opticflow_module_init(void)
   opticflow_state.V_body_x = 0.0;
   opticflow_state.V_body_y = 0.0;
   opticflow_state.V_body_z = 0.0;
+  opticflow_state.A_body_x = 0.0;
+  opticflow_state.A_body_y = 0.0;
+  opticflow_state.A_body_z = 0.0;
   opticflow_state.gps_z = 0.0;
+
+  // Set the log data to 0
+  logvideo_data.FPS = 0.0;
+  logvideo_data.V_body_x = 0.0;
+  logvideo_data.V_body_y = 0.0;
+  logvideo_data.V_body_z = 0.0;
+  logvideo_data.A_body_x = 0.0;
+  logvideo_data.A_body_y = 0.0;
+  logvideo_data.A_body_z = 0.0;
+  logvideo_data.agl = 0.0;
+  logvideo_data.flatness = 0.0;
+  logvideo_data.flatness_SSL = 0.0;
+  logvideo_data.gps_x = 0.0;
+  logvideo_data.gps_y = 0.0;
+  logvideo_data.gps_z = 0.0;
+  logvideo_data.phi = 0.0;
+  logvideo_data.theta = 0.0;
+  logvideo_data.psi = 0.0;
+  logvideo_data.corner_cnt = 0;
+  logvideo_data.tracked_cnt = 0;
 
   // Initialize the opticflow calculation
   opticflow_calc_init(&opticflow, 320, 240);
@@ -183,6 +223,10 @@ void opticflow_module_run(void)
   opticflow_state.V_body_y = V_body.y;
   opticflow_state.V_body_z = V_body.z;
   opticflow_state.gps_z = stateGetPositionEnu_f()->z;
+
+  opticflow_state.A_body_x = stateGetAccelNed_f()->x;
+  opticflow_state.A_body_y = stateGetAccelNed_f()->y;
+  opticflow_state.A_body_z = stateGetAccelNed_f()->z;
 
   // Update the stabilization loops on the current calculation
   if (opticflow_got_result) {
@@ -275,6 +319,40 @@ static void *opticflow_module_calc(void *data __attribute__((unused)))
     );
 #endif
 
+    // Check if we need to take a shot
+    if (logvideo.take_shot)
+    {
+      // Create a high quality image (99% JPEG encoded)
+      struct image_t jpeg_hr;
+      image_create(&jpeg_hr, img.w, img.h, IMAGE_JPEG);
+      jpeg_encode_image(&img, &jpeg_hr, 99, TRUE);
+
+      // Search for a file where we can write to
+      char save_name[128];
+      for (; logvideo.shot_number < 99999; logvideo.shot_number++)
+      {
+        sprintf(save_name, "%s/img_%05d.jpg", SAVE_VIDEO_PATH, logvideo.shot_number);
+        // Check if file exists or not
+        if (access(save_name, F_OK) == -1) {
+          FILE *fp = fopen(save_name, "w");
+          if (fp == NULL) {
+            printf("[viewvideo-thread] Could not write shot %s.\n", save_name);
+          } else {
+            // Save it to the file and close it
+            fwrite(jpeg_hr.buf, sizeof(uint8_t), jpeg_hr.buf_size, fp);
+            fclose(fp);
+          }
+
+          // We don't need to seek for a next index anymore
+          break;
+        }
+      }
+
+      // We finished the shot
+      image_free(&jpeg_hr);
+      logvideo.take_shot = FALSE;
+    }
+
     // Free the image
     v4l2_image_free(opticflow_dev, &img);
   }
@@ -295,4 +373,32 @@ static void opticflow_agl_cb(uint8_t sender_id __attribute__((unused)), float di
   if (distance > 0) {
     opticflow_state.agl = distance;
   }
+}
+
+
+/**
+ * Take a shot and save it
+ * This will only work when the streaming is enabled
+ */
+void log_video_start(bool_t take)
+{
+  logvideo.take_shot = take;
+  logvideo_data.FPS = opticflow_result.fps;
+  logvideo_data.V_body_x = opticflow_state.V_body_x;
+  logvideo_data.V_body_y = opticflow_state.V_body_y;
+  logvideo_data.V_body_z = opticflow_state.V_body_z;
+  logvideo_data.A_body_x = opticflow_state.A_body_x;
+  logvideo_data.A_body_y = opticflow_state.A_body_y;
+  logvideo_data.A_body_z = opticflow_state.A_body_z;
+  logvideo_data.agl = opticflow_state.agl;
+  logvideo_data.flatness = opticflow_result.flatness;
+  logvideo_data.div = opticflow_result.divergence;
+  logvideo_data.gps_x = opticflow_state.gps_x;
+  logvideo_data.gps_y = opticflow_state.gps_y;
+  logvideo_data.gps_z = opticflow_state.gps_z;
+  logvideo_data.phi = opticflow_state.phi;
+  logvideo_data.theta = opticflow_state.theta;
+  logvideo_data.psi = opticflow_state.psi;
+  logvideo_data.corner_cnt = opticflow_result.corner_cnt;
+  logvideo_data.tracked_cnt = opticflow_result.tracked_cnt;
 }

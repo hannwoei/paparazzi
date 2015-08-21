@@ -34,16 +34,14 @@ struct opticflow_result_t {
   float fps;              ///< Frames per second of the optical flow calculation
   uint16_t corner_cnt;    ///< The amount of coners found by FAST9
   uint16_t tracked_cnt;   ///< The amount of tracked corners
-
   int16_t flow_x;         ///< Flow in x direction from the camera (in subpixels)
   int16_t flow_y;         ///< Flow in y direction from the camera (in subpixels)
   int16_t flow_der_x;     ///< The derotated flow calculation in the x direction (in subpixels)
   int16_t flow_der_y;     ///< The derotated flow calculation in the y direction (in subpixels)
-
   float vel_x;            ///< The velocity in the x direction
   float vel_y;            ///< The velocity in the y direction
-
-  float divergence;       ///< Divergence
+  float divergence;       ///< Divergence from flow field fitting
+  float div_size;         ///< Divergence as determined with the size_divergence script
   float Div_f;			  ///< Filtered Divergence
   float Div_d;			  ///< Derivatives of Divergence
   float TTI;			  ///< Time-to-contact
@@ -61,11 +59,17 @@ struct opticflow_result_t {
 struct opticflow_state_t {
   float phi;      ///< roll [rad]
   float theta;    ///< pitch [rad]
+  float psi;	  ///< yaw [rad]
   float agl;      ///< height above ground [m]
   float V_body_x; ///< body velocity x,y,z [m/s]
   float V_body_y;
   float V_body_z;
-  float gps_z;    ///<  alt from GPS [m]
+  float A_body_x; ///< body acc x,y,z [m/s]
+  float A_body_y;
+  float A_body_z;
+  float gps_x;    ///<  x_ENU from GPS [m]
+  float gps_y;    ///<  y_ENU from GPS [m]
+  float gps_z;    ///<  z_ENU from GPS [m]
 };
 
 #endif

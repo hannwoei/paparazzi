@@ -37,6 +37,8 @@
 struct DivPilot_landing_t {
   int32_t div_pgain;        ///< The divergence P gain on the err_div
   int32_t div_igain;        ///< The divergence I gain on the err_div_int
+  int32_t div_dgain;        ///< The divergence D gain on the err_div_int
+  float nominal_throttle;   ///< The nominal throttle
   float desired_div;        ///< The desired divergence
   int32_t controller;		///< The controller switch
 

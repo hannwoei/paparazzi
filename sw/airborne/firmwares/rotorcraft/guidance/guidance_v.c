@@ -318,7 +318,7 @@ void guidance_v_run(bool_t in_flight)
 #if GUIDANCE_V_MODE_MODULE_SETTING == GUIDANCE_V_MODE_MODULE
     case GUIDANCE_V_MODE_MODULE:
       guidance_v_module_run(in_flight);
-//      guidance_v_zd_sp = 157895; // descent at a rate of 0.1 m/s = 0.1/0.0000019 = 52631, 0.2 m/s = 105263, 0.3 m/s = 157895, 0.4 m/s = 210526, 0.5 m/s = 263158, 0.6 m/s = 315789, 0.8 m/s = 421053, 1.0 m/s = 526316
+//      guidance_v_zd_sp = 52631; // descent at a rate of 0.1 m/s = 0.1/0.0000019 = 52631, 0.2 m/s = 105263, 0.3 m/s = 157895, 0.4 m/s = 210526, 0.5 m/s = 263158, 0.6 m/s = 315789, 0.8 m/s = 421053, 1.0 m/s = 526316
 //      gv_update_ref_from_zd_sp(guidance_v_zd_sp, stateGetPositionNed_i()->z);
 //      run_hover_loop(in_flight);
 //#if !NO_RC_THRUST_LIMIT

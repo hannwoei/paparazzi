@@ -218,7 +218,7 @@ void guidance_v_module_enter(void)
   divergence_v_z_sum_err = 0;
   div_OT = 0.0;
   n_buf = 0;
-  kd_update = 50;
+  kd_update = 80;
   min_kd = 20;
   max_kd = 300;
   gain_search = 1;
@@ -275,12 +275,22 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 		return;
 	}
 
+	/* compute ground divergence */
+	if(stateGetPositionNed_f()->z!=0)
+	{
+		div_OT = -2.0*stateGetSpeedNed_f()->z/stateGetPositionNed_f()->z;
+	}
+	else
+	{
+		div_OT = 0.0;
+	}
+
 	/* use normally landing when the height is below 10cm */
 	if(curr_pos>-POS_BFP_OF_REAL(0.1))
 	{
 		DivPilot_landing.div_pgain = VISION_DIV_PGAIN;
 		DivPilot_landing.div_dgain = VISION_DIV_DGAIN;
-		DivPilot_landing.div_igain = 0;
+		DivPilot_landing.div_igain = 0; // avoid oscillation
 
 		/* get speed */
 		curr_speed = stateGetSpeedNed_i()->z;
@@ -302,7 +312,8 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 
 		/* get divergence */
 		curr_speed = -(result->Div_f)*(1<<(INT32_SPEED_FRAC));
-//		curr_speed = div_OT;
+//		curr_speed = -(result->divergence)*(1<<(INT32_SPEED_FRAC));
+//		curr_speed = div_OT*(1<<(INT32_SPEED_FRAC));
 //		curr_speed = stateGetSpeedNed_i()->z;
 	}
 
@@ -314,7 +325,7 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 
 	if(DivPilot_landing.controller != 0)
 	{
-		if (DivPilot_landing.div_cov < -20.0)
+		if (DivPilot_landing.div_cov < -25.0)
 		{
 			if(gain_search == 1)
 			{
@@ -326,7 +337,7 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 			if(DivPilot_landing.controller == 2 && kd_update > min_kd)
 			{
 //				count_update += 1;
-//				if(count_update > 10)
+//				if(count_update > 20)
 //				{
 					kd_update = kd_update - 10;
 //				}
@@ -337,24 +348,13 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 			if(gain_search == 1)
 			{
 				count_update += 1;
-				if(count_update > 20)
+				if(count_update > 60)
 				{
 					kd_update = kd_update + 10;
 					count_update = 0;
 				}
 			}
 		}
-	}
-
-
-	/* compute ground divergence */
-	if(stateGetPositionNed_f()->z!=0)
-	{
-		div_OT = -2.0*stateGetSpeedNed_f()->z/stateGetPositionNed_f()->z;
-	}
-	else
-	{
-		div_OT = 0.0;
 	}
 
 	// **********************************************************************************************************************
@@ -422,7 +422,7 @@ static void run_landing_loop(int32_t pos, int32_t speed)
 	inv_m = BFP_OF_REAL(9.81 / (DivPilot_landing.nominal_throttle * MAX_PPRZ), FF_CMD_FRAC);
 
 	const int32_t g_m_zdd = (int32_t)BFP_OF_REAL(9.81, FF_CMD_FRAC);
-	//                          - (divergence_v_zdd_ref << (FF_CMD_FRAC - INT32_ACCEL_FRAC));
+//	                          - (divergence_v_zdd_ref << (FF_CMD_FRAC - INT32_ACCEL_FRAC));
 
 	divergence_v_ff_cmd = g_m_zdd / inv_m;
 	/* feed forward command */

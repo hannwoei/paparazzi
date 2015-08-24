@@ -256,39 +256,39 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   image_show_flow(img, vectors, result->tracked_cnt, opticflow->subpixel_factor);
 #endif
 
-  // Get the median flow
-  qsort(vectors, result->tracked_cnt, sizeof(struct flow_t), cmp_flow);
-  if (result->tracked_cnt == 0) {
-    // We got no flow
-    result->flow_x = 0;
-    result->flow_y = 0;
-  } else if (result->tracked_cnt > 3) {
-    // Take the average of the 3 median points
-    result->flow_x = vectors[result->tracked_cnt / 2 - 1].flow_x;
-    result->flow_y = vectors[result->tracked_cnt / 2 - 1].flow_y;
-    result->flow_x += vectors[result->tracked_cnt / 2].flow_x;
-    result->flow_y += vectors[result->tracked_cnt / 2].flow_y;
-    result->flow_x += vectors[result->tracked_cnt / 2 + 1].flow_x;
-    result->flow_y += vectors[result->tracked_cnt / 2 + 1].flow_y;
-    result->flow_x /= 3;
-    result->flow_y /= 3;
-  } else {
-    // Take the median point
-    result->flow_x = vectors[result->tracked_cnt / 2].flow_x;
-    result->flow_y = vectors[result->tracked_cnt / 2].flow_y;
-  }
-
-  // Flow Derotation
-  float diff_flow_x = (state->phi - opticflow->prev_phi) * img->w / OPTICFLOW_FOV_W;
-  float diff_flow_y = (state->theta - opticflow->prev_theta) * img->h / OPTICFLOW_FOV_H;
-  result->flow_der_x = result->flow_x - diff_flow_x * opticflow->subpixel_factor;
-  result->flow_der_y = result->flow_y - diff_flow_y * opticflow->subpixel_factor;
-  opticflow->prev_phi = state->phi;
-  opticflow->prev_theta = state->theta;
-
-  // Velocity calculation
-  result->vel_x = -result->flow_der_x * result->fps * state->agl/ opticflow->subpixel_factor * img->w / OPTICFLOW_FX;
-  result->vel_y =  result->flow_der_y * result->fps * state->agl/ opticflow->subpixel_factor * img->h / OPTICFLOW_FY;
+//  // Get the median flow
+//  qsort(vectors, result->tracked_cnt, sizeof(struct flow_t), cmp_flow);
+//  if (result->tracked_cnt == 0) {
+//    // We got no flow
+//    result->flow_x = 0;
+//    result->flow_y = 0;
+//  } else if (result->tracked_cnt > 3) {
+//    // Take the average of the 3 median points
+//    result->flow_x = vectors[result->tracked_cnt / 2 - 1].flow_x;
+//    result->flow_y = vectors[result->tracked_cnt / 2 - 1].flow_y;
+//    result->flow_x += vectors[result->tracked_cnt / 2].flow_x;
+//    result->flow_y += vectors[result->tracked_cnt / 2].flow_y;
+//    result->flow_x += vectors[result->tracked_cnt / 2 + 1].flow_x;
+//    result->flow_y += vectors[result->tracked_cnt / 2 + 1].flow_y;
+//    result->flow_x /= 3;
+//    result->flow_y /= 3;
+//  } else {
+//    // Take the median point
+//    result->flow_x = vectors[result->tracked_cnt / 2].flow_x;
+//    result->flow_y = vectors[result->tracked_cnt / 2].flow_y;
+//  }
+//
+//  // Flow Derotation
+//  float diff_flow_x = (state->phi - opticflow->prev_phi) * img->w / OPTICFLOW_FOV_W;
+//  float diff_flow_y = (state->theta - opticflow->prev_theta) * img->h / OPTICFLOW_FOV_H;
+//  result->flow_der_x = result->flow_x - diff_flow_x * opticflow->subpixel_factor;
+//  result->flow_der_y = result->flow_y - diff_flow_y * opticflow->subpixel_factor;
+//  opticflow->prev_phi = state->phi;
+//  opticflow->prev_theta = state->theta;
+//
+//  // Velocity calculation
+//  result->vel_x = -result->flow_der_x * result->fps * state->agl/ opticflow->subpixel_factor * img->w / OPTICFLOW_FX;
+//  result->vel_y =  result->flow_der_y * result->fps * state->agl/ opticflow->subpixel_factor * img->h / OPTICFLOW_FY;
 
   // *************************************************************************************
   // Flow Field Fitting

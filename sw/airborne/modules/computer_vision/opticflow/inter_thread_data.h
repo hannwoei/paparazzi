@@ -44,6 +44,7 @@ struct opticflow_result_t {
   float div_size;         ///< Divergence as determined with the size_divergence script
   float Div_f;			  ///< Filtered Divergence
   float Div_d;			  ///< Derivatives of Divergence
+  float Div_grd;		  ///< Divergence from OpticTrack
   float TTI;			  ///< Time-to-contact
   float flatness;		  ///< Flatness Measure
   float zx;

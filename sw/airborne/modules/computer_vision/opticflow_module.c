@@ -109,27 +109,29 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
 {
   pthread_mutex_lock(&opticflow_mutex);
   pprz_msg_send_OPTIC_FLOW_EST(trans, dev, AC_ID,
-                               &opticflow_result.fps, &opticflow_result.corner_cnt,
+                               &opticflow_result.fps,
+							   &opticflow_result.corner_cnt,
                                &opticflow_result.tracked_cnt,
-                               // &opticflow_result.flow_x, &opticflow_result.flow_y,
-                               // &opticflow_result.flow_der_x, &opticflow_result.flow_der_y,
-                               &opticflow_result.vel_x, &opticflow_result.vel_y,
+							   &opticflow_result.TTI,
+							   &opticflow_result.divergence,
+							   &opticflow_result.Div_f,
+							   &opticflow_result.Div_d,
+							   &opticflow_result.div_size,
+							   &opticflow_result.Div_grd,
+							   &DivPilot_landing.div_cov,
                                &opticflow_result.flatness,
-                               &opticflow_result.divergence,
-                               &opticflow_result.TTI,
                                &opticflow_result.d_heading,
                                &opticflow_result.d_pitch,
                                &opticflow_result.n_inlier,
                                &opticflow_result.min_error,
                                &opticflow_result.fit_uncertainty,
-                               &DivPilot_landing.div_thrust, &opticflow_state.agl,//&DivPilot_landing.err_div_int,
-                               &DivPilot_landing.desired_div,
-                               // &opticflow_stab.cmd.phi, &opticflow_stab.cmd.theta,
-                               &opticflow_state.V_body_x,&opticflow_state.V_body_y,
-                               &opticflow_state.V_body_z,&opticflow_state.gps_z,
-                               &opticflow_result.Div_f, &opticflow_result.Div_d,
-                               &imu.accel.z, &DivPilot_landing.div_cov, &DivPilot_landing.div_pgain,
-							   &DivPilot_landing.err_div, &opticflow_result.div_size);
+                               &DivPilot_landing.div_thrust,
+                               &opticflow_state.V_body_x,
+							   &opticflow_state.V_body_y,
+                               &opticflow_state.V_body_z,
+                               &imu.accel.z,
+							   &opticflow_state.gps_z,
+							   &opticflow_state.agl);
   pthread_mutex_unlock(&opticflow_mutex);
 }
 #endif

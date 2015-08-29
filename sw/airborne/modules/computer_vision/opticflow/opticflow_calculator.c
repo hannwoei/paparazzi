@@ -125,9 +125,13 @@ int n_inlier_minu, n_inlier_minv, FIT_UNCERTAINTY, USE_LINEAR_FIT, no_parameter;
 // washout filter
 float Div_dd, w_n, Div_d, t_step, Div_f;
 
+// lowpass filter
+float alpha, RC;
+
 // size divergence
 float size_divergence;
 int n_samples;
+float grd_divergence;
 
 // snapshot
 char filename[100];
@@ -180,9 +184,15 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   // washout filter
   Div_dd = 0.0, Div_d = 0.0, t_step = 0.0, Div_f = 0.0;
 
+  // lowpass filter
+  alpha = 0.0, RC = 1.0/(2.0*2*3.14);
+
   // size divergence
   size_divergence = 0.0;
   n_samples = 100;
+
+  // ground divergence
+  grd_divergence = 0.0;
 
   // snapshot
   i_frame = 0;
@@ -293,15 +303,20 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   // *************************************************************************************
   // Flow Field Fitting
   // *************************************************************************************
-  for(int i=0; i<no_parameter; i++)
-  {
-	  pu[i] = 0.0;
-	  pv[i] = 0.0;
-  }
+//  for(int i=0; i<no_parameter; i++)
+//  {
+//	  pu[i] = 0.0;
+//	  pv[i] = 0.0;
+//  }
+//
+//  analyseTTI(pu, pv, &z_x, &z_y, &flatness, &divergence, &TTI, &d_heading, &d_pitch,
+//  		&n_inlier_minu, &n_inlier_minv, &min_error_u, &min_error_v, &FIT_UNCERTAINTY,
+//  		vectors, result->tracked_cnt, opticflow->subpixel_factor, result->fps, img->w, img->h, USE_LINEAR_FIT);
 
-  analyseTTI(pu, pv, &z_x, &z_y, &flatness, &divergence, &TTI, &d_heading, &d_pitch,
-  		&n_inlier_minu, &n_inlier_minv, &min_error_u, &min_error_v, &FIT_UNCERTAINTY,
-  		vectors, result->tracked_cnt, opticflow->subpixel_factor, result->fps, img->w, img->h, USE_LINEAR_FIT);
+  // *************************************************************************************
+  // Size Divergence
+  // *************************************************************************************
+  size_divergence = -get_size_divergence(vectors, result->tracked_cnt, n_samples)*100;
 
   // washout filter on divergence
   if (result->fps == 0)
@@ -312,21 +327,30 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   {
 	  t_step = 1.0/result->fps;
   }
+//
+//  Div_dd = ((size_divergence-opticflow->Div_f_prev)*w_n/2.0-opticflow->Div_d_prev)*2.0*w_n;
+//  Div_d = Div_dd*t_step + opticflow->Div_d_prev;
+//  Div_f = Div_d*t_step + opticflow->Div_f_prev;
 
-//  t_step = 1.0/result->fps;
-
-  Div_dd = ((divergence-opticflow->Div_f_prev)*w_n/2.0-opticflow->Div_d_prev)*2.0*w_n;
-  Div_d = Div_dd*t_step + opticflow->Div_d_prev;
-  Div_f = Div_d*t_step + opticflow->Div_f_prev;
+  // low pass filter
+  alpha = t_step/(RC+t_step);
+  Div_f = opticflow->Div_f_prev + alpha*(size_divergence-opticflow->Div_f_prev);
 
   opticflow->Div_d_prev = Div_d;
   opticflow->Div_f_prev = Div_f;
 
   // *************************************************************************************
-  // Size Divergence
+  // Ground Divergence
   // *************************************************************************************
-//  size_divergence = get_size_divergence(vectors, result->tracked_cnt, n_samples);
-
+  /* compute ground divergence */
+  if(state->gps_z!=0)
+  {
+	  grd_divergence = -2.0*state->V_body_z/state->gps_z;
+  }
+  else
+  {
+	  grd_divergence = 0.0;
+  }
 
   // *************************************************************************************
   // thread data
@@ -344,6 +368,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   result->Div_f = Div_f;
   result->Div_d = Div_d;
   result->div_size = size_divergence;
+  result->Div_grd = grd_divergence;
 	// **********************************************************************************************************************
 	// Save an image
 	// **********************************************************************************************************************

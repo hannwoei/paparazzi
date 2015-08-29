@@ -317,6 +317,16 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 //		curr_speed = stateGetSpeedNed_i()->z;
 	}
 
+	/* sinuoidal signal for controlling climb rate */
+//	if(curr_pos>-POS_BFP_OF_REAL(1))
+//	{
+//		div_sp = -SPEED_BFP_OF_REAL(0.7);
+//	}
+//	if(curr_pos<-POS_BFP_OF_REAL(4))
+//	{
+//		div_sp = SPEED_BFP_OF_REAL(0.7);
+//	}
+
 	/* detect oscillation*/
 	buf_div[n_buf] = result->Div_f;
 	buf_thrust[n_buf] = (float) divergence_v_delta_t;

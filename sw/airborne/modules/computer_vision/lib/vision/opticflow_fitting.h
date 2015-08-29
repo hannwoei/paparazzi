@@ -55,4 +55,5 @@ void MatSwap(float **mat, int r1, int r2, int c);
 void saveSingleImageDataFile(struct image_t *input, int width, int height, char filename[100]);
 float CalcMean(float *arr, uint8_t size_arr);
 float CalcCov(float *arr1, float *arr2, uint8_t size_arr);
+void lineDivergence(float *divergence, struct flow_t *vectors, int count, int subpixel_factor);
 #endif

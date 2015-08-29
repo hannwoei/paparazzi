@@ -1449,6 +1449,12 @@ void analyseTTI(float *pu, float *pv, float *z_x, float *z_y, float *flatness, f
 				extractInformationFromQuadFlowField(z_x, z_y, flatness, divergence, TTI,  d_heading, d_pitch, pu, pv, *min_error_u, *min_error_v, count, FPS, imW, imH);
 			}
 		}
+
+		// delete data
+		free(x);
+		free(y);
+		free(dx);
+		free(dy);
 }
 
 void MatSwap(float **mat, int r1, int r2, int c)

@@ -584,7 +584,8 @@ void fitLinearFlowField(float* pu, float* pv, float* min_error_u, float* min_err
 			for(p = 0; p < count; p++)
 			{
 //				printf("h=%f ",C[p]);
-				if(C[p] < error_threshold)
+				if(abs(C[p]) < error_threshold)
+//				if(C[p] < error_threshold)
 				{
 					errors_pu[it] += abs(C[p]);
 					n_inliers_pu[it]++;
@@ -599,7 +600,8 @@ void fitLinearFlowField(float* pu, float* pv, float* min_error_u, float* min_err
 			for(p = 0; p < count; p++)
 			{
 //				printf("v=%f ",C[p]);
-				if(C[p] < error_threshold)
+				if(abs(C[p]) < error_threshold)
+//				if(C[p] < error_threshold)
 				{
 					errors_pv[it] += abs(C[p]);
 					n_inliers_pv[it]++;

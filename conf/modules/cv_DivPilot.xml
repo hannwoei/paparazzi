@@ -68,9 +68,8 @@
         <dl_setting var="opticflow.subpixel_factor" module="computer_vision/opticflow_module" min="0" step="1" max="100" shortname="subpixel_factor" param="OPTICFLOW_SUBPIXEL_FACTOR"/>
         <dl_setting var="opticflow.max_iterations" module="computer_vision/opticflow_module" min="0" step="1" max="100" shortname="max_iterations" param="OPTICFLOW_MAX_ITERATIONS"/>
         <dl_setting var="opticflow.threshold_vec" module="computer_vision/opticflow_module" min="0" step="1" max="100" shortname="threshold_vec" param="OPTICFLOW_THRESHOLD_VEC"/>
-        
         <dl_setting var="snapshot" module="computer_vision/opticflow_module" min="0" step="1" max="1" shortname="snapshot" param="OPTICFLOW_SNAPSHOT"/>
-	<dl_setting var="w_n" module="computer_vision/opticflow_module" min="0" step="1" max="20" shortname="w_n" param="OPTICFLOW_W_N"/>
+		<dl_setting var="opticflow.w_n" module="computer_vision/opticflow_module" min="0" step="0.01" max="20" shortname="w_n" param="OPTICFLOW_W_N"/>
         	
         <dl_setting var="opticflow.fast9_adaptive" module="computer_vision/opticflow_module" min="0" step="1" max="1" shortname="fast9_adaptive" param="OPTICFLOW_FAST9_ADAPTIVE"/>
         <dl_setting var="opticflow.fast9_threshold" module="computer_vision/opticflow_module" min="0" step="1" max="255" shortname="fast9_threshold" param="OPTICFLOW_FAST9_THRESHOLD"/>

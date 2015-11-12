@@ -110,7 +110,7 @@ PRINT_CONFIG_VAR(OPTICFLOW_FAST9_MIN_DISTANCE)
 PRINT_CONFIG_VAR(OPTICFLOW_SNAPSHOT)
 
 #ifndef OPTICFLOW_W_N
-#define OPTICFLOW_W_N 10
+#define OPTICFLOW_W_N 0.8
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_SNAPSHOT)
 
@@ -132,6 +132,8 @@ float alpha, RC;
 float size_divergence;
 int n_samples;
 float grd_divergence;
+float size_buf[5];
+unsigned int size_point = 0;
 
 // snapshot
 char filename[100];
@@ -165,6 +167,7 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   opticflow->fast9_adaptive = OPTICFLOW_FAST9_ADAPTIVE;
   opticflow->fast9_threshold = OPTICFLOW_FAST9_THRESHOLD;
   opticflow->fast9_min_distance = OPTICFLOW_FAST9_MIN_DISTANCE;
+  opticflow->w_n = OPTICFLOW_W_N;
 
   // flow fitting
   USE_LINEAR_FIT = 1;
@@ -197,7 +200,7 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   // snapshot
   i_frame = 0;
   snapshot = OPTICFLOW_SNAPSHOT;
-  w_n = OPTICFLOW_W_N;
+
 }
 
 /**
@@ -316,7 +319,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   // *************************************************************************************
   // Size Divergence
   // *************************************************************************************
-  size_divergence = -get_size_divergence(vectors, result->tracked_cnt, n_samples)*100;
+  size_divergence = -get_size_divergence(vectors, result->tracked_cnt, n_samples)*65;
 
   // washout filter on divergence
   if (result->fps == 0)
@@ -327,14 +330,24 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   {
 	  t_step = 1.0/result->fps;
   }
-//
+//  TODO: Better outlier removal is needed.
 //  Div_dd = ((size_divergence-opticflow->Div_f_prev)*w_n/2.0-opticflow->Div_d_prev)*2.0*w_n;
 //  Div_d = Div_dd*t_step + opticflow->Div_d_prev;
 //  Div_f = Div_d*t_step + opticflow->Div_f_prev;
 
   // low pass filter
-  alpha = t_step/(RC+t_step);
-  Div_f = opticflow->Div_f_prev + alpha*(size_divergence-opticflow->Div_f_prev);
+//  alpha = t_step/(RC+t_step);
+//  alpha = opticflow->w_n;
+//  Div_f = opticflow->Div_f_prev + alpha*(size_divergence-opticflow->Div_f_prev);
+//  Div_f = opticflow->Div_f_prev + alpha*(divergence-opticflow->Div_f_prev);
+
+  // median filter
+	size_buf[size_point] = size_divergence;
+//	size_buf[size_point] = divergence;
+	size_point = (size_point+1) %5;
+
+	quick_sort(size_buf,5);
+	Div_f  = size_buf[3];
 
   opticflow->Div_d_prev = Div_d;
   opticflow->Div_f_prev = Div_f;

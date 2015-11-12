@@ -54,11 +54,12 @@ struct opticflow_t {
   uint8_t fast9_adaptive;            ///< Whether the FAST9 threshold should be adaptive
   uint8_t fast9_threshold;          ///< FAST9 corner detection threshold
   uint16_t fast9_min_distance;      ///< Minimum distance in pixels between corners
+
+  float w_n;						///< Tuning parameter for divergence filter
 };
 
 // Snapshot
 extern uint8_t snapshot;
-extern float w_n;
 
 void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h);
 void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_t *state, struct image_t *img, struct opticflow_result_t *result);

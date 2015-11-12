@@ -320,11 +320,11 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 	/* sinuoidal signal for controlling climb rate */
 //	if(curr_pos>-POS_BFP_OF_REAL(1))
 //	{
-//		div_sp = -SPEED_BFP_OF_REAL(0.7);
+//		div_sp = -SPEED_BFP_OF_REAL(DivPilot_landing.desired_div);
 //	}
-//	if(curr_pos<-POS_BFP_OF_REAL(4))
+//	if(curr_pos<-POS_BFP_OF_REAL(3))
 //	{
-//		div_sp = SPEED_BFP_OF_REAL(0.7);
+//		div_sp = SPEED_BFP_OF_REAL(DivPilot_landing.desired_div);
 //	}
 
 	/* detect oscillation*/
@@ -346,11 +346,12 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 
 			if(DivPilot_landing.controller == 2 && kd_update > min_kd)
 			{
-//				count_update += 1;
-//				if(count_update > 20)
-//				{
+				count_update += 1;
+				if(count_update > 20)
+				{
 					kd_update = kd_update - 10;
-//				}
+					count_update = 0;
+				}
 			}
 		}
 		else
@@ -358,7 +359,7 @@ void landing_DivPilot_update(struct opticflow_result_t *result,  struct opticflo
 			if(gain_search == 1)
 			{
 				count_update += 1;
-				if(count_update > 60)
+				if(count_update > 120)
 				{
 					kd_update = kd_update + 10;
 					count_update = 0;

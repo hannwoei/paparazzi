@@ -1117,7 +1117,7 @@ void extractInformationFromLinearFlowField(float *flatness, float *divergence, f
 		*d_pitch = (-(pv[2] + (imgWidth/2.0f) * pv[0] + (imgHeight/2.0f) * pv[1]));
 
 		//apply a moving average
-		int medianfilter = 1;
+		int medianfilter = 0;
 		int averagefilter = 0;
 		int butterworthfilter = 0;
 		float div_avg = 0.0f;

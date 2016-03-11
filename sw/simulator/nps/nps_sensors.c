@@ -17,6 +17,9 @@ void nps_sensors_init(double time)
   nps_sensor_mag_init(&sensors.mag, time);
   nps_sensor_baro_init(&sensors.baro, time);
   nps_sensor_gps_init(&sensors.gps, time);
+  nps_sensor_sonar_init(&sensors.sonar, time);
+  nps_sensor_airspeed_init(&sensors.airspeed, time);
+  nps_sensor_temperature_init(&sensors.temp, time);
 
 }
 
@@ -29,6 +32,8 @@ void nps_sensors_run_step(double time)
   nps_sensor_baro_run_step(&sensors.baro, time);
   nps_sensor_gps_run_step(&sensors.gps, time);
   nps_sensor_sonar_run_step(&sensors.sonar, time);
+  nps_sensor_airspeed_run_step(&sensors.airspeed, time);
+  nps_sensor_temperature_run_step(&sensors.temp, time);
 }
 
 
@@ -72,6 +77,24 @@ bool_t nps_sensors_sonar_available(void)
 {
   if (sensors.sonar.data_available) {
     sensors.sonar.data_available = FALSE;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+bool_t nps_sensors_airspeed_available(void)
+{
+  if (sensors.airspeed.data_available) {
+    sensors.airspeed.data_available = FALSE;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+bool_t nps_sensors_temperature_available(void)
+{
+  if (sensors.temp.data_available) {
+    sensors.temp.data_available = FALSE;
     return TRUE;
   }
   return FALSE;

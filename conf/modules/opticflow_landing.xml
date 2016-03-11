@@ -1,0 +1,40 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="opticflow_landing" dir="divergence_landing">
+  <doc>
+    <description>
+		Vertical control landing using divergence
+    </description>
+    <define name="LANDING_AGL_ID" value="ABI_BROADCAST" description="Sender id of the AGL (sonar) ABI message"/>
+    <section name="DIVERGENCE_LANDING" prefix="VISION_">
+      <define name="DIV_PGAIN" value="283"/>
+      <define name="DIV_IGAIN" value="0.00"/>
+      <define name="DIV_DGAIN" value="0.00"/>
+      <define name="NOMINAL_THROTTLE" value="0.655"/>
+      <define name="DESIRED_DIV" value="1.0"/>
+      <define name="CONTROLLER" value="1"/>
+    </section>
+  </doc>
+
+  <settings>
+    <dl_settings>
+      <dl_settings NAME="DivergenceLanding">
+        <dl_setting var="Div_landing.div_pgain" module="computer_vision/opticflow_module" min="0" step="1" max="300" shortname="kp_div" param="VISION_DIV_PGAIN"/>
+        <dl_setting var="Div_landing.div_igain" module="computer_vision/opticflow_module" min="0" step="1" max="100" shortname="ki_div" param="VISION_DIV_IGAIN"/>
+        <dl_setting var="Div_landing.div_dgain" module="computer_vision/opticflow_module" min="0" step="1" max="300" shortname="kd_div" param="VISION_DIV_DGAIN"/>
+        <dl_setting var="Div_landing.nominal_throttle" module="computer_vision/opticflow_module" min="0" step="0.001" max="1" shortname="throttle" param="VISION_NOMINAL_THROTTLE"/>
+        <dl_setting var="Div_landing.desired_div" module="computer_vision/opticflow_module" min="-20" step="0.1" max="20" shortname="desired_div" param="VISION_DESIRED_DIV"/>
+        <dl_setting var="Div_landing.controller" module="computer_vision/opticflow_module" min="0" step="1" max="2" shortname="kp_div" param="VISION_CONTROLLER"/>        
+      </dl_settings>
+    </dl_settings>
+  </settings>
+
+  <header>
+    <file name="divergence_landing.h"/>
+  </header>
+
+  <makefile>
+    <file name="divergence_landing.c"/>
+  </makefile>
+
+</module>

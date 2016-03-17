@@ -33,6 +33,7 @@
     <!--load name="logger_file.xml">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
     </load-->
+<!--
     <load name="video_thread.xml">
       <define name="VIDEO_THREAD_FPS" value="8"/>
       <define name="VIDEO_THREAD_CAMERA" value="bottom_camera"/>
@@ -41,6 +42,11 @@
     <load name="video_rtp_stream.xml">
       <define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
       <define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="1"/>
+    </load>
+-->
+    <load name="cv_opticflow.xml">
+	<define name="OPTICFLOW_DEVICE" value="/dev/video0"/>
+	<define name="OPTICFLOW_DEVICE_SIZE" value="640,480"/>
     </load>
   </modules>
 

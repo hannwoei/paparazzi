@@ -116,7 +116,7 @@ void opticflow_module_init(void)
   opticflow_state.agl = 0;
 
   // Initialize the opticflow calculation
-  opticflow_calc_init(&opticflow, 320, 240);
+  opticflow_calc_init(&opticflow, OPTICFLOW_DEVICE_SIZE);
   opticflow_got_result = FALSE;
 
 #ifdef OPTICFLOW_SUBDEV

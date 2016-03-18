@@ -1,0 +1,4 @@
+<map file="aero_new_building.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 51.9899378	4.3750578"/>
+  <point x="698" y="345" geo="WGS84 51.9883147	4.3803901"/>
+</map>

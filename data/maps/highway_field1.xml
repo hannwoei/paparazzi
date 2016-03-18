@@ -1,0 +1,4 @@
+<map file="highway_field1.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 51.9795823	4.3891449"/>
+  <point x="693" y="327" geo="WGS84 51.9780435	4.3944390"/>
+</map>

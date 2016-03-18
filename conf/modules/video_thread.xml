@@ -46,6 +46,18 @@
     <file name="v4l2.c" dir="modules/computer_vision/lib/v4l"/>
     <file name="jpeg.c" dir="modules/computer_vision/lib/encoding"/>
 
+    <!-- The optical flow module (calculator) -->
+    <file name="opticflow_module.c"/>
+    <file name="opticflow_calculator.c" dir="modules/computer_vision/opticflow"/>
+    <file name="size_divergence.c" dir="modules/computer_vision/opticflow"/>
+    <file name="linear_flow_fit.c" dir="modules/computer_vision/opticflow"/>
+    <file name="pprz_algebra_float.c" dir="math"/>
+    <file name="pprz_matrix_decomp_float.c" dir="math"/>
+
+    <!-- Main vision calculations -->
+    <file name="fast_rosten.c" dir="modules/computer_vision/lib/vision"/>
+    <file name="lucas_kanade.c" dir="modules/computer_vision/lib/vision"/>
+    
     <!-- Random flags -->
     <define name="__USE_GNU"/>
     <flag name="LDFLAGS" value="lrt"/>

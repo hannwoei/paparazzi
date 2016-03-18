@@ -32,9 +32,17 @@
 #include "std.h"
 #include "lib/vision/image.h"
 
+// Include opticflow calculator
+#include "opticflow/opticflow_calculator.h"
+
+// Needed for settings
+extern struct opticflow_t opticflow;
+
 typedef bool_t (*cvFunction)(struct image_t *img);
 
 extern void cv_add(cvFunction func);
+extern void cv_init(int img_W, int img_H);
 extern void cv_run(struct image_t *img);
+extern void cv_periodic(void);
 
 #endif /* CV_H_ */

@@ -68,13 +68,17 @@ PRINT_CONFIG_VAR(VIDEO_THREAD_DEVICE_BUFFERS)
 #ifndef VIDEO_THREAD_FILTERS
 #define VIDEO_THREAD_FILTERS 0
 #endif
+#ifndef VIDEO_THREAD_FORMAT
+#define VIDEO_THREAD_FORMAT V4L2_PIX_FMT_UYVY
+#endif
 struct video_config_t custom_camera = {
   .w = VIDEO_THREAD_VIDEO_WIDTH,
   .h = VIDEO_THREAD_VIDEO_HEIGHT,
   .dev_name = STRINGIFY(VIDEO_THREAD_DEVICE),
   .subdev_name = VIDEO_THREAD_SUBDEV,
   .buf_cnt = VIDEO_THREAD_DEVICE_BUFFERS,
-  .filters = VIDEO_THREAD_FILTERS
+  .filters = VIDEO_THREAD_FILTERS,
+  .format = VIDEO_THREAD_FORMAT
 };
 #define VIDEO_THREAD_CAMERA custom_camera
 #endif
@@ -95,7 +99,9 @@ PRINT_CONFIG_VAR(VIDEO_THREAD_SHOT_PATH)
 
 // Main thread
 static void *video_thread_function(void *data);
-void video_thread_periodic(void) { }
+void video_thread_periodic(void) {
+	cv_periodic();
+}
 
 // Initialize the video_thread structure with the defaults
 struct video_thread_t video_thread = {
@@ -250,6 +256,9 @@ void video_thread_init(void)
     printf("[video_thread] Could not initialize the %s V4L2 device.\n", vid->dev_name);
     return;
   }
+
+  // Initialize cv
+  cv_init(vid->w, vid->h);
 
   // Create the shot directory
   char save_name[128];

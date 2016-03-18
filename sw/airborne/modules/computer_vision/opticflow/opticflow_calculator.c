@@ -45,7 +45,7 @@
 
 // What methods are run to determine divergence, lateral flow, etc.
 // SIZE_DIV looks at line sizes and only calculates divergence
-#define SIZE_DIV 1
+#define SIZE_DIV 0
 // LINEAR_FIT makes a linear optical flow field fit and extracts a lot of information:
 // relative velocities in x, y, z (divergence / time to contact), the slope of the surface, and the surface roughness.
 #define LINEAR_FIT 1
@@ -98,7 +98,7 @@ PRINT_CONFIG_VAR(OPTICFLOW_MAX_ITERATIONS)
 PRINT_CONFIG_VAR(OPTICFLOW_THRESHOLD_VEC)
 
 #ifndef OPTICFLOW_FAST9_ADAPTIVE
-#define OPTICFLOW_FAST9_ADAPTIVE TRUE
+#define OPTICFLOW_FAST9_ADAPTIVE FALSE
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_FAST9_ADAPTIVE)
 

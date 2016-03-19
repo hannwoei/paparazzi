@@ -32,6 +32,12 @@
 
 #include "std.h"
 
+// Include opticflow calculator
+#include "opticflow/opticflow_calculator.h"
+
+// Needed for settings
+extern struct opticflow_t opticflow_v;
+
 // Main video_thread structure
 struct video_thread_t {
   volatile bool_t is_running;   ///< When the device is running

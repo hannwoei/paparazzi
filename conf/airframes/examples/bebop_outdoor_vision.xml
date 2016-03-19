@@ -10,19 +10,20 @@
       <subsystem name="udp"/>
     </target>
 
-    <define name="USE_SONAR" value="TRUE"/>
+    <!--define name="USE_SONAR" value="TRUE"/-->
 	<!-- Subsystem section -->
     <subsystem name="telemetry" type="transparent_udp"/>
     <subsystem name="radio_control" type="datalink"/>
     <subsystem name="motor_mixing"/>
     <subsystem name="actuators" type="bebop"/>
     <subsystem name="imu" type="bebop"/>
-    <!--<subsystem name="gps" type="furuno"/-->
-    <subsystem name="gps" type="datalink"/>
+    <subsystem name="gps" type="furuno"/>
     <subsystem name="stabilization" type="int_quat"/>
     <subsystem name="ahrs"          type="int_cmpl_quat"/>
+<!--
       <configure name="USE_MAGNETOMETER" value="FALSE"/>
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/>
+-->
     <subsystem name="ins" type="extended"/>
   </firmware>
 
@@ -56,12 +57,13 @@
 	<define name="OPTICFLOW_DEVICE_BUFFERS" value="60"/>
     </load>
 -->
+<!--
     <load name="video_thread.xml">
-      <!--define name="VIDEO_THREAD_FPS" value="30"/-->
+      <define name="VIDEO_THREAD_FPS" value="30"/>
       <define name="VIDEO_THREAD_CAMERA" value="bottom_camera"/>
       <define name="VIDEO_THREAD_SHOT_PATH" value="/data/ftp/internal_000/images"/>
     </load>
-
+-->
   </modules>
 
   <commands>
@@ -127,8 +129,10 @@
   </section>
 
   <section name="INS" prefix="INS_">
+<!--
     <define name="USE_GPS_ALT" value="1"/>
     <define name="VFF_R_GPS" value="0.01"/>
+-->
     <define name="SONAR_MAX_RANGE" value="2.2"/>
     <define name="SONAR_UPDATE_ON_AGL" value="TRUE"/>
   </section>

@@ -53,6 +53,8 @@ struct opticflow_t {
   uint16_t fast9_min_distance;      ///< Minimum distance in pixels between corners
 };
 
+// SSL
+extern uint8_t USE_VISION_METHOD, dictionary_ready, load_dictionary, load_model;
 
 void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h);
 void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_t *state, struct image_t *img, struct opticflow_result_t *result);

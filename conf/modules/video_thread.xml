@@ -26,9 +26,35 @@
         </dl_setting>
         <dl_setting var="video_thread.fps" min="1" step="1" max="25" shortname="fps" module="computer_vision/video_thread" param="VIDEO_THREAD_FPS"/>
       </dl_settings>
+      <dl_settings name="SSL">
+        <dl_setting var="USE_VISION_METHOD" module="computer_vision/opticflow/opticflow_calculator" min="0" step="1" max="3" shortname="Method" param="VISION_METHOD"/>
+        <dl_setting var="dictionary_ready" module="computer_vision/opticflow/opticflow_calculator" min="0" step="1" max="2" shortname="Dictionary ready" param="SSL_DICTIONARY_READY"/>       
+        <dl_setting var="load_dictionary" module="computer_vision/opticflow/opticflow_calculator" min="0" step="1" max="1" shortname="Load Dictionary" param="SSL_LOAD_DICTIONARY"/>   
+        <dl_setting var="load_model" module="computer_vision/opticflow/opticflow_calculator" min="0" step="1" max="1" shortname="Load Model" param="SSL_LOAD_MODEL"/>
+        <dl_setting var="activate_landing" module="computer_vision/opticflow/landing_SSL" min="0" step="1" max="1" shortname="Landing_SSL" param="ACTIVATE_LANDING"/>            
+      </dl_settings>
+      
+      <!-- Optical flow calculations parameters for Lucas Kanade and FAST9 -->
+      <!--
+      <dl_settings name="vision_calc">
+        <dl_setting var="opticflow.max_track_corners" module="computer_vision/SSL_module" min="0" step="1" max="500" shortname="max_trck_corners" param="OPTICFLOW_MAX_TRACK_CORNERS"/>
+        <dl_setting var="opticflow.window_size" module="computer_vision/SSL_module" min="0" step="1" max="500" shortname="window_size" param="OPTICFLOW_WINDOW_SIZE"/>
+        <dl_setting var="opticflow.subpixel_factor" module="computer_vision/SSL_module" min="0" step="1" max="100" shortname="subpixel_factor" param="OPTICFLOW_SUBPIXEL_FACTOR"/>
+        <dl_setting var="opticflow.max_iterations" module="computer_vision/SSL_module" min="0" step="1" max="100" shortname="max_iterations" param="OPTICFLOW_MAX_ITERATIONS"/>
+        <dl_setting var="opticflow.threshold_vec" module="computer_vision/SSL_module" min="0" step="1" max="100" shortname="threshold_vec" param="OPTICFLOW_THRESHOLD_VEC"/>
+        
+        <dl_setting var="snapshot" module="computer_vision/SSL_module" min="0" step="1" max="1" shortname="snapshot" param="OPTICFLOW_SNAPSHOT"/>
+	    <dl_setting var="w_n" module="computer_vision/SSL_module" min="0" step="1" max="20" shortname="w_n" param="OPTICFLOW_W_N"/>
+        	
+        <dl_setting var="USE_DEROTATION" module="computer_vision/SSL_module" min="0" step="1" max="1" shortname="derotate_flow" param="OPTICFLOW_DEROTATION"/>
+        <dl_setting var="opticflow.fast9_adaptive" module="computer_vision/SSL_module" min="0" step="1" max="1" shortname="fast9_adaptive" param="OPTICFLOW_FAST9_ADAPTIVE"/>
+        <dl_setting var="opticflow.fast9_threshold" module="computer_vision/SSL_module" min="0" step="1" max="255" shortname="fast9_threshold" param="OPTICFLOW_FAST9_THRESHOLD"/>
+        <dl_setting var="opticflow.fast9_min_distance" module="computer_vision/SSL_module" min="0" step="1" max="500" shortname="fast9_min_distance" param="OPTICFLOW_FAST9_MIN_DISTANCE"/>
+      </dl_settings>
+       	  -->
     </dl_settings>
   </settings>
-
+  
   <header>
     <file name="video_thread.h"/>
   </header>
@@ -41,6 +67,17 @@
 
     <!-- Include the needed Computer Vision files -->
     <define name="modules/computer_vision" type="include"/>
+    <define name="DICTIONARY_PATH" value="/data/ftp/internal_000/SSL_files/" description="path where dictionary is saved."/>
+    <define name="VISION_METHOD"   value="0" description="0-Nth 1-OF 2-SSL 3-OF & SSL"/>
+    <define name="SSL_DICTIONARY_READY"   value="0" description="Train a new dictionary"/>
+    <define name="SSL_LOAD_DICTIONARY"   value="1" description="Load a dictionary"/>
+    <define name="SSL_LOAD_MODEL"   value="1" description="Load a Model"/>
+    <define name="SUB_IMG" description="Use sub-image for SSL"/> 
+    <define name="ACTIVATE_LANDING"   value="1" description="Land with SSL"/>
+    <!-- <define name="DOWNLINK_DISTRIBUTIONS" description="Send distributions"/> -->
+    <!-- <define name="OPTICFLOW_DEBUG"/> -->
+    <!-- <define name="OPTICFLOW_SHOW_FLOW"/>--> <!--  problem: failed regularly converting to jpeg -->
+    
     <file name="image.c" dir="modules/computer_vision/lib/vision"/>
     <file name="v4l2.c" dir="modules/computer_vision/lib/v4l"/>
     <file name="jpeg.c" dir="modules/computer_vision/lib/encoding"/>
@@ -52,10 +89,12 @@
     <file name="linear_flow_fit.c" dir="modules/computer_vision/opticflow"/>
     <file name="pprz_algebra_float.c" dir="math"/>
     <file name="pprz_matrix_decomp_float.c" dir="math"/>
+    <file name="landing_SSL.c" dir="modules/computer_vision/opticflow"/>
 
     <!-- Main vision calculations -->
     <file name="fast_rosten.c" dir="modules/computer_vision/lib/vision"/>
     <file name="lucas_kanade.c" dir="modules/computer_vision/lib/vision"/>
+    <file name="texton.c" dir="modules/computer_vision/lib/vision"/>
     
     <!-- Random flags -->
     <define name="__USE_GNU"/>

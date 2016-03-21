@@ -49,13 +49,44 @@ struct opticflow_result_t {
   float divergence;       ///< Divergence as determined with a linear flow fit
 
   float noise_measurement;  ///< noise of measurement, for state filter
+
+  float surface_roughness_SSL;	  ///< flatness from SSL
+  float zx;
+  float zy;
+  float d_heading;
+  float d_pitch;
+  float min_error;
+  int16_t n_inlier;
+  int16_t fit_uncertainty;
+
+  uint8_t USE_VISION_METHOD;
+  uint8_t land_safe;
+  uint32_t land_safe_count;
+  uint32_t active_3D;
+#ifdef SUB_IMG
+  uint8_t in_sub_min;
+  float sub_min;
+  float sub_roughness[9]; // set a maximum of 9 sub-images
+#else
+#ifdef DOWNLINK_DISTRIBUTIONS
+//  float *texton;
+  float texton[30]; // change the size according to number of words
+#endif
+#endif
 };
 
 /* The state of the drone when it took an image */
 struct opticflow_state_t {
-  float phi;      ///< roll [rad]
-  float theta;    ///< pitch [rad]
-  float agl;      ///< height above ground [m]
+	  float phi;      ///< roll [rad]
+	  float theta;    ///< pitch [rad]
+	  float psi;	  ///< yaw [rad]
+	  float agl;      ///< height above ground [m]
+	  float V_body_x; ///< body velocity x,y,z [m/s]
+	  float V_body_y;
+	  float V_body_z;
+	  float gps_x;    ///<  x_ENU from GPS [m]
+	  float gps_y;    ///<  y_ENU from GPS [m]
+	  float gps_z;    ///<  z_ENU from GPS [m]
 };
 
 #endif

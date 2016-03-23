@@ -1,0 +1,4 @@
+<map file="field_art1.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 51.9795838	4.3900209"/>
+  <point x="906" y="416" geo="WGS84 51.9782788	4.3946351"/>
+</map>

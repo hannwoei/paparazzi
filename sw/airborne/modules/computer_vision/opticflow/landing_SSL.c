@@ -129,60 +129,61 @@ void landing_SSL_update(struct opticflow_result_t *result,  struct opticflow_sta
 #ifdef SUB_IMG
 		if(activate_landing == 1) // move to min flatness
 		{
-			USE_VISION_METHOD = 0;
+//			USE_VISION_METHOD = 0;
 
 			float dw, dh;
-			dw = 106*opticflow_state->gps_z/Fx_ARdrone;
-			dh = 80*opticflow_state->gps_z/Fy_ARdrone;
+			dw = 213*opticflow_state->gps_z/Fx_ARdrone;
+			dh = 160*opticflow_state->gps_z/Fy_ARdrone;
 
-			if(result->in_sub_min == 0)
-			{
-				mv_x = dh;
-				mv_y = dw;
-			}
-			else if(result->in_sub_min == 1)
-			{
-				mv_x = dh;
-				mv_y = 0.0;
-			}
-			else if(result->in_sub_min == 2)
-			{
-				mv_x = dh;
-				mv_y = -dw;
-			}
-			else if(result->in_sub_min == 3)
-			{
-				mv_x = 0.0;
-				mv_y = dw;
-			}
-			else if(result->in_sub_min == 5)
-			{
-				mv_x = 0.0;
-				mv_y = -dw;
-			}
-			else if(result->in_sub_min == 6)
+			if(result->in_sub_min == 8)
 			{
 				mv_x = -dh;
 				mv_y = dw;
 			}
 			else if(result->in_sub_min == 7)
 			{
+				mv_x = 0.0;
+				mv_y = dw;
+			}
+			else if(result->in_sub_min == 6)
+			{
+				mv_x = dh;
+				mv_y = dw;
+			}
+			else if(result->in_sub_min == 5)
+			{
 				mv_x = -dh;
 				mv_y = 0.0;
 			}
-			else if(result->in_sub_min == 8)
-			{
-				mv_x = -dh;
-				mv_y = -dw;
-			}
-			else
+			else if(result->in_sub_min == 4)
 			{
 				mv_x = 0.0;
 				mv_y = 0.0;
 			}
+			else if(result->in_sub_min == 3)
+			{
+				mv_x = dh;
+				mv_y = 0.0;
+			}
+			else if(result->in_sub_min == 2)
+			{
+				mv_x = -dh;
+				mv_y = -dw;
+			}
+			else if(result->in_sub_min == 1)
+			{
+				mv_x = 0.0;
+				mv_y = -dw;
+			}
+			else
+			{
+				mv_x = dh;
+				mv_y = -dw;
+			}
 
 			float angle, mv_x_enuf, mv_y_enuf;
-			angle = opticflow_state->psi-1.57079633;
+//			angle = opticflow_state->psi-1.57079633;
+			angle = opticflow_state->psi;
 
 			mv_x_enuf = mv_x*cos(angle) + mv_y*sin(angle);
 			mv_y_enuf = - mv_x*sin(angle) + mv_y*cos(angle);
@@ -192,6 +193,7 @@ void landing_SSL_update(struct opticflow_result_t *result,  struct opticflow_sta
 			waypoints_Distribution.z = stateGetPositionEnu_i()->z;
 			waypoint_move_enu_i(WP_safe, &waypoints_Distribution);
 
+			activate_landing = 0;
 		}
 #endif
 	}

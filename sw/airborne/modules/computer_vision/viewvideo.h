@@ -47,4 +47,3 @@ extern struct viewvideo_t viewvideo;
 extern void viewvideo_init(void);
 
 #endif /* VIEW_VIDEO_H */
-

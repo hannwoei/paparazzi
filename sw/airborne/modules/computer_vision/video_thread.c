@@ -25,6 +25,8 @@
 
 // Own header
 #include "modules/computer_vision/video_thread.h"
+#include "modules/computer_vision/cv.h"
+
 #include "subsystems/abi.h"
 #include "state.h"
 
@@ -41,6 +43,7 @@
 #include "lib/vision/bayer.h"
 #include "lib/encoding/jpeg.h"
 #include "peripherals/video_device.h"
+//#include "lib/vision/save_YUV.h"
 
 #include "mcu_periph/sys_time.h"
 
@@ -118,6 +121,7 @@ static pthread_mutex_t opticflow_mutex;            ///< Mutex lock fo thread saf
 struct FloatVect3 V_Ned, V_body;
 struct FloatRMat Rmat_Ned2Body;
 static uint16_t shot_number;
+//char filename[100];
 
 /* Static functions */
 static void opticflow_agl_cb(uint8_t sender_id, float distance);  ///< Callback function of the ground altitude
@@ -158,7 +162,8 @@ static void SSL_SUB_telem_send(struct transport_tx *trans, struct link_device *d
 							   &opticflow_state.psi,
 							   &opticflow_result.active_3D,
 							   &opticflow_result.USE_VISION_METHOD,
-							   &shot_number
+							   &shot_number,
+							   &activate_landing
   	  	  	  	  	  	  	   );
   pthread_mutex_unlock(&opticflow_mutex);
 }
@@ -226,7 +231,7 @@ void video_thread_periodic(void) {
 	  opticflow_state.phi = stateGetNedToBodyEulers_f()->phi;
 	  opticflow_state.theta = stateGetNedToBodyEulers_f()->theta;
 	  opticflow_state.psi = stateGetNedToBodyEulers_f()->psi;
-
+#include "modules/computer_vision/cv.h"
 	  // Compute body velocities from ENU
 	  V_Ned.x = stateGetSpeedNed_f()->x;
 	  V_Ned.y = stateGetSpeedNed_f()->y;
@@ -344,7 +349,10 @@ static void *video_thread_function(void *data)
     // Check if we need to take a shot
     if (video_thread.take_shot) {
       video_thread_save_shot(img_final, &img_jpeg);
+//      sprintf(filename, "/data/ftp/internal_000/images/image_%d.dat", shot_number);
+//      saveSingleImageDataFile(&img, filename);
       video_thread.take_shot = FALSE;
+      shot_number++;
     }
 
     // Copy the state
@@ -360,9 +368,11 @@ static void *video_thread_function(void *data)
     // Copy the result if finished
     pthread_mutex_lock(&opticflow_mutex);
     memcpy(&opticflow_result, &temp_result, sizeof(struct opticflow_result_t));
-    shot_number = video_thread.shot_number;
     opticflow_got_result = TRUE;
     pthread_mutex_unlock(&opticflow_mutex);
+
+    // Run processing if required
+    cv_run(img_final);
 
     // Free the image
     v4l2_image_free(video_thread.dev, &img);

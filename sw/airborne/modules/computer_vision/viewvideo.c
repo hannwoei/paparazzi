@@ -236,4 +236,3 @@ void viewvideo_init(void)
   }
 #endif
 }
-

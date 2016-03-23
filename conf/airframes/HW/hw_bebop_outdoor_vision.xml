@@ -38,19 +38,20 @@
 
     <load name="video_thread.xml">
       <define name="VIDEO_THREAD_FPS" value="30"/>
-     <!-- <define name="VIDEO_THREAD_CAMERA" value="bottom_camera"/>-->
-      <define name="VIDEO_THREAD_DEVICE" value="/dev/video0"/>
+     <define name="VIDEO_THREAD_CAMERA" value="bottom_camera"/>
+      <!-- <define name="VIDEO_THREAD_DEVICE" value="/dev/video0"/>
       <define name="VIDEO_THREAD_VIDEO_WIDTH" value="320"/>
-      <define name="VIDEO_THREAD_VIDEO_HEIGHT" value="240"/>
+      <define name="VIDEO_THREAD_VIDEO_HEIGHT" value="240"/>-->
       <define name="VIDEO_THREAD_DEVICE_BUFFERS" value="60"/>
       <define name="VIDEO_THREAD_SHOT_PATH" value="/data/ftp/internal_000/images"/>
     </load>
 <!--
     <load name="video_rtp_stream.xml">
-      <define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
-      <define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="1"/>
+      <define name="VIEWVIDEO_QUALITY_FACTOR" value="60"/>
+      <define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="4"/>
     </load>
-
+-->
+<!--
     <load name="cv_opticflow.xml">
 	<define name="OPTICFLOW_DEVICE" value="/dev/video0"/>
 	<define name="OPTICFLOW_DEVICE_SIZE" value="640,480"/>
@@ -94,13 +95,20 @@
 
   <section name="IMU" prefix="IMU_">
     <!-- Magneto calibration Delft, Netherlands, 20160322-->
+<define name="MAG_X_NEUTRAL" value="-96"/>
+<define name="MAG_Y_NEUTRAL" value="173"/>
+<define name="MAG_Z_NEUTRAL" value="-184"/>
+<define name="MAG_X_SENS" value="6.90252442711" integer="16"/>
+<define name="MAG_Y_SENS" value="7.19913778923" integer="16"/>
+<define name="MAG_Z_SENS" value="7.63870228295" integer="16"/>
+<!--
     <define name="MAG_X_NEUTRAL" value="18"/>
     <define name="MAG_Y_NEUTRAL" value="157"/>
     <define name="MAG_Z_NEUTRAL" value="49"/>
     <define name="MAG_X_SENS" value="10.5007722373" integer="16"/>
     <define name="MAG_Y_SENS" value="11.1147400462" integer="16"/>
     <define name="MAG_Z_SENS" value="11.6479371722" integer="16"/>
-
+-->
     <!-- Magneto current calibration -->
     <define name="MAG_X_CURRENT_COEF" value="0.0"/>
     <define name="MAG_Y_CURRENT_COEF" value="0.0"/>
@@ -208,7 +216,7 @@
     <define name="PGAIN" value="79"/>
     <define name="DGAIN" value="100"/>
     <define name="IGAIN" value="30"/>
-    <define name="REF_MAX_SPEED" value="0.6"/> <!--default:8.5--> <!--0.6 -->
+    <define name="REF_MAX_SPEED" value="2.0"/> <!--default:8.5--> <!--0.6 -->
   </section>
 
   <section name="NAVIGATION" prefix="NAV_">
@@ -227,7 +235,7 @@
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_AUTO1" value="AP_MODE_ATTITUDE_Z_HOLD"/>
     <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
-    <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
+    <!--define name="NO_RC_THRUST_LIMIT" value="TRUE"/-->
   </section>
 
   <section name="BAT">

@@ -2000,6 +2000,7 @@
     <field name="active_3D"   type="uint32"/>
     <field name="vision"      type="uint8"/>
     <field name="n_shot"      type="uint16"/>
+    <field name="active_land" type="uint32"/>
   </message>
 
   <message name="VIDEO_SYNC" id="225">

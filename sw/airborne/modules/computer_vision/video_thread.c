@@ -347,7 +347,7 @@ static void *video_thread_function(void *data)
     }
 
     // Check if we need to take a shot
-    if (video_thread.take_shot) {
+    if (video_thread.take_shot || activate_landing == 1) {
       video_thread_save_shot(img_final, &img_jpeg);
 //      sprintf(filename, "/data/ftp/internal_000/images/image_%d.dat", shot_number);
 //      saveSingleImageDataFile(&img, filename);

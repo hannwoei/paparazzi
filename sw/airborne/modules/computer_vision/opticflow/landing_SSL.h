@@ -42,6 +42,6 @@ extern void guidance_v_module_run(bool_t in_flight);
 extern void landing_SSL_init(void);
 void landing_SSL_update(struct opticflow_result_t *result,  struct opticflow_state_t *opticflow_state);
 
-extern uint32_t activate_landing, stay_waypoint_3D, land_distribution;
+extern uint32_t activate_landing, stay_waypoint_3D, land_distribution,switch_region;
 
 #endif /* CV_LANDING_SSL_V_ */

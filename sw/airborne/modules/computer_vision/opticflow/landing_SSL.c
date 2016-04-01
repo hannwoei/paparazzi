@@ -40,13 +40,18 @@
 #define win_3D 300
 struct EnuCoor_i waypoints_3D[win_3D];
 struct EnuCoor_i waypoints_Distribution;
-uint32_t buf_point_3D, stay_waypoint_3D, land_safe_count, max_safe, active_3D, land_distribution_count, land_distribution, activate_landing;
+uint32_t buf_point_3D, stay_waypoint_3D, land_safe_count, max_safe, active_3D, land_distribution_count, land_distribution, activate_landing, switch_region, prev_region;
 float mv_x, mv_y;
 
 #ifndef ACTIVATE_LANDING
 #define ACTIVATE_LANDING 0
 #endif
 PRINT_CONFIG_VAR(ACTIVATE_LANDING)
+
+#ifndef SWITCH_REGION
+#define SWITCH_REGION 0
+#endif
+PRINT_CONFIG_VAR(SWITCH_REGION)
 
 /**
  * Horizontal guidance mode enter resets the errors
@@ -90,6 +95,9 @@ void landing_SSL_init(void)
 	active_3D = 0;
 	land_distribution_count = 0;
 	land_distribution = 0;
+	switch_region = SWITCH_REGION;
+	activate_landing = ACTIVATE_LANDING;
+	prev_region = 100;
 }
 
 #define Fx_ARdrone 343.1211
@@ -134,6 +142,8 @@ void landing_SSL_update(struct opticflow_result_t *result,  struct opticflow_sta
 			float dw, dh;
 			dw = 213*opticflow_state->gps_z/Fx_ARdrone;
 			dh = 160*opticflow_state->gps_z/Fy_ARdrone;
+//			dw = 213*opticflow_state->agl/Fx_ARdrone;
+//			dh = 160*opticflow_state->agl/Fy_ARdrone;
 
 			if(result->in_sub_min == 8)
 			{
@@ -190,51 +200,126 @@ void landing_SSL_update(struct opticflow_result_t *result,  struct opticflow_sta
 
 			waypoints_Distribution.x = stateGetPositionEnu_i()->x + POS_BFP_OF_REAL(mv_x_enuf);
 			waypoints_Distribution.y = stateGetPositionEnu_i()->y + POS_BFP_OF_REAL(mv_y_enuf);
-			waypoints_Distribution.z = stateGetPositionEnu_i()->z;
+			waypoints_Distribution.z = opticflow_state->gps_z;
+//			waypoints_Distribution.z = opticflow_state->agl;
+
 			waypoint_move_enu_i(WP_safe, &waypoints_Distribution);
 
 			activate_landing = 0;
 		}
-#endif
-	}
 
-	if(result->USE_VISION_METHOD == 1)
-	{
-		if((!stay_waypoint_3D) && ((abs(stateGetSpeedEnu_i()->x) > SPEED_BFP_OF_REAL(0.3)) || (abs(stateGetSpeedEnu_i()->y) > SPEED_BFP_OF_REAL(0.3))))
+		if(activate_landing == 2 && switch_region!=prev_region) // move to min flatness
 		{
-			active_3D = 1;
-			if(result->land_safe == 1)
-			{
-				waypoints_3D[buf_point_3D].x = stateGetPositionEnu_i()->x;
-				waypoints_3D[buf_point_3D].y = stateGetPositionEnu_i()->y;
-				waypoints_3D[buf_point_3D].z = stateGetPositionEnu_i()->z;
-				buf_point_3D = (buf_point_3D+1) %win_3D; // index starts from 0 to mov_block
+//			USE_VISION_METHOD = 0;
 
-				land_safe_count ++;
+			float dw, dh;
+			dw = 213*opticflow_state->gps_z/Fx_ARdrone;
+			dh = 160*opticflow_state->gps_z/Fy_ARdrone;
+//			dw = 213*opticflow_state->agl/Fx_ARdrone;
+//			dh = 160*opticflow_state->agl/Fy_ARdrone;
+
+			if(switch_region == 8)
+			{
+				mv_x = -dh;
+				mv_y = dw;
+			}
+			else if(switch_region == 7)
+			{
+				mv_x = 0.0;
+				mv_y = dw;
+			}
+			else if(switch_region == 6)
+			{
+				mv_x = dh;
+				mv_y = dw;
+			}
+			else if(switch_region == 5)
+			{
+				mv_x = -dh;
+				mv_y = 0.0;
+			}
+			else if(switch_region == 4)
+			{
+				mv_x = 0.0;
+				mv_y = 0.0;
+			}
+			else if(switch_region == 3)
+			{
+				mv_x = dh;
+				mv_y = 0.0;
+			}
+			else if(switch_region == 2)
+			{
+				mv_x = -dh;
+				mv_y = -dw;
+			}
+			else if(switch_region == 1)
+			{
+				mv_x = 0.0;
+				mv_y = -dw;
 			}
 			else
 			{
-				if(land_safe_count > max_safe) //land with the largest possibility of safe region
-				{
-					max_safe = land_safe_count;
-					if (buf_point_3D > 2) waypoint_move_enu_i(WP_safe, &waypoints_3D[buf_point_3D/2]); // save the waypoint having the minimum 3D value
-				}
-				land_safe_count = 0;
-				buf_point_3D = 0;
+				mv_x = dh;
+				mv_y = -dw;
 			}
+
+			prev_region = switch_region;
+
+			float angle, mv_x_enuf, mv_y_enuf;
+//			angle = opticflow_state->psi-1.57079633;
+			angle = opticflow_state->psi;
+
+			mv_x_enuf = mv_x*cos(angle) + mv_y*sin(angle);
+			mv_y_enuf = - mv_x*sin(angle) + mv_y*cos(angle);
+
+			waypoints_Distribution.x = stateGetPositionEnu_i()->x + POS_BFP_OF_REAL(mv_x_enuf);
+			waypoints_Distribution.y = stateGetPositionEnu_i()->y + POS_BFP_OF_REAL(mv_y_enuf);
+			waypoints_Distribution.z = opticflow_state->gps_z;
+//			waypoints_Distribution.z = opticflow_state->agl;
+
+			waypoint_move_enu_i(WP_safe, &waypoints_Distribution);
 		}
-		else
-		{
-			active_3D = 0;
-			if(land_safe_count > max_safe)
-			{
-				max_safe = land_safe_count;
-				if (buf_point_3D > 2) waypoint_move_enu_i(WP_safe, &waypoints_3D[buf_point_3D/2]); // save the waypoint having the minimum 3D value
-			}
-			land_safe_count = 0;
-			buf_point_3D = 0;
-		}
-		result->land_safe_count = land_safe_count;
-		result->active_3D = active_3D;
+#endif
 	}
+
+//	if(result->USE_VISION_METHOD == 1)
+//	{
+//		if((!stay_waypoint_3D) && ((abs(stateGetSpeedEnu_i()->x) > SPEED_BFP_OF_REAL(0.3)) || (abs(stateGetSpeedEnu_i()->y) > SPEED_BFP_OF_REAL(0.3))))
+//		{
+//			active_3D = 1;
+//			if(result->land_safe == 1)
+//			{
+//				waypoints_3D[buf_point_3D].x = stateGetPositionEnu_i()->x;
+//				waypoints_3D[buf_point_3D].y = stateGetPositionEnu_i()->y;
+//				waypoints_3D[buf_point_3D].z = stateGetPositionEnu_i()->z;
+//				buf_point_3D = (buf_point_3D+1) %win_3D; // index starts from 0 to mov_block
+//
+//				land_safe_count ++;
+//			}
+//			else
+//			{
+//				if(land_safe_count > max_safe) //land with the largest possibility of safe region
+//				{
+//					max_safe = land_safe_count;
+//					if (buf_point_3D > 2) waypoint_move_enu_i(WP_safe, &waypoints_3D[buf_point_3D/2]); // save the waypoint having the minimum 3D value
+//				}
+//				land_safe_count = 0;
+//				buf_point_3D = 0;
+//			}
+//		}
+//		else
+//		{
+//			active_3D = 0;
+//			if(land_safe_count > max_safe)
+//			{
+//				max_safe = land_safe_count;
+//				if (buf_point_3D > 2) waypoint_move_enu_i(WP_safe, &waypoints_3D[buf_point_3D/2]); // save the waypoint having the minimum 3D value
+//			}
+//			land_safe_count = 0;
+//			buf_point_3D = 0;
+//		}
+//		result->land_safe_count = land_safe_count;
+//		result->active_3D = active_3D;
+//	}
 }

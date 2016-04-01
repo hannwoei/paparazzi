@@ -31,7 +31,8 @@
         <dl_setting var="dictionary_ready" module="computer_vision/opticflow/opticflow_calculator" min="0" step="1" max="2" shortname="Dictionary ready" param="SSL_DICTIONARY_READY"/>       
         <dl_setting var="load_dictionary" module="computer_vision/opticflow/opticflow_calculator" min="0" step="1" max="1" shortname="Load Dictionary" param="SSL_LOAD_DICTIONARY"/>   
         <dl_setting var="load_model" module="computer_vision/opticflow/opticflow_calculator" min="0" step="1" max="1" shortname="Load Model" param="SSL_LOAD_MODEL"/>
-        <dl_setting var="activate_landing" module="computer_vision/opticflow/landing_SSL" min="0" step="1" max="1" shortname="Landing_SSL" param="ACTIVATE_LANDING"/>            
+        <dl_setting var="activate_landing" module="computer_vision/opticflow/landing_SSL" min="0" step="1" max="2" shortname="Landing_SSL" param="ACTIVATE_LANDING"/>    
+        <dl_setting var="switch_region" module="computer_vision/opticflow/landing_SSL" min="0" step="1" max="8" shortname="Region" param="SWITCH_REGION"/>        
       </dl_settings>
       
       <!-- Optical flow calculations parameters for Lucas Kanade and FAST9 -->
@@ -74,7 +75,8 @@
     <define name="SSL_LOAD_DICTIONARY"   value="1" description="Load a dictionary"/>
     <define name="SSL_LOAD_MODEL"   value="1" description="Load a Model"/>
     <define name="SUB_IMG" description="Use sub-image for SSL"/> 
-    <define name="ACTIVATE_LANDING"   value="1" description="Land with SSL"/>
+    <define name="ACTIVATE_LANDING"   value="0" description="Land with SSL"/>
+    <define name="SWITCH_REGION"   value="0" description="Check region"/>
     <!-- <define name="DOWNLINK_DISTRIBUTIONS" description="Send distributions"/> -->
     <!-- <define name="OPTICFLOW_DEBUG"/> -->
     <!-- <define name="OPTICFLOW_SHOW_FLOW"/>--> <!--  problem: failed regularly converting to jpeg -->

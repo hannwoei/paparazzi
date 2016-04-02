@@ -37,9 +37,14 @@ struct Div_landing_t {
   float desired_div;        ///< The desired divergence
   int32_t controller;		///< The controller switch
   float div_cov;
+  float div;
   float agl;
+  float gps_z;
+  float vel_z;
   float z_sp;
+  float err;
   float z_sum_err;
+  int32_t thrust;
 };
 extern struct Div_landing_t Div_landing;
 

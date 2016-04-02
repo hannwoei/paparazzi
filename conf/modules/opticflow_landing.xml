@@ -5,15 +5,6 @@
     <description>
 		Vertical control landing using divergence
     </description>
-    <define name="LANDING_AGL_ID" value="ABI_BROADCAST" description="Sender id of the AGL (sonar) ABI message"/>
-    <section name="DIVERGENCE_LANDING" prefix="VISION_">
-      <define name="DIV_PGAIN" value="283"/>
-      <define name="DIV_IGAIN" value="0.00"/>
-      <define name="DIV_DGAIN" value="0.00"/>
-      <define name="NOMINAL_THROTTLE" value="0.655"/>
-      <define name="DESIRED_DIV" value="1.0"/>
-      <define name="CONTROLLER" value="1"/>
-    </section>
   </doc>
 
   <settings>
@@ -35,6 +26,12 @@
 
   <makefile>
     <file name="divergence_landing.c"/>
+      <define name="VISION_DIV_PGAIN" value="283"/>
+      <define name="VISION_DIV_IGAIN" value="13"/>
+      <define name="VISION_DIV_DGAIN" value="82"/>
+      <define name="VISION_NOMINAL_THROTTLE" value="0.6042"/>
+      <define name="VISION_DESIRED_DIV" value="1.0"/>
+      <define name="VISION_CONTROLLER" value="1"/>
   </makefile>
 
 </module>

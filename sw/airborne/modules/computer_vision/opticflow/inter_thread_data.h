@@ -53,9 +53,16 @@ struct opticflow_result_t {
 
 /* The state of the drone when it took an image */
 struct opticflow_state_t {
-  float phi;      ///< roll [rad]
-  float theta;    ///< pitch [rad]
-  float agl;      ///< height above ground [m]
+	  float phi;      ///< roll [rad]
+	  float theta;    ///< pitch [rad]
+	  float psi;	  ///< yaw [rad]
+	  float agl;      ///< height above ground [m]
+	  float V_body_x; ///< body velocity x,y,z [m/s]
+	  float V_body_y;
+	  float V_body_z;
+	  float gps_x;    ///<  x_ENU from GPS [m]
+	  float gps_y;    ///<  y_ENU from GPS [m]
+	  float gps_z;    ///<  z_ENU from GPS [m]
 };
 
 #endif

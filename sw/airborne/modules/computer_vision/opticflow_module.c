@@ -81,6 +81,9 @@ static pthread_mutex_t opticflow_mutex;            ///< Mutex lock fo thread saf
 static void *opticflow_module_calc(void *data);                   ///< The main optical flow calculation thread
 static void opticflow_agl_cb(uint8_t sender_id, float distance);  ///< Callback function of the ground altitude
 
+struct FloatVect3 V_Ned, V_body;
+struct FloatRMat Rmat_Ned2Body;
+
 #if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
 /**
@@ -97,7 +100,11 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
                                &opticflow_result.flow_y, &opticflow_result.flow_der_x,
                                &opticflow_result.flow_der_y, &opticflow_result.vel_x,
                                &opticflow_result.vel_y, &opticflow_result.div_size,
-                               &opticflow_result.surface_roughness, &opticflow_result.divergence);
+                               &opticflow_result.surface_roughness, &opticflow_result.divergence,
+							   &opticflow_state.gps_x, &opticflow_state.gps_y, &opticflow_state.gps_z,
+							   &opticflow_state.agl,
+							   &opticflow_state.V_body_x, &opticflow_state.V_body_y, &opticflow_state.V_body_z,
+							   &opticflow_state.phi, &opticflow_state.theta, &opticflow_state.psi);
   pthread_mutex_unlock(&opticflow_mutex);
 }
 #endif
@@ -152,6 +159,22 @@ void opticflow_module_run(void)
   // Send Updated data to thread
   opticflow_state.phi = stateGetNedToBodyEulers_f()->phi;
   opticflow_state.theta = stateGetNedToBodyEulers_f()->theta;
+  opticflow_state.psi = stateGetNedToBodyEulers_f()->psi;
+
+  // Compute body velocities from ENU
+  V_Ned.x = stateGetSpeedNed_f()->x;
+  V_Ned.y = stateGetSpeedNed_f()->y;
+  V_Ned.z = stateGetSpeedNed_f()->z;
+
+  struct FloatQuat* BodyQuaternions = stateGetNedToBodyQuat_f();
+  FLOAT_RMAT_OF_QUAT(Rmat_Ned2Body,*BodyQuaternions);
+  RMAT_VECT3_MUL(V_body, Rmat_Ned2Body, V_Ned);
+  opticflow_state.V_body_x = V_body.x;
+  opticflow_state.V_body_y = V_body.y;
+  opticflow_state.V_body_z = V_body.z;
+  opticflow_state.gps_x = stateGetPositionEnu_f()->x;
+  opticflow_state.gps_y = stateGetPositionEnu_f()->y;
+  opticflow_state.gps_z = stateGetPositionEnu_f()->z;
 
   // Update the stabilization loops on the current calculation
   if (opticflow_got_result) {
@@ -163,7 +186,11 @@ void opticflow_module_run(void)
                            opticflow_result.flow_der_x,
                            opticflow_result.flow_der_x,
                            quality,
-                           opticflow_state.agl);
+						   opticflow_result.div_size,
+                           opticflow_state.agl,
+						   opticflow_state.gps_z,
+						   opticflow_state.V_body_z
+						   );
     //TODO Find an appropiate quality measure for the noise model in the state filter, for now it is tracked_cnt
     if (opticflow_result.tracked_cnt > 0) {
       AbiSendMsgVELOCITY_ESTIMATE(OPTICFLOW_SENDER_ID, now_ts,

@@ -63,6 +63,7 @@ struct opticflow_state_t {
 	  float gps_x;    ///<  x_ENU from GPS [m]
 	  float gps_y;    ///<  y_ENU from GPS [m]
 	  float gps_z;    ///<  z_ENU from GPS [m]
+	  float ground_divergence;
 };
 
 #endif

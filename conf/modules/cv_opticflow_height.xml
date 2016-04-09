@@ -32,7 +32,7 @@
       <define name="THRESHOLD_VEC" value="2" description="TThreshold in subpixels when the iterations of Lucas Kanade should stop"/>
 
       <!-- FAST9 corner detection parameters -->
-      <define name="FAST9_ADAPTIVE" value="TRUE" description="Whether we should use and adapative FAST9 crner detection threshold"/>
+      <define name="FAST9_ADAPTIVE" value="FALSE" description="Whether we should use and adapative FAST9 crner detection threshold"/>
       <define name="FAST9_THRESHOLD" value="20" description="FAST9 default threshold"/>
       <define name="FAST9_MIN_DISTANCE" value="10" description="The amount of pixels between corners that should be detected"/>
     </section>

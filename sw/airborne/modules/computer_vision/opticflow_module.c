@@ -118,9 +118,17 @@ void opticflow_module_init(void)
   AbiBindMsgAGL(OPTICFLOW_AGL_ID, &opticflow_agl_ev, opticflow_agl_cb);
 
   // Set the opticflow state to 0
-  opticflow_state.phi = 0;
-  opticflow_state.theta = 0;
-  opticflow_state.agl = 0;
+  opticflow_state.phi = 0.0;
+  opticflow_state.theta = 0.0;
+  opticflow_state.psi = 0.0;
+  opticflow_state.agl = 0.0;
+  opticflow_state.ground_divergence = 0.0;
+  opticflow_state.V_body_x = 0.0;
+  opticflow_state.V_body_y = 0.0;
+  opticflow_state.V_body_z = 0.0;
+  opticflow_state.gps_x = 0.0;
+  opticflow_state.gps_y = 0.0;
+  opticflow_state.gps_z = 0.0;
 
   // Initialize the opticflow calculation
   opticflow_calc_init(&opticflow, 320, 240);
@@ -176,6 +184,17 @@ void opticflow_module_run(void)
   opticflow_state.gps_y = stateGetPositionEnu_f()->y;
   opticflow_state.gps_z = stateGetPositionEnu_f()->z;
 
+  // Compute ground divergence from GPS
+  if (opticflow_state.gps_z == 0)
+  {
+	  opticflow_state.ground_divergence = 0.0;
+  }
+  else
+  {
+	  opticflow_state.ground_divergence = 2.0*opticflow_state.V_body_z/opticflow_state.gps_z;
+  }
+
+
   // Update the stabilization loops on the current calculation
   if (opticflow_got_result) {
     uint32_t now_ts = get_sys_time_usec();
@@ -189,7 +208,9 @@ void opticflow_module_run(void)
 						   opticflow_result.div_size,
                            opticflow_state.agl,
 						   opticflow_state.gps_z,
-						   opticflow_state.V_body_z
+						   opticflow_state.V_body_z,
+						   opticflow_state.ground_divergence,
+						   opticflow_result.fps
 						   );
     //TODO Find an appropiate quality measure for the noise model in the state filter, for now it is tracked_cnt
     if (opticflow_result.tracked_cnt > 0) {

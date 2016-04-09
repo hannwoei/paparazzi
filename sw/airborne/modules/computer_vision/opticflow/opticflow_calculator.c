@@ -48,7 +48,7 @@
 #define SIZE_DIV 1
 // LINEAR_FIT makes a linear optical flow field fit and extracts a lot of information:
 // relative velocities in x, y, z (divergence / time to contact), the slope of the surface, and the surface roughness.
-#define LINEAR_FIT 1
+#define LINEAR_FIT 0
 
 // Camera parameters (defaults are from an ARDrone 2)
 #ifndef OPTICFLOW_FOV_W
@@ -98,7 +98,7 @@ PRINT_CONFIG_VAR(OPTICFLOW_MAX_ITERATIONS)
 PRINT_CONFIG_VAR(OPTICFLOW_THRESHOLD_VEC)
 
 #ifndef OPTICFLOW_FAST9_ADAPTIVE
-#define OPTICFLOW_FAST9_ADAPTIVE TRUE
+#define OPTICFLOW_FAST9_ADAPTIVE FALSE
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_FAST9_ADAPTIVE)
 
@@ -222,7 +222,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   if (SIZE_DIV) {
     n_samples = 100;
     size_divergence = get_size_divergence(vectors, result->tracked_cnt, n_samples);
-    result->div_size = size_divergence;
+    result->div_size = size_divergence*result->fps;
   } else {
     result->div_size = 0.0f;
   }

@@ -99,7 +99,7 @@ static void opticflow_telem_send(struct transport_tx *trans, struct link_device 
                                &opticflow_result.tracked_cnt, &opticflow_result.flow_x,
                                &opticflow_result.flow_y, &opticflow_result.flow_der_x,
                                &opticflow_result.flow_der_y, &opticflow_result.vel_x,
-                               &opticflow_result.vel_y, &opticflow_result.div_size,
+                               &opticflow_result.vel_y, &opticflow_result.div_size, &opticflow_result.div_f,
                                &opticflow_result.surface_roughness, &opticflow_result.divergence,
 							   &opticflow_state.gps_x, &opticflow_state.gps_y, &opticflow_state.gps_z,
 							   &opticflow_state.agl,
@@ -126,6 +126,9 @@ void opticflow_module_init(void)
   opticflow_state.V_body_x = 0.0;
   opticflow_state.V_body_y = 0.0;
   opticflow_state.V_body_z = 0.0;
+  opticflow_state.A_body_x = 0.0;
+  opticflow_state.A_body_y = 0.0;
+  opticflow_state.A_body_z = 0.0;
   opticflow_state.gps_x = 0.0;
   opticflow_state.gps_y = 0.0;
   opticflow_state.gps_z = 0.0;
@@ -184,6 +187,11 @@ void opticflow_module_run(void)
   opticflow_state.gps_y = stateGetPositionEnu_f()->y;
   opticflow_state.gps_z = stateGetPositionEnu_f()->z;
 
+  struct NedCoor_f* BodyAccel = stateGetAccelNed_f();
+  opticflow_state.A_body_x = BodyAccel->x;
+  opticflow_state.A_body_y = BodyAccel->y;
+  opticflow_state.A_body_z = BodyAccel->z;
+
   // Compute ground divergence from GPS
   if (opticflow_state.gps_z == 0)
   {
@@ -191,7 +199,7 @@ void opticflow_module_run(void)
   }
   else
   {
-	  opticflow_state.ground_divergence = 2.0*opticflow_state.V_body_z/opticflow_state.gps_z;
+	  opticflow_state.ground_divergence = opticflow_state.V_body_z/opticflow_state.gps_z;
   }
 
 
@@ -206,9 +214,11 @@ void opticflow_module_run(void)
                            opticflow_result.flow_der_x,
                            quality,
 						   opticflow_result.div_size,
+						   opticflow_result.div_f,
                            opticflow_state.agl,
 						   opticflow_state.gps_z,
 						   opticflow_state.V_body_z,
+						   opticflow_state.A_body_z,
 						   opticflow_state.ground_divergence,
 						   opticflow_result.fps
 						   );

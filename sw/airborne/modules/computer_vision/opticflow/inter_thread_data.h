@@ -44,6 +44,7 @@ struct opticflow_result_t {
   float vel_y;            ///< The velocity in the y direction
 
   float div_size;         ///< Divergence as determined with the size_divergence script
+  float div_f;            ///< Filtered Divergence
 
   float surface_roughness; ///< Surface roughness as determined with a linear optical flow fit
   float divergence;       ///< Divergence as determined with a linear flow fit
@@ -60,6 +61,9 @@ struct opticflow_state_t {
 	  float V_body_x; ///< body velocity x,y,z [m/s]
 	  float V_body_y;
 	  float V_body_z;
+	  float A_body_x; ///< body acceleration x,y,z [m/s2]
+	  float A_body_y;
+	  float A_body_z;
 	  float gps_x;    ///<  x_ENU from GPS [m]
 	  float gps_y;    ///<  y_ENU from GPS [m]
 	  float gps_z;    ///<  z_ENU from GPS [m]

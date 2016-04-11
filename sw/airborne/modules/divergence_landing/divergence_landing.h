@@ -33,15 +33,17 @@ struct Div_landing_t {
   float div_pgain;        ///< The divergence P gain on the err_div
   float div_igain;        ///< The divergence I gain on the err_div_int
   float div_dgain;        ///< The divergence D gain on the err_div_int
-  float nominal_throttle;   ///< The nominal throttle
-  float desired_div;        ///< The desired divergence
-  int32_t controller;		///< The controller switch
+  float nominal_throttle; ///< The nominal throttle
+  float desired_div;      ///< The desired divergence
+  int32_t controller;	  ///< The controller switch
   float div_cov;
-  float div;
-  float ground_div;
+  float div;              ///< The divergence
+  float div_f;            ///< The filtered divergence (low-pass)
+  float ground_div;       ///< The ground divergence
   float agl;
   float gps_z;
   float vel_z;
+  float accel_z;
   float z_sp;
   float err;
   float z_sum_err;

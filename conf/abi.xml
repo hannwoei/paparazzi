@@ -63,7 +63,6 @@
       <field name="flow_der_y" type="int16_t">The derotated flow calculation in the y direction (in subpixels)</field>
       <field name="quality" type="uint8_t"/>
       <field name="size_divergence" type="float">Divergence as determined with the size method (in 1/seconds)</field>
-      <field name="div_f" type="float">Filtered Divergence (in 1/seconds)</field>
       <field name="dist" type="float">Distance to ground</field>
       <field name="gps_z" type="float">Height from GPS</field>
       <field name="vel_z" type="float">Velocity from GPS</field>

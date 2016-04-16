@@ -112,11 +112,6 @@ PRINT_CONFIG_VAR(OPTICFLOW_FAST9_THRESHOLD)
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_FAST9_MIN_DISTANCE)
 
-#ifndef VISION_LP_ALPHA
-#define VISION_LP_ALPHA 0.6
-#endif
-PRINT_CONFIG_VAR(VISION_LP_ALPHA)
-
 /* Functions only used here */
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
 static int cmp_flow(const void *a, const void *b);
@@ -148,7 +143,6 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   opticflow->fast9_adaptive = OPTICFLOW_FAST9_ADAPTIVE;
   opticflow->fast9_threshold = OPTICFLOW_FAST9_THRESHOLD;
   opticflow->fast9_min_distance = OPTICFLOW_FAST9_MIN_DISTANCE;
-  opticflow->alpha = VISION_LP_ALPHA;
 }
 
 /**
@@ -251,9 +245,6 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
     result->divergence = 0.0f;
     result->surface_roughness = 0.0f;
   }
-
-  // Filter Divergence
-  result->div_f = result->div_f*opticflow->alpha + result->div_size*(1.0f - opticflow->alpha);
 
   // Get the median flow
   qsort(vectors, result->tracked_cnt, sizeof(struct flow_t), cmp_flow);

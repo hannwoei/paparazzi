@@ -49,6 +49,7 @@ struct Div_landing_t {
   float z_sum_err;
   int32_t thrust;
   float fps;
+  float alpha;
 };
 extern struct Div_landing_t Div_landing;
 

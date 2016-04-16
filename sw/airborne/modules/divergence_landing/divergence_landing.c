@@ -61,6 +61,11 @@ PRINT_CONFIG_VAR(VISION_DESIRED_DIV)
 #endif
 PRINT_CONFIG_VAR(VISION_CONTROLLER)
 
+#ifndef VISION_LP_ALPHA
+#define VISION_LP_ALPHA 0.6
+#endif
+PRINT_CONFIG_VAR(VISION_LP_ALPHA)
+
 #ifndef LANDING_AGL_ID
 #define LANDING_AGL_ID ABI_BROADCAST
 #endif
@@ -89,11 +94,44 @@ static abi_event optical_flow_ev;
 /// Callback function of the ground altitude
 static void landing_agl_cb(uint8_t sender_id __attribute__((unused)), float distance);
 // Callback function of the optical flow estimate:
-static void vertical_ctrl_optical_flow_cb(uint8_t sender_id __attribute__((unused)), uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float div_f, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps);
-static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float FPS);
+static void vertical_ctrl_optical_flow_cb(uint8_t sender_id __attribute__((unused)), uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps);
+static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float fps);
+
+// Vision
+float div_update, fb_cmd;
+int message_count, previous_count, i_init;
 
 // Height Estimation using EKF
 float P_EKF[4], Z_EKF, Vz_EKF, innov_EKF;
+
+// Frame Rate
+#include <sys/time.h>
+float dt;
+volatile long timestamp;
+#define USEC_PER_SEC 1000000L
+
+static long time_elapsed (struct timeval *t1, struct timeval *t2) {
+	long sec, usec;
+	sec = t2->tv_sec - t1->tv_sec;
+	usec = t2->tv_usec - t1->tv_usec;
+	if (usec < 0) {
+		--sec;
+		usec = usec + USEC_PER_SEC;
+	}
+	return sec*USEC_PER_SEC + usec;
+}
+
+struct timeval start_time;
+struct timeval end_time;
+
+static void start_timer(void) {
+	gettimeofday (&start_time, NULL);
+}
+static long end_timer(void) {
+	gettimeofday (&end_time, NULL);
+	return time_elapsed(&start_time, &end_time);
+}
+
 
 #if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
@@ -108,8 +146,8 @@ static void div_ctrl_telem_send(struct transport_tx *trans, struct link_device *
 		  &Div_landing.div_pgain, &Div_landing.div_igain, &Div_landing.div_dgain,
 		  &Div_landing.desired_div, &Div_landing.nominal_throttle, &Div_landing.controller,
 		  &Div_landing.agl, &Div_landing.gps_z, &Div_landing.vel_z, &Div_landing.accel_z, &Div_landing.z_sp, &Div_landing.err, &Div_landing.z_sum_err,
-		  &Div_landing.div, &Div_landing.div_f, &Div_landing.ground_div, &stabilization_cmd[COMMAND_THRUST], &Div_landing.thrust,
-		  &Z_EKF, &Vz_EKF, &innov_EKF, &Div_landing.fps,
+		  &Div_landing.div, &Div_landing.div_f, &Div_landing.ground_div, &stabilization_cmd[COMMAND_THRUST], &Div_landing.thrust, &fb_cmd,
+		  &Z_EKF, &Vz_EKF, &innov_EKF, &Div_landing.fps, &dt,
 		  &P_EKF[0], &P_EKF[1], &P_EKF[2], &P_EKF[3]);
 }
 #endif
@@ -119,6 +157,18 @@ void divergence_landing_run(bool_t in_flight);
 
 void divergence_landing_init(void)
 {
+	div_update = 0.0;
+	fb_cmd = 0.0;
+	message_count = 1;
+	previous_count = 0;
+
+	i_init = 0;
+
+	// FPS
+	dt = 0.0;
+	timestamp=0;
+//	start_timer();
+
 	/* Initialize the default gains and settings */
 	Div_landing.div_pgain = VISION_DIV_PGAIN;
 	Div_landing.div_igain = VISION_DIV_IGAIN;
@@ -126,9 +176,10 @@ void divergence_landing_init(void)
 	Div_landing.desired_div = VISION_DESIRED_DIV;
 	Div_landing.nominal_throttle = VISION_NOMINAL_THROTTLE;
 	Div_landing.controller = VISION_CONTROLLER;
+	Div_landing.alpha = VISION_LP_ALPHA;
 	Div_landing.div_cov = 0.0f;
 	Div_landing.div = 0.0f;
-	Div_landing.div_f = 0.0f;
+	Div_landing.div_f = VISION_DESIRED_DIV;
 	Div_landing.ground_div = 0.0f;
 	Div_landing.agl = 0.0f;
 	Div_landing.gps_z = 0.0f;
@@ -141,10 +192,10 @@ void divergence_landing_init(void)
 	Div_landing.fps = 0.0f;
 
 	// Height estimation using EKF
-	Z_EKF = 2.0;
-	Vz_EKF = -0.01;
+	Z_EKF = 3.0;
+	Vz_EKF = 0.01;
 	innov_EKF = 0.0;
-	P_EKF[0] = 1000; P_EKF[1] = 0; P_EKF[2] = 0; P_EKF[3] = 100;
+	P_EKF[0] = 10; P_EKF[1] = 0; P_EKF[2] = 0; P_EKF[3] = 10;
 
   // Subscribe to the altitude above ground level ABI messages
   AbiBindMsgAGL(LANDING_AGL_ID, &agl_ev, landing_agl_cb);
@@ -158,6 +209,18 @@ void divergence_landing_init(void)
 
 void divergence_landing_run(bool_t in_flight)
 {
+    // FPS
+	timestamp = end_timer();
+	dt += (float)timestamp/1000000.0;
+	start_timer();
+//	 ignore first dt
+//	if(dt > 10.0f) {
+//		printf("too long, dt = %f\n",dt);
+//		dt = 0.0f;
+//		return;
+//	}
+
+
   if (!in_flight)
   {
     // Reset integrators
@@ -167,32 +230,83 @@ void divergence_landing_run(bool_t in_flight)
   else
   {
 	// **********************************************************************************************************************
-	// Controller
+	// Sinusoidal setpoints
 	// **********************************************************************************************************************
-    int32_t nominal_throttle = Div_landing.nominal_throttle * MAX_PPRZ;
-    if(Div_landing.controller == 1)
-    {
-    	Div_landing.err = -(Div_landing.desired_div - Div_landing.div_f);
-    }
-    else if(Div_landing.controller == 2)
-    {
-    	Div_landing.err = -(Div_landing.desired_div - Div_landing.ground_div);
-    }
-    else
-    {
-    	Div_landing.err = Div_landing.desired_div - Div_landing.gps_z;
-    }
-    Div_landing.thrust = nominal_throttle + (Div_landing.div_pgain * Div_landing.err) * MAX_PPRZ  + (Div_landing.div_igain * Div_landing.z_sum_err*0.001) * MAX_PPRZ;
-    Bound(Div_landing.thrust, 0, MAX_PPRZ);
-    stabilization_cmd[COMMAND_THRUST] = Div_landing.thrust;
-    Div_landing.z_sum_err += Div_landing.err;
+	if(Div_landing.gps_z < 0.5)
+	{
+		Div_landing.desired_div = -VISION_DESIRED_DIV;
+	}
+	if(Div_landing.gps_z > 1.8)
+	{
+		Div_landing.desired_div = VISION_DESIRED_DIV;
+	}
 
 	// **********************************************************************************************************************
-	// Height Estimation using EKF
+	// Vision Correction
 	// **********************************************************************************************************************
-	float u;
-	u = (float) ((Div_landing.thrust - nominal_throttle)/MAX_PPRZ);
-	HeightEKT(&Z_EKF, &Vz_EKF, &innov_EKF, P_EKF, -u, Div_landing.ground_div, Div_landing.fps);
+	if(message_count != previous_count)
+	{
+		if(i_init == 0)
+		{
+			Div_landing.div_f = VISION_DESIRED_DIV;
+			i_init ++;
+		}
+		else
+		{
+			// correct for outliers
+			div_update = Div_landing.div*1.28;
+			if(fabs(div_update - Div_landing.div_f) > 0.20) {
+				if(div_update < Div_landing.div_f) div_update = Div_landing.div_f - 0.10f;
+				else div_update = Div_landing.div_f + 0.10f;
+			}
+			Div_landing.div_f = Div_landing.div_f*Div_landing.alpha + div_update*(1.0f - Div_landing.alpha);
+		}
+		// **********************************************************************************************************************
+		// Controller
+		// **********************************************************************************************************************
+	    int32_t nominal_throttle = Div_landing.nominal_throttle * MAX_PPRZ;
+	    if(Div_landing.controller == 1)
+	    {
+	    	Div_landing.err = -(Div_landing.desired_div - Div_landing.div_f);
+	    }
+	    else if(Div_landing.controller == 2)
+	    {
+	    	Div_landing.err = -(Div_landing.desired_div - Div_landing.ground_div);
+	    }
+	    else
+	    {
+	    	Div_landing.err = Div_landing.desired_div - Div_landing.gps_z;
+	    }
+
+//	    Div_landing.div_pgain = Div_landing.div_pgain - innov_EKF;
+//	    if(Div_landing.div_pgain < 0)
+//	    {
+//	    	Div_landing.div_pgain = 0.05;
+//	    }
+//	    if(Div_landing.div_pgain > 0.3)
+//	    {
+//	    	Div_landing.div_pgain = 0.3;
+//	    }
+
+	    fb_cmd = (Div_landing.div_pgain * Div_landing.err);//   + (Div_landing.div_igain * Div_landing.z_sum_err*0.001);
+	    Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
+	    Bound(Div_landing.thrust, 0, MAX_PPRZ);
+	    stabilization_cmd[COMMAND_THRUST] = Div_landing.thrust;
+//	    Div_landing.z_sum_err += Div_landing.err;
+
+		// **********************************************************************************************************************
+		// Height Estimation using EKF
+		// **********************************************************************************************************************
+//		printf("u = %f, dt = %f\n",fb_cmd,dt);
+		HeightEKT(&Z_EKF, &Vz_EKF, &innov_EKF, P_EKF, fb_cmd, -Div_landing.div_f, Div_landing.fps);
+
+		previous_count = message_count;
+		dt = 0.0;
+	}
+	else
+	{
+//		return;
+	}
   }
 }
 
@@ -201,15 +315,17 @@ static void landing_agl_cb(uint8_t sender_id, float distance)
 	Div_landing.agl = distance;
 }
 
-static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float div_f, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps)
+static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps)
 {
   Div_landing.div = size_divergence;
-  Div_landing.div_f = div_f;
   Div_landing.gps_z = gps_z;
   Div_landing.ground_div = ground_divergence;
   Div_landing.fps = fps;
   Div_landing.vel_z = vel_z;
   Div_landing.accel_z = accel_z;
+
+  message_count++;
+  if(message_count > 10) message_count = 0;
 }
 
 // vertical guidance from module
@@ -229,43 +345,50 @@ void guidance_v_module_run(bool_t in_flight)
   divergence_landing_run(in_flight);
 }
 
-static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float FPS)
+static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float fps)
 {
-	float dt, dx1, dx2, xp1, xp2, zp, Pp[4], H[2], Ve, L[2];
+	float dt_ekf, dx1, dx2, xp1, xp2, zp, Pp[4], H[2], Ve, L[2];
 
-	if (FPS == 0.0)
+	if (fps < 0.0001f)
 	{
-		dt = 0.0;
+		dt_ekf = 0.0;
+		return;
 	}
 	else
 	{
-		dt = 1/FPS;
+		dt_ekf = 1.0/fps;
 	}
+//	dt_ekf = fps;
 
-	float phi[4] = {1,dt,0,1};
-	float gamma[2] = {0,dt};
-	float Q = 0.01; // for OT, both Q and R are 0.001
-	float R = 0.0001;
+	float phi[4] = {1.0,dt_ekf,0.0,1.0};
+	float gamma[2] = {dt_ekf*dt_ekf*0.5,dt_ekf};
+	float Q = 0.0001; // for OT, both Q and R are 0.001
+	float R = 0.001;
 
 	// Prediction
 	dx1 = *Vz;
-	dx2 = u;
-	xp1 = *Z + dx1*dt;
-	xp2 = *Vz + dx2*dt;
+	dx2 = 10.0*u;
+	xp1 = *Z + dx1*dt_ekf;
+	xp2 = *Vz + dx2*dt_ekf;
 	zp = xp2/xp1;
+
+//	printf("xp1=%f, dx2=%f, zp=%f ,", xp1, xp2, zp);
 
 	Pp[0] = Q*(gamma[0]*gamma[0]) + phi[0]*(P[0]*phi[0] + P[2]*phi[1]) + phi[1]*(P[1]*phi[0] + P[3]*phi[1]);
 	Pp[1] = phi[2]*(P[0]*phi[0] + P[2]*phi[1]) + phi[3]*(P[1]*phi[0] + P[3]*phi[1]) + Q*gamma[0]*gamma[1];
 	Pp[2] = phi[0]*(P[0]*phi[2] + P[2]*phi[3]) + phi[1]*(P[1]*phi[2] + P[3]*phi[3]) + Q*gamma[0]*gamma[1];
 	Pp[3] = Q*(gamma[1]*gamma[1]) + phi[2]*(P[0]*phi[2] + P[2]*phi[3]) + phi[3]*(P[1]*phi[2] + P[3]*phi[3]);
 
+//	printf("pp1=%f, pp2=%f, pp3=%f, pp4=%f, ",Pp[0], Pp[1], Pp[2], Pp[3]);
 	// Correction
 	H[0] = -xp2/(xp1*xp1);
-	H[1] = 1/xp1;
+	H[1] = 1.0/xp1;
+//	printf("H1=%f, H2=%f, ",H[0],H[1]);
 
 	Ve = R + H[0]*(H[0]*Pp[0] + H[1]*Pp[2]) + H[1]*(H[0]*Pp[1] + H[1]*Pp[3]);
 	L[0] = (H[0]*Pp[0] + H[1]*Pp[1])/Ve;
 	L[1] = (H[0]*Pp[2] + H[1]*Pp[3])/Ve;
+//	printf("Ve=%f, L1=%f, L2=%f, \n",Ve, L[0], L[1]);
 
 	*innov = div-zp;
 

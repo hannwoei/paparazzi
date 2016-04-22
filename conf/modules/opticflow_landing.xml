@@ -27,10 +27,10 @@
 
   <makefile>
     <file name="divergence_landing.c"/>
-      <define name="VISION_DIV_PGAIN" value="0.1"/> <!-- 283 -->
+      <define name="VISION_DIV_PGAIN" value="0.2"/> <!-- 283 -->
       <define name="VISION_DIV_IGAIN" value="0"/> <!-- 20 -->
       <define name="VISION_DIV_DGAIN" value="0"/> <!-- 82 -->
-      <define name="VISION_NOMINAL_THROTTLE" value="0.628"/> <!-- 0.6042 -->
+      <define name="VISION_NOMINAL_THROTTLE" value="0.620"/> <!-- 0.6042 -->
       <define name="VISION_DESIRED_DIV" value="0.3"/>
       <define name="VISION_CONTROLLER" value="1"/>
       <define name="VISION_LP_ALPHA" value="0.6"/>

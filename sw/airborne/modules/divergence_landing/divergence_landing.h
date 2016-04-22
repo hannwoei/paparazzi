@@ -50,6 +50,7 @@ struct Div_landing_t {
   int32_t thrust;
   float fps;
   float alpha;
+  float stamp;
 };
 extern struct Div_landing_t Div_landing;
 

@@ -45,12 +45,18 @@ struct Div_landing_t {
   float vel_z;
   float accel_z;
   float z_sp;
-  float err;
+  float err_Z;
+  float err_Vz;
   float z_sum_err;
   int32_t thrust;
   float fps;
   float alpha;
   float stamp;
+  float t_interval_sp;
+  int64_t delay_step;
+  int8_t cov_method;
+  float cov_div;
+  float cov_thres;
 };
 extern struct Div_landing_t Div_landing;
 
@@ -65,4 +71,6 @@ extern void guidance_v_module_init(void);
 extern void guidance_v_module_enter(void);
 extern void guidance_v_module_run(bool_t in_flight);
 
+float get_cov(float* a, float* b, int n_elements);
+float get_mean_array(float *a, int n_elements);
 #endif /* DIVERGENCE_LANDING_H_ */

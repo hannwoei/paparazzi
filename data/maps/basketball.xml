@@ -1,0 +1,4 @@
+<map file="basketball.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 51.9829128	4.3525093"/>
+  <point x="614" y="323" geo="WGS84 51.9824801	4.3538450"/>
+</map>

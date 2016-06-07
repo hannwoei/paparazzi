@@ -1,0 +1,4 @@
+<map file="AE_field2.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 51.9903847	4.3786989"/>
+  <point x="639" y="388" geo="WGS84 51.9885594	4.3835805"/>
+</map>

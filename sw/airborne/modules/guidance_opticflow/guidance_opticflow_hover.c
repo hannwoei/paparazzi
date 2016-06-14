@@ -47,22 +47,22 @@ PRINT_CONFIG_VAR(VISION_VELOCITY_ESTIMATE_ID)
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
 
 #ifndef VISION_PHI_PGAIN
-#define VISION_PHI_PGAIN 400
+#define VISION_PHI_PGAIN 1200
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_PGAIN)
 
 #ifndef VISION_PHI_IGAIN
-#define VISION_PHI_IGAIN 20
+#define VISION_PHI_IGAIN 600
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_IGAIN)
 
 #ifndef VISION_THETA_PGAIN
-#define VISION_THETA_PGAIN 400
+#define VISION_THETA_PGAIN 1200
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
 #ifndef VISION_THETA_IGAIN
-#define VISION_THETA_IGAIN 20
+#define VISION_THETA_IGAIN 600
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_IGAIN)
 
@@ -85,6 +85,9 @@ PRINT_CONFIG_VAR(VISION_DESIRED_VY)
 #endif
 
 static abi_event velocity_est_ev;
+uint32_t prev_stamp;
+uint8_t init_dt;
+float dt_stamp;
 
 /* Initialize the default gains and settings */
 struct opticflow_stab_t opticflow_stab = {
@@ -99,7 +102,7 @@ struct opticflow_stab_t opticflow_stab = {
 
 static void stabilization_opticflow_vel_cb(uint8_t sender_id __attribute__((unused)),
     uint32_t stamp, float vel_x, float vel_y, float vel_z, float noise);
-/**
+/**err_vx_int
  * Initialization of horizontal guidance module.
  */
 void guidance_h_module_init(void)
@@ -122,6 +125,10 @@ void guidance_h_module_enter(void)
   opticflow_stab.cmd.phi = 0;
   opticflow_stab.cmd.theta = 0;
   opticflow_stab.cmd.psi = stateGetNedToBodyEulers_i()->psi;
+
+  prev_stamp = 0;
+  init_dt = 0;
+  dt_stamp = 0.0;
 }
 
 /**
@@ -161,8 +168,18 @@ static void stabilization_opticflow_vel_cb(uint8_t sender_id __attribute__((unus
   float err_vy = opticflow_stab.desired_vy - vel_y;
 
   /* Calculate the integrated errors (TODO: bound??) */
-  opticflow_stab.err_vx_int += err_vx / 512;
-  opticflow_stab.err_vy_int += err_vy / 512;
+  if(init_dt == 0)
+  {
+	  prev_stamp = stamp;
+	  dt_stamp = 0.0;
+	  init_dt = 1;
+	  return;
+  }
+  dt_stamp = (float) (stamp-prev_stamp)/1000000.0;
+  prev_stamp = stamp;
+
+  opticflow_stab.err_vx_int += err_vx *dt_stamp;
+  opticflow_stab.err_vy_int += err_vy *dt_stamp;
 
   /* Calculate the commands */
   opticflow_stab.cmd.phi   = opticflow_stab.phi_pgain * err_vy

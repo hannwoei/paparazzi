@@ -123,7 +123,7 @@ static void vertical_ctrl_optical_flow_cb(uint8_t sender_id __attribute__((unuse
 static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float fps, float *L);
 
 // Vision
-float div_update, fb_cmd;
+float div_update, fb_cmd, curr_height;
 int message_count, previous_count, i_init;
 
 // Height Estimation using EKF
@@ -163,6 +163,7 @@ void divergence_landing_run(bool_t in_flight);
 
 void divergence_landing_init(void)
 {
+	curr_height = 0.0;
 	div_update = 0.0;
 	fb_cmd = 0.0;
 	message_count = 1;
@@ -218,7 +219,7 @@ void divergence_landing_init(void)
 	landing_method = 0; restart_init = 0;
 
 	// Height estimation using EKF
-	Z_EKF = 3.0;
+	Z_EKF = 5.0;
 	Vz_EKF = 0.01;
 	innov_EKF = 0.0;
 	P_EKF[0] = 1000; P_EKF[1] = 0; P_EKF[2] = 0; P_EKF[3] = 100; L_EKF[0] = 0.0, L_EKF[1] = 0.0;
@@ -251,17 +252,31 @@ void divergence_landing_run(bool_t in_flight)
 		// **********************************************************************************************************************
 		// timestamp of messages
 		// **********************************************************************************************************************
-		Div_landing.stamp = (float) (curr_stamp-prev_stamp)/1000000.0;
-		prev_stamp = curr_stamp;
+//		Div_landing.stamp = (float) (curr_stamp-prev_stamp)/1000000.0;
+//		prev_stamp = curr_stamp;
+		if(Div_landing.fps != 0.0)
+		{
+			Div_landing.stamp = 1.0/Div_landing.fps;
+		}
+		else
+		{
+			Div_landing.stamp = 0.0;
+		}
 
 		// skip the first timestamp
 		if(i_init == 0)
 		{
 //			Div_landing.div_f = VISION_DESIRED_DIV;
+			curr_height = Div_landing.agl;
 			Div_landing.stamp = 0.0;
 			i_init ++;
 			return;
 		}
+
+		// **********************************************************************************************************************
+		// Sonar height filter
+		// **********************************************************************************************************************
+//		if(fab(curr_height-Div_landing.agl))
 
 		// **********************************************************************************************************************
 		// Sinusoidal setpoints
@@ -345,21 +360,23 @@ void divergence_landing_run(bool_t in_flight)
 	    	Div_landing.desired_div = Div_landing.desired_div - Vz_init*Div_landing.stamp;
 //	    	Div_landing.err_Z = Div_landing.desired_div - Div_landing.gps_z;
 	    	Div_landing.err_Z = (Div_landing.desired_div - Z_est);
-	    	Div_landing.err_Vz = (0.2 - V_est);
-
+//	    	Div_landing.err_Vz = (Vz_init - V_est);
+//	    	Div_landing.err_Vz = (0.2 - V_est);
 //	    	if(Div_landing.gps_z<0.2) Div_landing.nominal_throttle = 0.9*Div_landing.nominal_throttle;
 	    }
 	    // 5. hovering with divergence
 	    else if(Div_landing.controller == 5)
 	    {
 	    	Div_landing.err_Z = Div_landing.div_f;
+//	    	Div_landing.err_Z = curr_height - Div_landing.agl;
 			Div_landing.div_pgain = Div_landing.div_pgain *1.001;
 			Div_landing.div_igain = Div_landing.div_igain *1.001;
 	    }
 	    // 0. hovering with height control
 	    else
 	    {
-	    	Div_landing.err_Z = Div_landing.desired_div - Div_landing.gps_z;
+//	    	Div_landing.err_Z = Div_landing.desired_div - Div_landing.agl;
+	    	Div_landing.err_Z = curr_height - Div_landing.agl;
 	    }
 
 		// **********************************************************************************************************************
@@ -382,106 +399,106 @@ void divergence_landing_run(bool_t in_flight)
 		// **********************************************************************************************************************
 		// Oscillation detection & re-configure the gains
 		// **********************************************************************************************************************
-		normalized_thrust = (float)(Div_landing.thrust / (MAX_PPRZ / 100));
-		thrust_hist[i_hist%COV_WIN_SIZE] = normalized_thrust;
-		div_hist[i_hist%COV_WIN_SIZE] = Div_landing.div_f;
-		int64_t i_prev = (i_hist%COV_WIN_SIZE) - Div_landing.delay_step;
-		if(i_prev < 0) i_prev += COV_WIN_SIZE;
-		float prev_div = div_hist[i_prev];
-		prev_div_hist[i_hist%COV_WIN_SIZE] = prev_div;
-		i_hist++;
-		//if(i_hist >= COV_WIN_SIZE) i_hist = 0; // prevent overflow
-		if(i_hist >= COV_WIN_SIZE*4) {
-			if(Div_landing.cov_method == 1) {
-				Div_landing.cov_div = get_cov(thrust_hist, div_hist, COV_WIN_SIZE);
-			}
-			else if(Div_landing.cov_method == 2) {
-				Div_landing.cov_div = get_cov(prev_div_hist, div_hist, COV_WIN_SIZE);
-			}
-			else
-			{
-				// nothing
-			}
-		}
+//		normalized_thrust = (float)(Div_landing.thrust / (MAX_PPRZ / 100));
+//		thrust_hist[i_hist%COV_WIN_SIZE] = normalized_thrust;
+//		div_hist[i_hist%COV_WIN_SIZE] = Div_landing.div_f;
+//		int64_t i_prev = (i_hist%COV_WIN_SIZE) - Div_landing.delay_step;
+//		if(i_prev < 0) i_prev += COV_WIN_SIZE;
+//		float prev_div = div_hist[i_prev];
+//		prev_div_hist[i_hist%COV_WIN_SIZE] = prev_div;
+//		i_hist++;
+//		//if(i_hist >= COV_WIN_SIZE) i_hist = 0; // prevent overflow
+//		if(i_hist >= COV_WIN_SIZE*4) {
+//			if(Div_landing.cov_method == 1) {
+//				Div_landing.cov_div = get_cov(thrust_hist, div_hist, COV_WIN_SIZE);
+//			}
+//			else if(Div_landing.cov_method == 2) {
+//				Div_landing.cov_div = get_cov(prev_div_hist, div_hist, COV_WIN_SIZE);
+//			}
+//			else
+//			{
+//				// nothing
+//			}
+//		}
+//		// Go back to previous gain and start landing
+//		if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && Div_landing.controller == 5)
+//		{
+//			Div_landing.controller = 1;
+//			landing_method = 2;
+//			Div_landing.div_pgain = Div_landing.div_pgain *(1-0.001);
+//			Div_landing.div_igain = Div_landing.div_igain *(1-0.001);
+//		}
+//
+//
+//		if(landing_method == 1)
+//		{
+//			// landing method 1: whole exponential decay
+//			if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && cov_trigger == 0)
+//			{
+//				t_interval = 0.0;
+//				cov_trigger = 1;
+//				pgain_init = Div_landing.div_pgain;
+//				igain_init = Div_landing.div_igain;
+//			}
+//
+//			if(cov_trigger == 1)
+//			{
+//				Div_landing.div_pgain = pgain_init*exp(-Div_landing.desired_div*t_interval);
+//				Div_landing.div_igain = igain_init*exp(-Div_landing.desired_div*t_interval);
+//				fb_cmd = (Div_landing.div_pgain * Div_landing.err_Z) + (Div_landing.div_igain * Div_landing.z_sum_err);// + (Div_landing.div_dgain * Div_landing.err_Vz);//
+//				Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
+//			}
+//		}
+//		else if(landing_method == 2)
+//		{
+//			// landing method 2: decrease and restart when oscillate
+//			if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && restart_init == 0)
+//			{
+//				t_interval = 0.0;
+//				pgain_init = Div_landing.div_pgain;
+//				igain_init = Div_landing.div_igain;
+//				restart_init = 1;
+//				cov_trigger = 1;
+//			}
+//
+//			if(cov_trigger == 1)
+//			{
+//				Div_landing.div_pgain = pgain_init*exp(-Div_landing.desired_div*t_interval);
+//				Div_landing.div_igain = igain_init*exp(-Div_landing.desired_div*t_interval);
+//				fb_cmd = (Div_landing.div_pgain * Div_landing.err_Z) + (Div_landing.div_igain * Div_landing.z_sum_err);// + (Div_landing.div_dgain * Div_landing.err_Vz);//
+//				Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
+//
+//				if(fabs(Div_landing.cov_div) < Div_landing.cov_thres)
+//				{
+//					restart_init = 0;
+//				}
+//			}
+//		}
+//		else if(landing_method == 3)
+//		{
+//			// landing method 3: whole exponential decay
+//			if(cov_trigger == 0)
+//			{
+//				t_interval = 0.0;
+//				cov_trigger = 1;
+//				pgain_init = Div_landing.div_pgain;
+//				igain_init = Div_landing.div_igain;
+//			}
+//
+//			if(cov_trigger == 1)
+//			{
+//				Div_landing.div_pgain = pgain_init*exp(-Div_landing.desired_div*t_interval);
+//				Div_landing.div_igain = igain_init*exp(-Div_landing.desired_div*t_interval);
+//				fb_cmd = (Div_landing.div_pgain * Div_landing.err_Z) + (Div_landing.div_igain * Div_landing.z_sum_err);// + (Div_landing.div_dgain * Div_landing.err_Vz);//
+//				Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
+//			}
+//		}
+//		else
+//		{
+//			// landing method 3: decrease when oscillate
+//		}
 
-		if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && Div_landing.controller == 5)
-		{
-			Div_landing.controller = 1;
-			landing_method = 3;
-			Div_landing.div_pgain = Div_landing.div_pgain *(1-0.001);
-			Div_landing.div_igain = Div_landing.div_igain *(1-0.001);
-		}
-
-
-		if(landing_method == 1)
-		{
-			// landing method 1: whole exponential decay
-			if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && cov_trigger == 0)
-			{
-				t_interval = 0.0;
-				cov_trigger = 1;
-				pgain_init = Div_landing.div_pgain;
-				igain_init = Div_landing.div_igain;
-			}
-
-			if(cov_trigger == 1)
-			{
-				Div_landing.div_pgain = pgain_init*exp(-Div_landing.desired_div*t_interval);
-				Div_landing.div_igain = igain_init*exp(-Div_landing.desired_div*t_interval);
-				fb_cmd = (Div_landing.div_pgain * Div_landing.err_Z) + (Div_landing.div_igain * Div_landing.z_sum_err);// + (Div_landing.div_dgain * Div_landing.err_Vz);//
-				Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
-			}
-		}
-		else if(landing_method == 2)
-		{
-			// landing method 2: decrease and restart when oscillate
-			if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && restart_init == 0)
-			{
-				t_interval = 0.0;
-				pgain_init = Div_landing.div_pgain;
-				igain_init = Div_landing.div_igain;
-				restart_init = 1;
-				cov_trigger = 1;
-			}
-
-			if(cov_trigger == 1)
-			{
-				Div_landing.div_pgain = pgain_init*exp(-Div_landing.desired_div*t_interval);
-				Div_landing.div_igain = igain_init*exp(-Div_landing.desired_div*t_interval);
-				fb_cmd = (Div_landing.div_pgain * Div_landing.err_Z) + (Div_landing.div_igain * Div_landing.z_sum_err);// + (Div_landing.div_dgain * Div_landing.err_Vz);//
-				Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
-
-				if(fabs(Div_landing.cov_div) < Div_landing.cov_thres)
-				{
-					restart_init = 0;
-				}
-			}
-		}
-		else if(landing_method == 3)
-		{
-			// landing method 3: whole exponential decay
-			if(cov_trigger == 0)
-			{
-				t_interval = 0.0;
-				cov_trigger = 1;
-				pgain_init = Div_landing.div_pgain;
-				igain_init = Div_landing.div_igain;
-			}
-
-			if(cov_trigger == 1)
-			{
-				Div_landing.div_pgain = pgain_init*exp(-Div_landing.desired_div*t_interval);
-				Div_landing.div_igain = igain_init*exp(-Div_landing.desired_div*t_interval);
-				fb_cmd = (Div_landing.div_pgain * Div_landing.err_Z) + (Div_landing.div_igain * Div_landing.z_sum_err);// + (Div_landing.div_dgain * Div_landing.err_Vz);//
-				Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
-			}
-		}
-		else
-		{
-			// landing method 3: decrease when oscillate
-		}
-
-		// trim landing
+//		 trim landing
 	    if(Div_landing.agl<0.3 && trim_landing == 0 && Div_landing.gps_z<1.0)
 	    {
 	    	trim_init = fb_cmd* MAX_PPRZ;
@@ -501,10 +518,9 @@ void divergence_landing_run(bool_t in_flight)
 		// Height Estimation using EKF
 		// **********************************************************************************************************************
 
-//	    HeightEKT(&Z_EKF, &Vz_EKF, &innov_EKF, P_EKF, fb_cmd, -Div_landing.div_f, Div_landing.stamp, L_EKF);
-
-//	    Z_est = 1.0*Z_EKF;
-//		V_est = 1.0*Vz_EKF;
+	    HeightEKT(&Z_EKF, &Vz_EKF, &innov_EKF, P_EKF, fb_cmd, -Div_landing.div_f, Div_landing.stamp, L_EKF);
+	    Z_est = 1.0*Z_EKF;
+		V_est = 1.0*Vz_EKF;
 
 		previous_count = message_count;
 	}
@@ -529,6 +545,7 @@ static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int
   Div_landing.vel_z = vel_z;
   Div_landing.accel_z = accel_z;
   curr_stamp = stamp;
+//  printf("t=%d\n",stamp);
   message_count++;
   if(message_count > 10) message_count = 0;
 }
@@ -568,7 +585,7 @@ static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, floa
 	float phi[4] = {1.0,dt_ekf,0.0,1.0};
 	float gamma[2] = {dt_ekf*dt_ekf*0.5,dt_ekf};
 	float Q = 1.0; // 0.3: 2m: Q = 1, R = 0.00005; //3m: R = 0.00001 // 0.2: 2m: Q = 1, R = 0.0001; //3m: R = 0.00005
-	float R = 0.00005; // 0.1: 2m: Q = 1, R = 0.00005; //3m: R = 0.00001
+	float R = 0.000001; // 0.1: 2m: Q = 1, R = 0.00005; //3m: R = 0.00001
 
 	// Prediction
 	dx1 = *Vz;

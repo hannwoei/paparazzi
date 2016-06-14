@@ -39,7 +39,7 @@
     <load name="video_rtp_stream.xml"/>
     <load name="video_usb_logger.xml"/>
     -->
-
+    <load name="opticflow_hover.xml"/>
     <load name="opticflow_landing.xml"/>
     <load name="cv_opticflow_height.xml"/>
 

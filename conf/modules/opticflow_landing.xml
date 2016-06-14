@@ -34,8 +34,8 @@
       <define name="VISION_DIV_IGAIN" value="0.1"/> <!-- 20 -->
       <define name="VISION_DIV_DGAIN" value="0.1"/> <!-- 82 -->
       <define name="VISION_NOMINAL_THROTTLE" value="0.620"/> <!-- 0.6042 -->
-      <define name="VISION_DESIRED_DIV" value="0.1"/>
-      <define name="VISION_CONTROLLER" value="5"/>
+      <define name="VISION_DESIRED_DIV" value="0.2"/>
+      <define name="VISION_CONTROLLER" value="3"/>
       <define name="VISION_LP_ALPHA" value="0.6"/>
       <define name="VISION_T_INTERVAL" value="2.0"/>
       <define name="VISION_DELAY_STEP" value="15"/>

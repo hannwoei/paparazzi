@@ -61,7 +61,7 @@ struct Div_landing_t {
 extern struct Div_landing_t Div_landing;
 
 // use the hover mode for horizontal control
-#define GUIDANCE_H_MODE_MODULE_SETTING GUIDANCE_H_MODE_HOVER
+//#define GUIDANCE_H_MODE_MODULE_SETTING GUIDANCE_H_MODE_HOVER
 
 // use guidance from module
 #define GUIDANCE_V_MODE_MODULE_SETTING GUIDANCE_V_MODE_MODULE

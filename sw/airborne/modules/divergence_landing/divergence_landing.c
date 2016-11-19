@@ -372,6 +372,13 @@ void divergence_landing_run(bool_t in_flight)
 			Div_landing.div_pgain = Div_landing.div_pgain *1.001;
 			Div_landing.div_igain = Div_landing.div_igain *1.001;
 	    }
+	    // 6. landing with height adaptive gain
+	    else if(Div_landing.controller == 6)
+	    {
+	    	Div_landing.err_Z = -(Div_landing.desired_div - Div_landing.div_f);
+			Div_landing.div_pgain = Z_est*(4*Div_landing.desired_div+0.3)*0.1;
+			Div_landing.div_igain = 0.0;
+	    }
 	    // 0. hovering with height control
 	    else
 	    {
@@ -399,27 +406,27 @@ void divergence_landing_run(bool_t in_flight)
 		// **********************************************************************************************************************
 		// Oscillation detection & re-configure the gains
 		// **********************************************************************************************************************
-//		normalized_thrust = (float)(Div_landing.thrust / (MAX_PPRZ / 100));
-//		thrust_hist[i_hist%COV_WIN_SIZE] = normalized_thrust;
-//		div_hist[i_hist%COV_WIN_SIZE] = Div_landing.div_f;
-//		int64_t i_prev = (i_hist%COV_WIN_SIZE) - Div_landing.delay_step;
-//		if(i_prev < 0) i_prev += COV_WIN_SIZE;
-//		float prev_div = div_hist[i_prev];
-//		prev_div_hist[i_hist%COV_WIN_SIZE] = prev_div;
-//		i_hist++;
-//		//if(i_hist >= COV_WIN_SIZE) i_hist = 0; // prevent overflow
-//		if(i_hist >= COV_WIN_SIZE*4) {
-//			if(Div_landing.cov_method == 1) {
-//				Div_landing.cov_div = get_cov(thrust_hist, div_hist, COV_WIN_SIZE);
-//			}
-//			else if(Div_landing.cov_method == 2) {
-//				Div_landing.cov_div = get_cov(prev_div_hist, div_hist, COV_WIN_SIZE);
-//			}
-//			else
-//			{
-//				// nothing
-//			}
-//		}
+		normalized_thrust = (float)(Div_landing.thrust / (MAX_PPRZ / 100));
+		thrust_hist[i_hist%COV_WIN_SIZE] = normalized_thrust;
+		div_hist[i_hist%COV_WIN_SIZE] = Div_landing.div_f;
+		int64_t i_prev = (i_hist%COV_WIN_SIZE) - Div_landing.delay_step;
+		if(i_prev < 0) i_prev += COV_WIN_SIZE;
+		float prev_div = div_hist[i_prev];
+		prev_div_hist[i_hist%COV_WIN_SIZE] = prev_div;
+		i_hist++;
+		//if(i_hist >= COV_WIN_SIZE) i_hist = 0; // prevent overflow
+		if(i_hist >= COV_WIN_SIZE*4) {
+			if(Div_landing.cov_method == 1) {
+				Div_landing.cov_div = get_cov(thrust_hist, div_hist, COV_WIN_SIZE);
+			}
+			else if(Div_landing.cov_method == 2) {
+				Div_landing.cov_div = get_cov(prev_div_hist, div_hist, COV_WIN_SIZE);
+			}
+			else
+			{
+				// nothing
+			}
+		}
 //		// Go back to previous gain and start landing
 //		if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && Div_landing.controller == 5)
 //		{

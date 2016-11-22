@@ -120,7 +120,7 @@ static abi_event optical_flow_ev;
 static void landing_agl_cb(uint8_t sender_id __attribute__((unused)), float distance);
 // Callback function of the optical flow estimate:
 static void vertical_ctrl_optical_flow_cb(uint8_t sender_id __attribute__((unused)), uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps);
-static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float fps, float *L);
+static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float fps, float *L, float W_ekf);
 
 // Vision
 float div_update, fb_cmd, curr_height;
@@ -130,6 +130,7 @@ int message_count, previous_count, i_init;
 float P_EKF[4], Z_EKF, Vz_EKF, innov_EKF, L_EKF[2], Z_est, V_est, Z_init, Vz_init;
 int i_Z_init, i_switch;
 float t_interval;
+float W_s;
 uint32_t prev_stamp, curr_stamp;
 
 // Oscillation detection
@@ -219,11 +220,11 @@ void divergence_landing_init(void)
 	landing_method = 0; restart_init = 0;
 
 	// Height estimation using EKF
-	Z_EKF = 5.0;
+	Z_EKF = 3.0;
 	Vz_EKF = 0.01;
 	innov_EKF = 0.0;
 	P_EKF[0] = 1000; P_EKF[1] = 0; P_EKF[2] = 0; P_EKF[3] = 100; L_EKF[0] = 0.0, L_EKF[1] = 0.0;
-	Z_est = Z_EKF; V_est = Vz_EKF; Z_init = 0.0; Vz_init = 0.0; i_Z_init = 0, i_switch = 0;
+	Z_est = Z_EKF; V_est = Vz_EKF; Z_init = 0.0; Vz_init = 0.0; i_Z_init = 0, i_switch = 0; W_s = 0.4;
 
   // Subscribe to the altitude above ground level ABI messages
   AbiBindMsgAGL(LANDING_AGL_ID, &agl_ev, landing_agl_cb);
@@ -283,7 +284,7 @@ void divergence_landing_run(bool_t in_flight)
 		// **********************************************************************************************************************
 		t_interval += Div_landing.stamp;
 
-		if(t_interval > 10.0 && (Div_landing.controller != 4 && Div_landing.controller != 1))
+		if(t_interval > 10.0 && (Div_landing.controller != 4 && Div_landing.controller != 1 && Div_landing.controller != 6))
 		{
 			t_interval = 0.0;
 		}
@@ -376,7 +377,10 @@ void divergence_landing_run(bool_t in_flight)
 	    else if(Div_landing.controller == 6)
 	    {
 	    	Div_landing.err_Z = -(Div_landing.desired_div - Div_landing.div_f);
-			Div_landing.div_pgain = Z_est*(4*Div_landing.desired_div+0.3)*0.1;
+//	    	if(t_interval > Div_landing.t_interval_sp)
+//	    	{
+				Div_landing.div_pgain = Z_est*(4.0*Div_landing.desired_div+0.3)*W_s;
+//	    	}
 			Div_landing.div_igain = 0.0;
 	    }
 	    // 0. hovering with height control
@@ -506,17 +510,17 @@ void divergence_landing_run(bool_t in_flight)
 //		}
 
 //		 trim landing
-	    if(Div_landing.agl<0.3 && trim_landing == 0 && Div_landing.gps_z<1.0)
-	    {
-	    	trim_init = fb_cmd* MAX_PPRZ;
-	    	trim_landing = 1;
-	    }
-
-	    if(trim_landing == 1)
-	    {
-	    	Div_landing.nominal_throttle = Div_landing.nominal_throttle-0.0005;
-	    	Div_landing.thrust = Div_landing.nominal_throttle * MAX_PPRZ; // + trim_init
-	    }
+//	    if(Div_landing.agl<0.3 && trim_landing == 0 && Div_landing.gps_z<1.0)
+//	    {
+//	    	trim_init = fb_cmd* MAX_PPRZ;
+//	    	trim_landing = 1;
+//	    }
+//
+//	    if(trim_landing == 1)
+//	    {
+//	    	Div_landing.nominal_throttle = Div_landing.nominal_throttle-0.0005;
+//	    	Div_landing.thrust = Div_landing.nominal_throttle * MAX_PPRZ; // + trim_init
+//	    }
 
 		Bound(Div_landing.thrust, 0, MAX_PPRZ);
 	    stabilization_cmd[COMMAND_THRUST] = Div_landing.thrust;
@@ -525,7 +529,7 @@ void divergence_landing_run(bool_t in_flight)
 		// Height Estimation using EKF
 		// **********************************************************************************************************************
 
-	    HeightEKT(&Z_EKF, &Vz_EKF, &innov_EKF, P_EKF, fb_cmd, -Div_landing.div_f, Div_landing.stamp, L_EKF);
+	    HeightEKT(&Z_EKF, &Vz_EKF, &innov_EKF, P_EKF, fb_cmd, -Div_landing.div_f, Div_landing.stamp, L_EKF, W_s);
 	    Z_est = 1.0*Z_EKF;
 		V_est = 1.0*Vz_EKF;
 
@@ -574,7 +578,7 @@ void guidance_v_module_run(bool_t in_flight)
   divergence_landing_run(in_flight);
 }
 
-static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float fps, float *L)
+static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, float div, float fps, float *L, float W_ekf)
 {
 	float dt_ekf, dx1, dx2, xp1, xp2, zp, Pp[4], H[2], Ve;
 
@@ -591,8 +595,10 @@ static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, floa
 
 	float phi[4] = {1.0,dt_ekf,0.0,1.0};
 	float gamma[2] = {dt_ekf*dt_ekf*0.5,dt_ekf};
-	float Q = 1.0; // 0.3: 2m: Q = 1, R = 0.00005; //3m: R = 0.00001 // 0.2: 2m: Q = 1, R = 0.0001; //3m: R = 0.00005
-	float R = 0.000001; // 0.1: 2m: Q = 1, R = 0.00005; //3m: R = 0.00001
+//	float Q = 1.0; // 0.3: 2m: Q = 1, R = 0.00005; //3m: R = 0.00001 // 0.2: 2m: Q = 1, R = 0.0001; //3m: R = 0.00005
+//	float R = 0.000001; // 0.1: 2m: Q = 1, R = 0.00005; //3m: R = 0.00001
+	float Q = 1.0;
+	float R = 0.000001;
 
 	// Prediction
 	dx1 = *Vz;
@@ -606,7 +612,7 @@ static void HeightEKT(float *Z, float *Vz, float *innov, float *P, float u, floa
 //	}
 //	dx2 = u-(0.015/0.2*0.1);
 //	dx2 = u*20.0-1.0;
-	dx2 = u;
+	dx2 = u/W_ekf;
 	xp1 = *Z + dx1*dt_ekf;
 	xp2 = *Vz + dx2*dt_ekf;
 	zp = xp2/xp1;

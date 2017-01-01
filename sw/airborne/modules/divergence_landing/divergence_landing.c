@@ -22,6 +22,10 @@
  * @file modules/divergence_landing/divergence_landing.c
  * @Vertical landing using divergence
  *
+ * Ho H.W., de Croon G.C.H.E., van Kampen E., Chu Q.P., and Mulder M. (2016)
+ * Adaptive Control Strategy for Constant Optical Flow Divergence Landing.
+ * arXiv preprint arXiv:1609.06767.
+ * <https://arxiv.org/abs/1609.06767>
  */
 
 #include "modules/divergence_landing/divergence_landing.h"

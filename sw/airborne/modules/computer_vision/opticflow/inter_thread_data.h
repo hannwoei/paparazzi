@@ -49,6 +49,11 @@ struct opticflow_result_t {
   float divergence;       ///< Divergence as determined with a linear flow fit
 
   float noise_measurement;  ///< noise of measurement, for state filter
+
+  float t1;
+  float t2;
+  float t3;
+  float t4;
 };
 
 /* The state of the drone when it took an image */

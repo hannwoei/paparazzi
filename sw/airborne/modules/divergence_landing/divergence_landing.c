@@ -101,6 +101,11 @@ PRINT_CONFIG_VAR(LANDING_AGL_ID)
 #endif
 PRINT_CONFIG_VAR(VERTICAL_CTRL_MODULE_OPTICAL_FLOW_ID)
 
+/* check process time */
+#ifdef CHECK_CPU_TIME_DIV
+#include <time.h>
+#endif
+
 /* Check the control gains */
 /*
 #if (VISION_DIV_PGAIN < 0)      ||  \
@@ -118,7 +123,9 @@ static abi_event optical_flow_ev;
 /// Callback function of the ground altitude
 static void landing_agl_cb(uint8_t sender_id __attribute__((unused)), float distance);
 // Callback function of the optical flow estimate:
-static void vertical_ctrl_optical_flow_cb(uint8_t sender_id __attribute__((unused)), uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps);
+static void vertical_ctrl_optical_flow_cb(uint8_t sender_id __attribute__((unused)), uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y,
+		uint8_t quality, float size_divergence, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps,
+		float t1, float t2, float t3, float t4, uint16_t n_corner, uint16_t n_track);
 
 // Vision
 float div_update, fb_cmd, curr_height, t_interval;
@@ -129,6 +136,11 @@ uint32_t prev_stamp, curr_stamp;
 float div_hist[COV_WIN_SIZE], prev_div_hist[COV_WIN_SIZE], pgain_init, igain_init, trim_init;
 int64_t i_hist;
 int8_t cov_trigger, trim_landing, landing_method, restart_init;
+
+#ifdef CHECK_CPU_TIME_DIV
+  static clock_t t_fun1, t_fun2, t_fun3, t_fun4, t_fun5;
+  static float time_taken1, time_taken2, time_taken3, time_taken4, time_taken5, time_taken6, time_taken7, time_taken8, time_taken9;
+#endif
 
 #if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
@@ -145,7 +157,9 @@ static void div_ctrl_telem_send(struct transport_tx *trans, struct link_device *
 		  &Div_landing.agl, &Div_landing.gps_z, &Div_landing.vel_z, &Div_landing.accel_z,
 		  &Div_landing.div_igain, &Div_landing.err_Z, &Div_landing.div_f, &Div_landing.ground_div,
 		  &stabilization_cmd[COMMAND_THRUST], &Div_landing.thrust, &fb_cmd,
-		  &Div_landing.fps, &Div_landing.stamp);
+		  &Div_landing.fps, &Div_landing.stamp, &time_taken1, &time_taken2, &time_taken3,
+		  &time_taken4, &time_taken5, &time_taken6, &time_taken7, &time_taken8, &time_taken9,
+		  &Div_landing.n_corner, &Div_landing.n_track);
 }
 #endif
 
@@ -194,6 +208,12 @@ void divergence_landing_init(void)
 	Div_landing.delay_step = VISION_DELAY_STEP;
 	Div_landing.cov_div = 0.0;
 	Div_landing.cov_thres = VISION_COV_THRESHOLD;
+	Div_landing.t1 = 0.0;
+	Div_landing.t2 = 0.0;
+	Div_landing.t3 = 0.0;
+	Div_landing.t4 = 0.0;
+	Div_landing.n_track = 0;
+	Div_landing.n_corner = 0;
 
 	// Oscillation detection
 	i_hist = 0;
@@ -205,6 +225,11 @@ void divergence_landing_init(void)
 	pgain_init = Div_landing.div_pgain;
 	igain_init = Div_landing.div_igain;
 	landing_method = 0; restart_init = 0;
+
+#ifdef CHECK_CPU_TIME_DIV
+  t_fun1 = 0, t_fun2 = 0, t_fun3 = 0, t_fun4 = 0, t_fun5 = 0;
+  time_taken1 = 0.0, time_taken2 = 0.0, time_taken3 = 0.0, time_taken4 = 0.0, time_taken5 = 0.0, time_taken6 = 0.0, time_taken7 = 0.0, time_taken8 = 0.0, time_taken9 = 0.0;
+#endif
 
   // Subscribe to the altitude above ground level ABI messages
   AbiBindMsgAGL(LANDING_AGL_ID, &agl_ev, landing_agl_cb);
@@ -230,6 +255,9 @@ void divergence_landing_run(bool_t in_flight)
 
 	if(message_count != previous_count)
 	{
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun5 = clock();
+#endif
 		// **********************************************************************************************************************
 		// timestamp of messages
 		// **********************************************************************************************************************
@@ -261,6 +289,10 @@ void divergence_landing_run(bool_t in_flight)
 		// **********************************************************************************************************************
 		// Vision Correction and filter
 		// **********************************************************************************************************************
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun1 = clock();
+#endif
+
 		div_update = Div_landing.div*1.28;
 		if(fabs(div_update - Div_landing.div_f) > 0.20) {
 			if(div_update < Div_landing.div_f) div_update = Div_landing.div_f - 0.10f;
@@ -268,10 +300,20 @@ void divergence_landing_run(bool_t in_flight)
 		}
 		Div_landing.div_f = Div_landing.div_f*Div_landing.alpha + div_update*(1.0f - Div_landing.alpha);
 
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun1 = clock()-t_fun1;
+		time_taken1 = ((float)t_fun1)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+#endif
+
 		// **********************************************************************************************************************
 		// Feedback Controller
 		// **********************************************************************************************************************
 		// trim thrust
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun2 = clock();
+#endif
+
 	    int32_t nominal_throttle = Div_landing.nominal_throttle * MAX_PPRZ;
 
 	    // 1. tracking a divergence setpoint
@@ -297,9 +339,18 @@ void divergence_landing_run(bool_t in_flight)
 	    fb_cmd = (Div_landing.div_pgain * Div_landing.err_Z) + (Div_landing.div_igain * Div_landing.z_sum_err);
 	    Div_landing.thrust = nominal_throttle + fb_cmd* MAX_PPRZ;
 
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun2 = clock()-t_fun2;
+		time_taken2 = ((float)t_fun2)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+#endif
 		// **********************************************************************************************************************
 		// Oscillation detection & re-configure the gains
 		// **********************************************************************************************************************
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun3 = clock();
+#endif
+
 		div_hist[i_hist%COV_WIN_SIZE] = Div_landing.div_f;
 		int64_t i_prev = (i_hist%COV_WIN_SIZE) - Div_landing.delay_step;
 		if(i_prev < 0) i_prev += COV_WIN_SIZE;
@@ -310,6 +361,16 @@ void divergence_landing_run(bool_t in_flight)
 		if(i_hist >= COV_WIN_SIZE*4) {
 			Div_landing.cov_div = get_cov(prev_div_hist, div_hist, COV_WIN_SIZE);
 		}
+
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun3 = clock()-t_fun3;
+		time_taken3 = ((float)t_fun3)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+#endif
+
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun4 = clock();
+#endif
 		// Go back to previous gain and start landing
 		if(i_hist >= COV_WIN_SIZE && fabs(Div_landing.cov_div) > Div_landing.cov_thres && Div_landing.controller == 2)
 		{
@@ -368,8 +429,24 @@ void divergence_landing_run(bool_t in_flight)
 			// landing method 3: decrease when oscillate
 		}
 
+#ifdef CHECK_CPU_TIME_DIV
+		t_fun4 = clock()-t_fun4;
+		time_taken4 = ((float)t_fun4)/CLOCKS_PER_SEC; // in seconds
+		t_fun5 = clock()-t_fun5;
+		time_taken5 = ((float)t_fun5)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+#endif
+
 		Bound(Div_landing.thrust, 0, MAX_PPRZ);
 	    stabilization_cmd[COMMAND_THRUST] = Div_landing.thrust;
+
+#ifdef CHECK_CPU_TIME_DIV
+	    // computational time for each process
+	    time_taken6 = Div_landing.t1;
+	    time_taken7 = Div_landing.t2;
+	    time_taken8 = Div_landing.t3;
+	    time_taken9 = Div_landing.t4;
+#endif
 
 		previous_count = message_count;
 	}
@@ -385,7 +462,7 @@ static void landing_agl_cb(uint8_t sender_id, float distance)
 	Div_landing.agl = distance;
 }
 
-static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps)
+static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float dist, float gps_z, float vel_z, float accel_z, float ground_divergence, float fps, float t1, float t2, float t3, float t4, uint16_t n_corner, uint16_t n_track)
 {
   Div_landing.div = size_divergence;
   Div_landing.gps_z = gps_z;
@@ -393,6 +470,12 @@ static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int
   Div_landing.fps = fps;
   Div_landing.vel_z = vel_z;
   Div_landing.accel_z = accel_z;
+  Div_landing.t1 = t1;
+  Div_landing.t2 = t2;
+  Div_landing.t3 = t3;
+  Div_landing.t4 = t4;
+  Div_landing.n_corner = n_corner;
+  Div_landing.n_track = n_track;
   curr_stamp = stamp;
 //  printf("t=%d\n",stamp);
   message_count++;

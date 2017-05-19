@@ -112,9 +112,19 @@ PRINT_CONFIG_VAR(OPTICFLOW_FAST9_THRESHOLD)
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_FAST9_MIN_DISTANCE)
 
+/* check process time */
+#ifdef CHECK_CPU_TIME
+#include <time.h>
+#endif
+
 /* Functions only used here */
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
 static int cmp_flow(const void *a, const void *b);
+
+#ifdef CHECK_CPU_TIME
+  static clock_t t_fun1, t_fun2, t_fun3, t_fun4;
+  static float time_taken1, time_taken2, time_taken3, time_taken4;
+#endif
 
 /**
  * Initialize the opticflow calculator
@@ -143,6 +153,11 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   opticflow->fast9_adaptive = OPTICFLOW_FAST9_ADAPTIVE;
   opticflow->fast9_threshold = OPTICFLOW_FAST9_THRESHOLD;
   opticflow->fast9_min_distance = OPTICFLOW_FAST9_MIN_DISTANCE;
+
+#ifdef CHECK_CPU_TIME
+  t_fun1 = 0, t_fun2 = 0, t_fun3 = 0, t_fun4 = 0;
+  time_taken1 = 0.0, time_taken2 = 0.0, time_taken3 = 0.0, time_taken4 = 0.0;
+#endif
 }
 
 /**
@@ -155,6 +170,9 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
 void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_t *state, struct image_t *img,
                           struct opticflow_result_t *result)
 {
+#ifdef CHECK_CPU_TIME
+		t_fun4 = clock();
+#endif
   // variables for size_divergence:
   float size_divergence; int n_samples;
 
@@ -177,11 +195,19 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   // *************************************************************************************
   // Corner detection
   // *************************************************************************************
+#ifdef CHECK_CPU_TIME
+		t_fun1 = clock();
+#endif
 
   // FAST corner detection (TODO: non fixed threshold)
   struct point_t *corners = fast9_detect(img, opticflow->fast9_threshold, opticflow->fast9_min_distance,
                                          20, 20, &result->corner_cnt);
 
+#ifdef CHECK_CPU_TIME
+		t_fun1 = clock()-t_fun1;
+		time_taken1 = ((float)t_fun1)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+#endif
   // Adaptive threshold
   if (opticflow->fast9_adaptive) {
 
@@ -207,6 +233,9 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   // *************************************************************************************
   // Corner Tracking
   // *************************************************************************************
+#ifdef CHECK_CPU_TIME
+		t_fun2 = clock();
+#endif
 
   // Execute a Lucas Kanade optical flow
   result->tracked_cnt = result->corner_cnt;
@@ -214,11 +243,21 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
                                        opticflow->window_size / 2, opticflow->subpixel_factor, opticflow->max_iterations,
                                        opticflow->threshold_vec, opticflow->max_track_corners);
 
+#ifdef CHECK_CPU_TIME
+		t_fun2 = clock()-t_fun2;
+		time_taken2 = ((float)t_fun2)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+#endif
+
 #if OPTICFLOW_DEBUG && OPTICFLOW_SHOW_FLOW
   image_show_flow(img, vectors, result->tracked_cnt, opticflow->subpixel_factor);
 #endif
 
   // Estimate size divergence:
+#ifdef CHECK_CPU_TIME
+		t_fun3 = clock();
+#endif
+
   if (SIZE_DIV) {
     n_samples = 100;
     size_divergence = get_size_divergence(vectors, result->tracked_cnt, n_samples);
@@ -226,6 +265,12 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   } else {
     result->div_size = 0.0f;
   }
+#ifdef CHECK_CPU_TIME
+		t_fun3 = clock()-t_fun3;
+		time_taken3 = ((float)t_fun3)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+#endif
+
   if (LINEAR_FIT) {
     // Linear flow fit (normally derotation should be performed before):
     error_threshold = 10.0f;
@@ -304,6 +349,16 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   free(corners);
   free(vectors);
   image_switch(&opticflow->img_gray, &opticflow->prev_img_gray);
+
+#ifdef CHECK_CPU_TIME
+		t_fun4 = clock()-t_fun4;
+		time_taken4 = ((float)t_fun4)/CLOCKS_PER_SEC; // in seconds
+//		printf("corner_detection() took %f seconds to execute \n", time_taken);
+		result->t1 = time_taken1;
+		result->t2 = time_taken2;
+		result->t3 = time_taken3;
+		result->t4 = time_taken4;
+#endif
 }
 
 /**

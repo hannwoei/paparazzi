@@ -57,6 +57,12 @@ struct Div_landing_t {
   int8_t cov_method;
   float cov_div;
   float cov_thres;
+  float t1;
+  float t2;
+  float t3;
+  float t4;
+  uint16_t n_corner;
+  uint16_t n_track;
 };
 extern struct Div_landing_t Div_landing;
 

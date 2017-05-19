@@ -219,7 +219,13 @@ void opticflow_module_run(void)
 						   opticflow_state.V_body_z,
 						   opticflow_state.A_body_z,
 						   opticflow_state.ground_divergence,
-						   opticflow_result.fps
+						   opticflow_result.fps,
+						   opticflow_result.t1,
+						   opticflow_result.t2,
+						   opticflow_result.t3,
+						   opticflow_result.t4,
+						   opticflow_result.corner_cnt,
+						   opticflow_result.tracked_cnt
 						   );
     //TODO Find an appropiate quality measure for the noise model in the state filter, for now it is tracked_cnt
     if (opticflow_result.tracked_cnt > 0) {

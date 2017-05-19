@@ -69,6 +69,12 @@
       <field name="accel_z" type="float">Acceleration</field>
       <field name="ground_divergence" type="float">Divergence from GPS</field>
       <field name="fps" type="float">FPS from vision</field>
+      <field name="t1" type="float"/>
+      <field name="t2" type="float"/>
+      <field name="t3" type="float"/>
+      <field name="t4" type="float"/>
+      <field name="n_corner" type="uint16_t"/>
+      <field name="n_track" type="uint16_t"/>
     </message>
 
     <message name="VELOCITY_ESTIMATE" id="12">

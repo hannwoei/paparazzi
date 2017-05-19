@@ -33,13 +33,14 @@
       <define name="VISION_DIV_IGAIN" value="0.1"/>
       <define name="VISION_DIV_DGAIN" value="0.1"/>
       <define name="VISION_NOMINAL_THROTTLE" value="0.620"/> 
-      <define name="VISION_DESIRED_DIV" value="0.2"/>
+      <define name="VISION_DESIRED_DIV" value="0.1"/>
       <define name="VISION_CONTROLLER" value="2"/>
       <define name="VISION_LP_ALPHA" value="0.6"/>
       <define name="VISION_T_INTERVAL" value="2.0"/>
-      <define name="VISION_DELAY_STEP" value="8"/>
-      <define name="COV_WIN_SIZE" value="16"/>
+      <define name="VISION_DELAY_STEP" value="15"/>
+      <define name="COV_WIN_SIZE" value="30"/>
       <define name="VISION_COV_THRESHOLD" value="0.001"/>
+      <define name="CHECK_CPU_TIME_DIV" description="Check CPU Time"/> 
   </makefile>
 
 </module>

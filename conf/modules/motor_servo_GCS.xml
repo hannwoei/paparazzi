@@ -1,0 +1,36 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="motor_servo_GCS" dir="ctrl">
+  <doc>
+    <description>
+		control motors and servos via GCS
+		Copyright (C) 2019 HO HANN WOEI
+    </description>
+    <section name="MS" prefix="MS_">
+      <define name="THROTTLE" value="0" description="throttle values"/>
+    </section>
+  </doc>
+  <settings>
+    <dl_settings>
+      <dl_settings NAME="MotorServoGCS">
+        <dl_setting var="motor_servo_ctrl.ms_throttle" min="0" step="10" max="9600" module="ctrl/motor_servo_GCS" shortname="ms_throttle" param="MS_THROTTLE"/>
+        <dl_setting var="motor_servo_ctrl.ms_throttle2" min="0" step="10" max="9600" module="ctrl/motor_servo_GCS" shortname="ms_throttle2" param="MS_THROTTLE2"/>
+        <dl_setting var="motor_servo_ctrl.ms_servo" min="-9600" step="100" max="9600" module="ctrl/motor_servo_GCS" shortname="ms_servo" param="MS_SERVO"/>
+        <dl_setting var="motor_servo_ctrl.ms_servo2" min="-9600" step="100" max="9600" module="ctrl/motor_servo_GCS" shortname="ms_servo2" param="MS_SERVO2"/>
+    </dl_settings>
+    </dl_settings>
+  </settings>
+
+  <header>
+    <file name="motor_servo_GCS.h"/>
+  </header>
+
+  <makefile target="ap">
+    <file name="motor_servo_GCS.c"/>
+        <!-- raw>
+      ap.CFLAGS += -DGUIDANCE_V_MODE_MODULE_SETTING=GUIDANCE_V_MODE_MODULE
+      ap.CFLAGS += -DGUIDANCE_H_MODE_MODULE_SETTING=GUIDANCE_H_MODE_ATTITUDE
+    </raw-->
+  </makefile>
+
+</module>

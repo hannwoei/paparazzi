@@ -50,4 +50,5 @@
  <channel ctl="4" function="YAW"         min="1000" neutral="1500" max="2000" average="0"/>
  <channel ctl="5" function="KILL_SWITCH" min="2000" neutral="1750" max="1500" average="0"/>
  <channel ctl="6" function="MODE"        min="1000" neutral="1500" max="2000" average="1"/>
+ <channel ctl="7" function="FLAP"        min="1000" neutral="1500" max="2000" average="0"/>
 </radio>

@@ -27,10 +27,6 @@
 
   <makefile target="ap">
     <file name="motor_servo_GCS.c"/>
-        <!-- raw>
-      ap.CFLAGS += -DGUIDANCE_V_MODE_MODULE_SETTING=GUIDANCE_V_MODE_MODULE
-      ap.CFLAGS += -DGUIDANCE_H_MODE_MODULE_SETTING=GUIDANCE_H_MODE_ATTITUDE
-    </raw-->
   </makefile>
 
 </module>

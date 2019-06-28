@@ -18,6 +18,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file modules/ctrl/motor_servo_GCS.h
+ * @brief Control 2 motors and 2 servo from GCS
+ *
+ *
+ */
+
 #include "motor_servo_GCS.h"
 
 #include "generated/airframe.h"

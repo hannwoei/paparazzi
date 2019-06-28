@@ -18,6 +18,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file modules/ctrl/motor_servo_GCS.h
+ * @brief Control 2 motors and 2 servo from GCS
+ *
+ *
+ */
+
 #ifndef MOTOR_SERVO_GCS_H_
 #define MOTOR_SERVO_GCS_H_
 

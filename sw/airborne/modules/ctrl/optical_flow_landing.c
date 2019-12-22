@@ -161,7 +161,7 @@ static void send_divergence(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_DIVERGENCE(trans, dev, AC_ID,
                            &(of_landing_ctrl.divergence), &divergence_vision_dt, &normalized_thrust,
-                           &cov_div, &pstate, &pused, &(of_landing_ctrl.agl));
+                           &cov_div, &pstate, &pused, &(of_landing_ctrl.agl), &(of_landing_ctrl.vel));
 }
 
 /// Function definitions
@@ -363,6 +363,7 @@ void vertical_ctrl_module_run(bool in_flight)
 
       // trigger the landing if the cov div is too high:
       if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
+      // if (of_landing_ctrl.agl < 0.2) {
         thrust_set = final_landing_procedure();
       }
     } else if (of_landing_ctrl.CONTROL_METHOD == 1) {
@@ -595,6 +596,7 @@ void update_errors(float err, float dt)
 void vertical_ctrl_agl_cb(uint8_t sender_id UNUSED, float distance)
 {
   of_landing_ctrl.agl = distance;
+  of_landing_ctrl.vel = stateGetSpeedEnu_f()->z;
 }
 
 void vertical_ctrl_optical_flow_cb(uint8_t sender_id UNUSED, uint32_t stamp, int16_t flow_x UNUSED,

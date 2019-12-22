@@ -13,6 +13,7 @@
       <define name="STABILIZATION_INDI_G2_R" value="0.0"/><!-- for jsbsim (rotor inertia is not modelled) -->
       <!-- <define name="STABILIZATION_INDI_G2_R" value="0.20"/> --><!-- for gazebo -->
     </target>
+<!--define name="FAILSAFE_DESCENT_SPEED" value="0.5"/-->
 <define name="USE_SONAR" value="TRUE"/>
 	  <!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
@@ -28,8 +29,6 @@
     </module>
     <module name="ins" type="extended"/>
 
-    <!--module name="video_thread"/-->
-
     <module name="cv_opticflow">
       <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
       <define name="MAX_HORIZON" value="10"/>
@@ -37,8 +36,7 @@
       <define name="OPTICFLOW_DEROTATION_CORRECTION_FACTOR_Y" value="0.85"/> <!--Obtained from a linefit--> 
     </module>
 
-    <module name="opticflow_hover.xml"/>
-    <module name="opticflow_landing.xml"/>
+    <module name="optical_flow_landing.xml"/>
 
     <!-- <module name="video_rtp_stream">
       <define name="VIEWVIDEO_CAMERA" value="bottom_camera"/>
@@ -230,8 +228,8 @@
   <section name="BAT">
     <define name="MILLIAMP_AT_FULL_THROTTLE" value="8700"/>
     <define name="CATASTROPHIC_BAT_LEVEL" value="9.3" unit="V"/>
-    <define name="CRITIC_BAT_LEVEL" value="9.6" unit="V"/>
-    <define name="LOW_BAT_LEVEL" value="9.7" unit="V"/>
+    <define name="CRITIC_BAT_LEVEL" value="9.9" unit="V"/>
+    <define name="LOW_BAT_LEVEL" value="10.5" unit="V"/>
     <define name="MAX_BAT_LEVEL" value="12.4" unit="V"/>
   </section>
 </airframe>

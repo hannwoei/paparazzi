@@ -31,7 +31,7 @@
       <message name="VISUALTARGET"             period="0.10"/>
       <message name="VISION_POSITION_ESTIMATE" period="0.1"/>
       <message name="DIVERGENCE"               period="0.05"/>
-      <message name="DRAGSPEED"                period="0.02"/>
+      <message name="DIV_CTRL"                 period="0.02"/>
       <message name="MSTHROTTLE"               period="0.05"/>
     </mode>
 

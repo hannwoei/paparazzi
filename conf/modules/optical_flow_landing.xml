@@ -15,7 +15,7 @@
       <define name="IGAIN" value="0.10" description="I gain on summed height error"/>
       <define name="DGAIN" value="0.0" description="D gain on summed height error"/>
       <define name="VISION_METHOD" value="1" description="0 = fake vision, 1 = real vision"/>
-      <define name="CONTROL_METHOD" value="0" description="0 = fixed gain control, 1 = adaptive gain control, 2 = exponential control"/>
+      <define name="CONTROL_METHOD" value="0" description="0 = fixed gain control, 1 = adaptive gain control, 2 = exponential control, 3 INDI"/>
       <define name="COV_METHOD" value="0" description="0 = cov(uz, div), 1 = cov(div_past, div)"/>
       <define name="COV_WINDOW_SIZE" value="30" description="Number of time steps for window size for getting the covariance over time."/>
       <define name="COV_LANDING_LIMIT" value="2.2" description="Covariance where the vehicle engages final landing procedure."/>

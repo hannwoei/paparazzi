@@ -174,6 +174,7 @@ void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t fl
 // common functions for different landing strategies:
 static void set_cov_div(int32_t thrust);
 static int32_t PID_divergence_control(float divergence_setpoint, float P, float I, float D, float dt);
+static int32_t INDI_divergence_control(float divergence_setpoint, float dt);
 static void update_errors(float error, float dt);
 static uint32_t final_landing_procedure(void);
 
@@ -227,6 +228,21 @@ void vertical_ctrl_module_init(void)
   // if the gain reaches this value during an exponential landing, the drone makes the final landing.
   of_landing_ctrl.p_land_threshold = OFL_P_LAND_THRESHOLD;
   of_landing_ctrl.elc_oscillate = OFL_ELC_OSCILLATE;
+
+  // INDI
+  of_landing_ctrl.yt_1 = 0.0;
+  of_landing_ctrl.yt_2 = 0.0;
+  of_landing_ctrl.ut_1 = 0.0;
+  of_landing_ctrl.ut_2 = 0.0;
+  of_landing_ctrl.P_rls11 = 10.0;
+  of_landing_ctrl.P_rls12 = 0.0;
+  of_landing_ctrl.P_rls21 = 0.0;
+  of_landing_ctrl.P_rls22 = 10.0;
+  of_landing_ctrl.gamma_RLS = 0.95;
+  of_landing_ctrl.F_t = 1.0;
+  of_landing_ctrl.G_t = 0.0;
+  of_landing_ctrl.GainP = 1.0;
+  of_landing_ctrl.ut_Max = 10.0;
   reset_all_vars();
 
   // Subscribe to the altitude above ground level ABI messages
@@ -280,6 +296,21 @@ static void reset_all_vars(void)
   of_landing_ctrl.previous_err = 0.;
   of_landing_ctrl.sum_err = 0.;
   of_landing_ctrl.d_err = 0.;
+
+  //INDI
+  of_landing_ctrl.yt_1 = 0.0;
+  of_landing_ctrl.yt_2 = 0.0;
+  of_landing_ctrl.ut_1 = 0.0;
+  of_landing_ctrl.ut_2 = 0.0;
+  of_landing_ctrl.P_rls11 = 10.0;
+  of_landing_ctrl.P_rls12 = 0.0;
+  of_landing_ctrl.P_rls21 = 0.0;
+  of_landing_ctrl.P_rls22 = 10.0;
+  of_landing_ctrl.gamma_RLS = 0.95;
+  of_landing_ctrl.F_t = 1.0;
+  of_landing_ctrl.G_t = 0.0;
+  of_landing_ctrl.GainP = 1.0;
+  of_landing_ctrl.ut_Max = 10.0;
 }
 
 /**
@@ -487,6 +518,15 @@ void vertical_ctrl_module_run(bool in_flight)
       } else {
         thrust_set = final_landing_procedure();
       }
+    } else if (of_landing_ctrl.CONTROL_METHOD == 3) {
+        // INDI CONTROL:
+
+
+        // trigger the landing if the cov div is too high:
+        //if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
+        if (of_landing_ctrl.agl < 0.2) {
+          thrust_set = final_landing_procedure();
+        }
     }
 
     if (in_flight) {
@@ -572,6 +612,87 @@ int32_t PID_divergence_control(float setpoint, float P, float I, float D, float 
 
   // update covariance
   set_cov_div(thrust);
+
+  return thrust;
+}
+
+/**
+ * Determine and set the thrust for constant divergence control with INDI
+ * @param[out] thrust
+ * @param[in] divergence_set_point: The desired divergence
+ * @param[in] dt: time difference since last update
+ */
+int32_t INDI_divergence_control(float setpoint, float dt)
+{
+  // determine the error:
+  //float err = setpoint - of_landing_ctrl.divergence;
+  float et = of_landing_ctrl.divergence - setpoint;
+
+  // Incremental Model RLS
+  float tar_M = of_landing_ctrl.divergence - of_landing_ctrl.yt_1;
+  float input_M11 = of_landing_ctrl.yt_1 - of_landing_ctrl.yt_2;
+  float input_M21 = of_landing_ctrl.ut_1 - of_landing_ctrl.ut_2;
+  float Gain_denominator = of_landing_ctrl.gamma_RLS + input_M11 * of_landing_ctrl.P_rls11 * input_M11 + input_M21 * of_landing_ctrl.P_rls21 * input_M11 + input_M11*of_landing_ctrl.P_rls12*input_M21 + input_M21*of_landing_ctrl.P_rls22*input_M21;
+  float Gain11 = 0.0;
+  float Gain21 = 0.0;
+
+  if (Gain_denominator > 1e-5f) {
+	  Gain11 = ( of_landing_ctrl.P_rls11 * input_M11 + of_landing_ctrl.P_rls12 * input_M21 ) / Gain_denominator;
+	  Gain21 = ( of_landing_ctrl.P_rls21 * input_M11 + of_landing_ctrl.P_rls22 * input_M21 ) / Gain_denominator;
+  }
+
+  float error_istep = tar_M - ( input_M11 * of_landing_ctrl.F_t +  input_M21 * of_landing_ctrl.G_t );
+  of_landing_ctrl.F_t = of_landing_ctrl.F_t + Gain11 * error_istep;
+  of_landing_ctrl.G_t = of_landing_ctrl.G_t + Gain21 * error_istep;
+
+  float P_rls_new11 = of_landing_ctrl.P_rls11 - ( Gain11 * input_M11 * of_landing_ctrl.P_rls11 + Gain11 * input_M21 * of_landing_ctrl.P_rls21 );
+  float P_rls_new12 = of_landing_ctrl.P_rls12 - ( Gain11 * input_M11 * of_landing_ctrl.P_rls12 + Gain11 * input_M21 * of_landing_ctrl.P_rls22 );
+  float P_rls_new21 = of_landing_ctrl.P_rls21 - ( Gain21 * input_M11 * of_landing_ctrl.P_rls11 + Gain21 * input_M21 * of_landing_ctrl.P_rls21 );
+  float P_rls_new22 = of_landing_ctrl.P_rls22 - ( Gain21 * input_M11 * of_landing_ctrl.P_rls12 + Gain21 * input_M21 * of_landing_ctrl.P_rls22 );
+
+  if (( fabsf(P_rls_new11) + fabsf(P_rls_new12) + fabsf(P_rls_new21) + fabsf(P_rls_new22) ) < 1e+20f) {
+	  of_landing_ctrl.P_rls11 = P_rls_new11 / of_landing_ctrl.gamma_RLS;
+	  of_landing_ctrl.P_rls12 = P_rls_new12 / of_landing_ctrl.gamma_RLS;
+	  of_landing_ctrl.P_rls21 = P_rls_new21 / of_landing_ctrl.gamma_RLS;
+	  of_landing_ctrl.P_rls22 = P_rls_new22 / of_landing_ctrl.gamma_RLS;
+  } else {
+	  of_landing_ctrl.P_rls11 = P_rls_new11;
+	  of_landing_ctrl.P_rls12 = P_rls_new12;
+	  of_landing_ctrl.P_rls21 = P_rls_new21;
+	  of_landing_ctrl.P_rls22 = P_rls_new22;
+  }
+
+  float virtual = -of_landing_ctrl.GainP * et;
+  float u_delta = 1 / of_landing_ctrl.G_t * (  dt * virtual - of_landing_ctrl.F_t * (of_landing_ctrl.divergence - of_landing_ctrl.yt_1)  ); // dt in sec
+  float ut = u_delta + of_landing_ctrl.ut_1;
+
+  // Limit UT
+//  if (ut > of_landing_ctrl.ut_Max){
+//      ut = of_landing_ctrl.ut_Max;
+//  } elseif (ut < -of_landing_ctrl.ut_Max){
+//      ut = - of_landing_ctrl.ut_Max;
+//  }
+  Bound(ut, -of_landing_ctrl.ut_Max, of_landing_ctrl.ut_Max);
+
+  // save
+  of_landing_ctrl.ut_2 = of_landing_ctrl.ut_1;
+  of_landing_ctrl.ut_1 = ut;
+  of_landing_ctrl.yt_2 = of_landing_ctrl.yt_1;
+  of_landing_ctrl.yt_1 = of_landing_ctrl.divergence;
+
+  int32_t thrust = (of_landing_ctrl.nominal_thrust - ut) * MAX_PPRZ;
+
+  // PID control:
+//  int32_t thrust = (of_landing_ctrl.nominal_thrust
+//                    + P * err
+//                    + I * of_landing_ctrl.sum_err
+//                    + D * of_landing_ctrl.d_err) * MAX_PPRZ;
+
+  // bound thrust:
+  Bound(thrust, 0.25 * of_landing_ctrl.nominal_thrust * MAX_PPRZ, MAX_PPRZ);
+
+  // update covariance
+  // set_cov_div(thrust);
 
   return thrust;
 }

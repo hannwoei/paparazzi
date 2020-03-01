@@ -520,7 +520,7 @@ void vertical_ctrl_module_run(bool in_flight)
       }
     } else if (of_landing_ctrl.CONTROL_METHOD == 3) {
         // INDI CONTROL:
-
+    	INDI_divergence_control(of_landing_ctrl.divergence_setpoint, dt);
 
         // trigger the landing if the cov div is too high:
         //if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {

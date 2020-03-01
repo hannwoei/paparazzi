@@ -14,7 +14,7 @@
       <!-- <define name="STABILIZATION_INDI_G2_R" value="0.20"/> --><!-- for gazebo -->
     </target>
 <!--define name="FAILSAFE_DESCENT_SPEED" value="0.5"/-->
-<define name="USE_SONAR" value="TRUE"/>
+<!--define name="USE_SONAR" value="TRUE"/-->
 	  <!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>
@@ -90,7 +90,6 @@
   </section>
 
   <section name="IMU" prefix="IMU_">
-    <!-- Magneto calibration -->
 	<define name="MAG_X_NEUTRAL" value="-229"/>
 	<define name="MAG_Y_NEUTRAL" value="35"/>
 	<define name="MAG_Z_NEUTRAL" value="322"/>
@@ -98,6 +97,16 @@
 	<define name="MAG_Y_SENS" value="8.12854378122" integer="16"/>
 	<define name="MAG_Z_SENS" value="8.27962071665" integer="16"/>
   </section>
+
+  <!--section name="IMU" prefix="IMU_">
+<define name="MAG_X_NEUTRAL" value="-172"/>
+<define name="MAG_Y_NEUTRAL" value="52"/>
+<define name="MAG_Z_NEUTRAL" value="303"/>
+<define name="MAG_X_SENS" value="7.05127248461" integer="16"/>
+<define name="MAG_Y_SENS" value="8.72738922391" integer="16"/>
+<define name="MAG_Z_SENS" value="9.03258744069" integer="16"/>
+  </section-->
+
 
   <!-- local magnetic field -->
   <!-- http://wiki.paparazziuav.org/wiki/Subsystem/ahrs#Local_Magnetic_Field -->
@@ -189,7 +198,7 @@
     <define name="HOVER_KD" value="85"/>
     <define name="HOVER_KI" value="20"/>
     <define name="NOMINAL_HOVER_THROTTLE" value="0.620"/>
-    <define name="ADAPT_THROTTLE_ENABLED" value="FALSE"/>
+    <define name="ADAPT_THROTTLE_ENABLED" value="TRUE"/>
   </section>
 
   <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
@@ -204,7 +213,7 @@
   </section>
 
   <section name="NAVIGATION" prefix="NAV_">
-    <define name="CLIMB_VSPEED" value="4.5"/>
+    <define name="CLIMB_VSPEED" value="2.0"/>
     <define name="DESCEND_VSPEED" value="-1.0"/>
   </section>
 

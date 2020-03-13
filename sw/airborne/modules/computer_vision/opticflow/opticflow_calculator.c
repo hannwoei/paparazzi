@@ -589,6 +589,9 @@ bool calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct image_t *img,
                       (opticflow->subpixel_factor * OPTICFLOW_CAMERA.camera_intrinsics.focal_y);
   result->vel_cam.z = result->divergence * result->fps * agl_dist_value_filtered;
 
+  //h2w
+  result->agl = agl_dist_value_filtered;
+
   //Apply a  median filter to the velocity if wanted
   if (opticflow->median_filter == true) {
     UpdateMedianFilterVect3Float(vel_filt, result->vel_cam);

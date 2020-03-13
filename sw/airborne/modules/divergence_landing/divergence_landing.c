@@ -475,7 +475,7 @@ static void landing_agl_cb(uint8_t sender_id, float distance)
 	Div_landing.agl = distance;
 }
 
-static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, uint8_t quality, float size_divergence, float fps)
+static void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t flow_x, int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, float quality, float size_divergence, float fps)
 {
   Div_landing.div = size_divergence;
   //Div_landing.gps_z = gps_z;

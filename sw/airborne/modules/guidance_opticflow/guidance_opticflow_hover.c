@@ -38,6 +38,8 @@
 #include "autopilot.h"
 #include "subsystems/datalink/downlink.h"
 
+#include "subsystems/datalink/telemetry.h"
+
 /** Default sender to accect VELOCITY_ESTIMATE messages from */
 #ifndef VISION_VELOCITY_ESTIMATE_ID
 #define VISION_VELOCITY_ESTIMATE_ID ABI_BROADCAST
@@ -96,9 +98,21 @@ struct opticflow_stab_t opticflow_stab = {
   .desired_vy = VISION_DESIRED_VY
 };
 
+float err_vx, err_vy, Vx_OF, Vy_OF;
+
 
 static void stabilization_opticflow_vel_cb(uint8_t sender_id __attribute__((unused)),
     uint32_t stamp, float vel_x, float vel_y, float vel_z, float noise_x, float noise_y, float noise_z);
+
+// sending the divergence message to the ground station:
+static void send_optical_flow_hctrl(struct transport_tx *trans, struct link_device *dev)
+{
+  pprz_msg_send_OPTICAL_FLOW_HCTRL(trans, dev, AC_ID, &Vx_OF, &Vy_OF, &opticflow_stab.theta_pgain,
+                                   &opticflow_stab.theta_igain, &opticflow_stab.phi_pgain, &opticflow_stab.phi_igain, &err_vx, &err_vy,
+                                   &opticflow_stab.err_vx_int, &opticflow_stab.err_vy_int, &opticflow_stab.cmd.phi,
+                                   &opticflow_stab.cmd.theta);
+}
+
 /**
  * Initialization of horizontal guidance module.
  */
@@ -106,12 +120,18 @@ void guidance_h_module_init(void)
 {
   // Subscribe to the VELOCITY_ESTIMATE ABI message
   AbiBindMsgVELOCITY_ESTIMATE(VISION_VELOCITY_ESTIMATE_ID, &velocity_est_ev, stabilization_opticflow_vel_cb);
+
+  // register telemetry:
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_OPTICAL_FLOW_HCTRL, send_optical_flow_hctrl);
 }
 
 /**
  * Horizontal guidance mode enter resets the errors
  * and starts the controller.
  */
+
+
+
 void guidance_h_module_enter(void)
 {
   /* Reset the integrated errors */
@@ -122,6 +142,11 @@ void guidance_h_module_enter(void)
   opticflow_stab.cmd.phi = 0;
   opticflow_stab.cmd.theta = 0;
   opticflow_stab.cmd.psi = stateGetNedToBodyEulers_i()->psi;
+
+  err_vx = 0.0;
+  err_vy = 0.0;
+  Vx_OF = 0.0;
+  Vy_OF = 0.0;
 }
 
 /**
@@ -158,8 +183,12 @@ static void stabilization_opticflow_vel_cb(uint8_t sender_id __attribute__((unus
 
   if (noise_x >= 0.f)
   {
+
+	Vx_OF = vel_x;
+	Vy_OF = vel_y;
+
     /* Calculate the error */
-    float err_vx = opticflow_stab.desired_vx - vel_x;
+    err_vx = opticflow_stab.desired_vx - Vx_OF;
 
     /* Calculate the integrated errors (TODO: bound??) */
     opticflow_stab.err_vx_int += err_vx / 512;
@@ -175,7 +204,7 @@ static void stabilization_opticflow_vel_cb(uint8_t sender_id __attribute__((unus
   if (noise_y >= 0.f)
   {
     /* Calculate the error */
-    float err_vy = opticflow_stab.desired_vy - vel_y;
+    err_vy = opticflow_stab.desired_vy - Vy_OF;
 
     /* Calculate the integrated errors (TODO: bound??) */
     opticflow_stab.err_vy_int += err_vy / 512;

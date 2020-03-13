@@ -73,11 +73,11 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 
 // Other default values:
 #ifndef OFL_PGAIN
-#define OFL_PGAIN 0.40
+#define OFL_PGAIN 0.1
 #endif
 
 #ifndef OFL_IGAIN
-#define OFL_IGAIN 0.01
+#define OFL_IGAIN 0.0
 #endif
 
 #ifndef OFL_DGAIN
@@ -85,11 +85,11 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 #endif
 
 #ifndef OFL_VISION_METHOD
-#define OFL_VISION_METHOD 1
+#define OFL_VISION_METHOD 0
 #endif
 
 #ifndef OFL_CONTROL_METHOD
-#define OFL_CONTROL_METHOD 0
+#define OFL_CONTROL_METHOD 4
 #endif
 
 #ifndef OFL_COV_METHOD
@@ -142,6 +142,8 @@ bool landing;
 float previous_cov_err;
 int32_t thrust_set;
 float divergence_setpoint;
+float err_height;
+float dt_sum;
 
 // for the exponentially decreasing gain strategy:
 int32_t elc_phase;
@@ -160,8 +162,8 @@ struct OpticalFlowLanding of_landing_ctrl;
 static void send_divergence(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_DIVERGENCE(trans, dev, AC_ID,
-                           &(of_landing_ctrl.divergence), &divergence_vision_dt, &normalized_thrust,
-                           &cov_div, &pstate, &pused, &(of_landing_ctrl.agl), &(of_landing_ctrl.vel));
+                           &(of_landing_ctrl.divergence), &dt_sum, &of_landing_ctrl.sum_err,
+                           &thrust_set, &err_height, &pused, &(of_landing_ctrl.agl), &(of_landing_ctrl.vel));
 }
 
 /// Function definitions
@@ -169,12 +171,13 @@ static void send_divergence(struct transport_tx *trans, struct link_device *dev)
 void vertical_ctrl_agl_cb(uint8_t sender_id, float distance);
 // Callback function of the optical flow estimate:
 void vertical_ctrl_optical_flow_cb(uint8_t sender_id, uint32_t stamp, int16_t flow_x,
-                                   int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, float quality, float size_divergence);
+                                   int16_t flow_y, int16_t flow_der_x, int16_t flow_der_y, float quality, float size_divergence, float fps);
 
 // common functions for different landing strategies:
 static void set_cov_div(int32_t thrust);
 static int32_t PID_divergence_control(float divergence_setpoint, float P, float I, float D, float dt);
 static int32_t INDI_divergence_control(float divergence_setpoint, float dt);
+static int32_t height_control(float setpoint, float dt);
 static void update_errors(float error, float dt);
 static uint32_t final_landing_procedure(void);
 
@@ -243,6 +246,10 @@ void vertical_ctrl_module_init(void)
   of_landing_ctrl.G_t = 0.0;
   of_landing_ctrl.GainP = 1.0;
   of_landing_ctrl.ut_Max = 10.0;
+
+  err_height = 0.0;
+  dt_sum = 0.0;
+
   reset_all_vars();
 
   // Subscribe to the altitude above ground level ABI messages
@@ -258,7 +265,7 @@ void vertical_ctrl_module_init(void)
  */
 static void reset_all_vars(void)
 {
-  of_landing_ctrl.agl_lp = of_landing_ctrl.agl = stateGetPositionEnu_f()->z;
+  of_landing_ctrl.agl_lp = of_landing_ctrl.agl;// = stateGetPositionEnu_f()->z;
 
   thrust_set = of_landing_ctrl.nominal_thrust * MAX_PPRZ;
 
@@ -322,6 +329,8 @@ void vertical_ctrl_module_run(bool in_flight)
 
   float dt = vision_time - prev_vision_time;
 
+  dt_sum = dt;
+
   // check if new measurement received
   if (dt <= 1e-5f) {
     return;
@@ -335,30 +344,44 @@ void vertical_ctrl_module_run(bool in_flight)
    * VISION
    ***********/
   if (of_landing_ctrl.VISION_METHOD == 0) {
-    // SIMULATED DIVERGENCE:
+//    // SIMULATED DIVERGENCE:
+//
+//    // USE OPTITRACK HEIGHT
+//    of_landing_ctrl.agl = stateGetPositionEnu_f()->z;
+//
+//    if (fabsf(of_landing_ctrl.agl - of_landing_ctrl.agl_lp) > 1.0f) {
+//      // ignore outliers:
+//      of_landing_ctrl.agl = of_landing_ctrl.agl_lp;
+//    }
+//    // calculate the new low-pass height and the velocity
+//    of_landing_ctrl.agl_lp += (of_landing_ctrl.agl - of_landing_ctrl.agl_lp) * lp_factor;
+//
+//    // only calculate velocity and divergence if dt is large enough:
+//    of_landing_ctrl.vel = stateGetSpeedEnu_f()->z;
+//
+//    // calculate the fake divergence:
+//    if (of_landing_ctrl.agl_lp > 1e-5f) {
+//      of_landing_ctrl.divergence = of_landing_ctrl.vel / of_landing_ctrl.agl_lp;
+//      // TODO: this time scaling should be done in optical flow module
+//      divergence_vision_dt = (divergence_vision / dt);
+//      if (fabsf(divergence_vision_dt) > 1e-5f) {
+//        div_factor = of_landing_ctrl.divergence / divergence_vision_dt;
+//      }
+//    }
 
-    // USE OPTITRACK HEIGHT
-    of_landing_ctrl.agl = stateGetPositionEnu_f()->z;
+	    // USE SONAR HEIGHT
+	  of_landing_ctrl.CONTROL_METHOD = 4;
 
-    if (fabsf(of_landing_ctrl.agl - of_landing_ctrl.agl_lp) > 1.0f) {
-      // ignore outliers:
-      of_landing_ctrl.agl = of_landing_ctrl.agl_lp;
-    }
-    // calculate the new low-pass height and the velocity
-    of_landing_ctrl.agl_lp += (of_landing_ctrl.agl - of_landing_ctrl.agl_lp) * lp_factor;
+	    if (fabsf(of_landing_ctrl.agl - of_landing_ctrl.agl_lp) > 1.0f) {
+	      // ignore outliers:
+	      of_landing_ctrl.agl = of_landing_ctrl.agl_lp;
+	    }
+	    // calculate the new low-pass height
+	    of_landing_ctrl.agl_lp += (of_landing_ctrl.agl - of_landing_ctrl.agl_lp) * lp_factor;
 
-    // only calculate velocity and divergence if dt is large enough:
-    of_landing_ctrl.vel = stateGetSpeedEnu_f()->z;
+	    prev_vision_time = vision_time;
 
-    // calculate the fake divergence:
-    if (of_landing_ctrl.agl_lp > 1e-5f) {
-      of_landing_ctrl.divergence = of_landing_ctrl.vel / of_landing_ctrl.agl_lp;
-      // TODO: this time scaling should be done in optical flow module
-      divergence_vision_dt = (divergence_vision / dt);
-      if (fabsf(divergence_vision_dt) > 1e-5f) {
-        div_factor = of_landing_ctrl.divergence / divergence_vision_dt;
-      }
-    }
+
   } else {
     // USE REAL VISION OUTPUTS:
     // TODO: this div_factor depends on the subpixel-factor (automatically adapt?)
@@ -527,7 +550,17 @@ void vertical_ctrl_module_run(bool in_flight)
         if (of_landing_ctrl.agl < 0.2) {
           thrust_set = final_landing_procedure();
         }
-    }
+    } else if (of_landing_ctrl.CONTROL_METHOD == 4) {
+	  // Height CONTROL:
+
+    	thrust_set = height_control(2.0, dt);
+
+	  // trigger the landing if the cov div is too high:
+	  //if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
+//	  if (of_landing_ctrl.agl < 0.2) {
+//		thrust_set = final_landing_procedure();
+//	  }
+	}
 
     if (in_flight) {
       Bound(thrust_set, 0.25 * of_landing_ctrl.nominal_thrust * MAX_PPRZ, MAX_PPRZ);
@@ -698,6 +731,32 @@ int32_t INDI_divergence_control(float setpoint, float dt)
 }
 
 /**
+ * Determine and set the thrust for height control
+ * @param[out] thrust
+ * @param[in] height_set_point: The desired height
+ * @param[in] dt: time difference since last update
+ */
+int32_t height_control(float setpoint, float dt)
+{
+	// determine the error:
+	err_height = setpoint - of_landing_ctrl.agl_lp;
+
+	of_landing_ctrl.sum_err += err_height*dt;
+
+	float fb_cmd = (of_landing_ctrl.pgain * err_height) + (of_landing_ctrl.igain * of_landing_ctrl.sum_err);
+
+	int32_t thrust = (of_landing_ctrl.nominal_thrust + fb_cmd) * MAX_PPRZ;
+
+
+	// bound thrust:
+	Bound(thrust, 0.25 * of_landing_ctrl.nominal_thrust * MAX_PPRZ, MAX_PPRZ);
+
+	// printf("thrust = %d\n", thrust );
+
+	return thrust;
+}
+
+/**
  * Updates the integral and differential errors for PID control and sets the previous error
  * @param[in] err: the error of the divergence and divergence setpoint
  * @param[in] dt:  time difference since last update
@@ -722,7 +781,7 @@ void vertical_ctrl_agl_cb(uint8_t sender_id UNUSED, float distance)
 
 void vertical_ctrl_optical_flow_cb(uint8_t sender_id UNUSED, uint32_t stamp, int16_t flow_x UNUSED,
                                    int16_t flow_y UNUSED,
-                                   int16_t flow_der_x UNUSED, int16_t flow_der_y UNUSED, float quality UNUSED, float size_divergence)
+                                   int16_t flow_der_x UNUSED, int16_t flow_der_y UNUSED, float quality UNUSED, float size_divergence, float fps)
 {
   divergence_vision = size_divergence;
   vision_time = ((float)stamp) / 1e6;

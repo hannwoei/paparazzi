@@ -48,6 +48,7 @@
 
 struct OpticalFlowLanding {
   float agl;                    ///< agl = height from sonar (only used when using "fake" divergence)
+  float alt;                    ///< altitude from fusion of sonar and altimeter
   float agl_lp;                 ///< low-pass version of agl
   float lp_const;               ///< low-pass filter constant
   float vel;                    ///< vertical velocity as determined with sonar (only used when using "fake" divergence)
@@ -78,10 +79,11 @@ struct OpticalFlowLanding {
 
   //INDI
   float yt_1, yt_2;				///< output vector
-  float ut_1, ut_2;				///< input vector
+  float ut_1, ut_2, ut_0, ut_00;				///< input vector
+  bool delay_input;
   float P_rls11, P_rls12, P_rls21, P_rls22;	///< P vector
   float gamma_RLS;
-  float F_t, G_t;
+  float F_t, G_t, G_t_prev;
   float GainP;
   float ut_Max;
 };

@@ -73,7 +73,7 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 
 // Other default values:
 #ifndef OFL_PGAIN
-#define OFL_PGAIN 0.1
+#define OFL_PGAIN 0.05
 #endif
 
 #ifndef OFL_IGAIN
@@ -85,11 +85,11 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 #endif
 
 #ifndef OFL_VISION_METHOD
-#define OFL_VISION_METHOD 0
+#define OFL_VISION_METHOD 1
 #endif
 
 #ifndef OFL_CONTROL_METHOD
-#define OFL_CONTROL_METHOD 4
+#define OFL_CONTROL_METHOD 3
 #endif
 
 #ifndef OFL_COV_METHOD
@@ -162,8 +162,8 @@ struct OpticalFlowLanding of_landing_ctrl;
 static void send_divergence(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_DIVERGENCE(trans, dev, AC_ID,
-                           &(of_landing_ctrl.divergence), &dt_sum, &of_landing_ctrl.sum_err,
-                           &thrust_set, &err_height, &pused, &(of_landing_ctrl.agl), &(of_landing_ctrl.vel));
+                           &(of_landing_ctrl.divergence), &dt_sum, &of_landing_ctrl.ut_1,
+                           &thrust_set, &of_landing_ctrl.F_t, &of_landing_ctrl.G_t, &(of_landing_ctrl.agl), &(of_landing_ctrl.alt), &(of_landing_ctrl.vel));
 }
 
 /// Function definitions
@@ -200,9 +200,10 @@ void vertical_ctrl_module_init(void)
 {
   // filling the of_landing_ctrl struct with default values:
   of_landing_ctrl.agl = 0.0f;
+  of_landing_ctrl.alt = 0.0f;
   of_landing_ctrl.agl_lp = 0.0f;
   of_landing_ctrl.vel = 0.0f;
-  of_landing_ctrl.divergence_setpoint = 0.0f; // For exponential gain landing, pick a negative value
+  of_landing_ctrl.divergence_setpoint = -0.1f; // positive = down, negative = up
   of_landing_ctrl.cov_set_point = OFL_COV_SETPOINT;
   of_landing_ctrl.cov_limit = fabsf(OFL_COV_LANDING_LIMIT);
   of_landing_ctrl.lp_const = OFL_LP_CONST;
@@ -237,15 +238,19 @@ void vertical_ctrl_module_init(void)
   of_landing_ctrl.yt_2 = 0.0;
   of_landing_ctrl.ut_1 = 0.0;
   of_landing_ctrl.ut_2 = 0.0;
+  of_landing_ctrl.ut_0 = 0.0;
+  of_landing_ctrl.ut_00 = 0.0;
+  of_landing_ctrl.delay_input = false;
   of_landing_ctrl.P_rls11 = 10.0;
   of_landing_ctrl.P_rls12 = 0.0;
   of_landing_ctrl.P_rls21 = 0.0;
   of_landing_ctrl.P_rls22 = 10.0;
-  of_landing_ctrl.gamma_RLS = 0.95;
+  of_landing_ctrl.gamma_RLS = 0.99; // update rate
   of_landing_ctrl.F_t = 1.0;
-  of_landing_ctrl.G_t = 0.0;
-  of_landing_ctrl.GainP = 1.0;
-  of_landing_ctrl.ut_Max = 10.0;
+  of_landing_ctrl.G_t = 0.1;
+  of_landing_ctrl.G_t_prev = 0.0;
+  of_landing_ctrl.GainP = 30.0; //1.0
+  of_landing_ctrl.ut_Max = 0.1;
 
   err_height = 0.0;
   dt_sum = 0.0;
@@ -309,15 +314,18 @@ static void reset_all_vars(void)
   of_landing_ctrl.yt_2 = 0.0;
   of_landing_ctrl.ut_1 = 0.0;
   of_landing_ctrl.ut_2 = 0.0;
+  of_landing_ctrl.ut_0 = 0.0;
+  of_landing_ctrl.ut_00 = 0.0;
   of_landing_ctrl.P_rls11 = 10.0;
   of_landing_ctrl.P_rls12 = 0.0;
   of_landing_ctrl.P_rls21 = 0.0;
   of_landing_ctrl.P_rls22 = 10.0;
-  of_landing_ctrl.gamma_RLS = 0.95;
-  of_landing_ctrl.F_t = 1.0;
-  of_landing_ctrl.G_t = 0.0;
-  of_landing_ctrl.GainP = 1.0;
-  of_landing_ctrl.ut_Max = 10.0;
+  of_landing_ctrl.gamma_RLS = 0.99;
+  of_landing_ctrl.F_t = 1.0; // Trial 5: F_t initial set to 0.2
+  of_landing_ctrl.G_t = 0.1;
+  of_landing_ctrl.G_t_prev = 0.0;
+  of_landing_ctrl.GainP = 30.0;
+  of_landing_ctrl.ut_Max = 0.1;
 }
 
 /**
@@ -377,8 +385,8 @@ void vertical_ctrl_module_run(bool in_flight)
 	      of_landing_ctrl.agl = of_landing_ctrl.agl_lp;
 	    }
 	    // calculate the new low-pass height
-	    of_landing_ctrl.agl_lp += (of_landing_ctrl.agl - of_landing_ctrl.agl_lp) * lp_factor;
-
+//	    of_landing_ctrl.agl_lp += (of_landing_ctrl.agl - of_landing_ctrl.agl_lp) * lp_factor;
+	    of_landing_ctrl.agl_lp = of_landing_ctrl.agl;
 	    prev_vision_time = vision_time;
 
 
@@ -401,6 +409,9 @@ void vertical_ctrl_module_run(bool in_flight)
     // low-pass filter the divergence:
     of_landing_ctrl.divergence += (new_divergence - of_landing_ctrl.divergence) * lp_factor;
     prev_vision_time = vision_time;
+
+    // change to landing control
+    of_landing_ctrl.CONTROL_METHOD = 3;
   }
 
   /***********
@@ -543,17 +554,17 @@ void vertical_ctrl_module_run(bool in_flight)
       }
     } else if (of_landing_ctrl.CONTROL_METHOD == 3) {
         // INDI CONTROL:
-    	INDI_divergence_control(of_landing_ctrl.divergence_setpoint, dt);
+    	thrust_set = INDI_divergence_control(of_landing_ctrl.divergence_setpoint, dt);
 
         // trigger the landing if the cov div is too high:
         //if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
-        if (of_landing_ctrl.agl < 0.2) {
-          thrust_set = final_landing_procedure();
-        }
+//        if (of_landing_ctrl.agl < 0.2) {
+//          thrust_set = final_landing_procedure();
+//        }
     } else if (of_landing_ctrl.CONTROL_METHOD == 4) {
 	  // Height CONTROL:
 
-    	thrust_set = height_control(2.0, dt);
+    	thrust_set = height_control(1.5, dt);
 
 	  // trigger the landing if the cov div is too high:
 	  //if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
@@ -644,7 +655,7 @@ int32_t PID_divergence_control(float setpoint, float P, float I, float D, float 
   Bound(thrust, 0.25 * of_landing_ctrl.nominal_thrust * MAX_PPRZ, MAX_PPRZ);
 
   // update covariance
-  set_cov_div(thrust);
+  // set_cov_div(thrust);
 
   return thrust;
 }
@@ -658,18 +669,18 @@ int32_t PID_divergence_control(float setpoint, float P, float I, float D, float 
 int32_t INDI_divergence_control(float setpoint, float dt)
 {
   // determine the error:
-  //float err = setpoint - of_landing_ctrl.divergence;
+//  float et = setpoint - of_landing_ctrl.divergence;
   float et = of_landing_ctrl.divergence - setpoint;
 
   // Incremental Model RLS
   float tar_M = of_landing_ctrl.divergence - of_landing_ctrl.yt_1;
   float input_M11 = of_landing_ctrl.yt_1 - of_landing_ctrl.yt_2;
   float input_M21 = of_landing_ctrl.ut_1 - of_landing_ctrl.ut_2;
-  float Gain_denominator = of_landing_ctrl.gamma_RLS + input_M11 * of_landing_ctrl.P_rls11 * input_M11 + input_M21 * of_landing_ctrl.P_rls21 * input_M11 + input_M11*of_landing_ctrl.P_rls12*input_M21 + input_M21*of_landing_ctrl.P_rls22*input_M21;
+  float Gain_denominator=of_landing_ctrl.gamma_RLS+input_M11*of_landing_ctrl.P_rls11*input_M11+input_M21*of_landing_ctrl.P_rls21*input_M11+input_M11*of_landing_ctrl.P_rls12*input_M21+input_M21*of_landing_ctrl.P_rls22*input_M21;
   float Gain11 = 0.0;
   float Gain21 = 0.0;
 
-  if (Gain_denominator > 1e-5f) {
+  if (fabs(Gain_denominator) > 1e-5f) {
 	  Gain11 = ( of_landing_ctrl.P_rls11 * input_M11 + of_landing_ctrl.P_rls12 * input_M21 ) / Gain_denominator;
 	  Gain21 = ( of_landing_ctrl.P_rls21 * input_M11 + of_landing_ctrl.P_rls22 * input_M21 ) / Gain_denominator;
   }
@@ -677,6 +688,33 @@ int32_t INDI_divergence_control(float setpoint, float dt)
   float error_istep = tar_M - ( input_M11 * of_landing_ctrl.F_t +  input_M21 * of_landing_ctrl.G_t );
   of_landing_ctrl.F_t = of_landing_ctrl.F_t + Gain11 * error_istep;
   of_landing_ctrl.G_t = of_landing_ctrl.G_t + Gain21 * error_istep;
+
+  // Trial 0: original
+  // Trial 1: use theoretical values
+//  of_landing_ctrl.F_t = -2.0*of_landing_ctrl.divergence;
+//  of_landing_ctrl.G_t = dt/of_landing_ctrl.agl;
+
+  // Trial 2: bound G_t
+  Bound(of_landing_ctrl.G_t, 0.01, 3.0);
+
+  // Trial 3: filter G_t
+  // deal with (unlikely) fast changes in Gt:
+//  static const float max_G_dt = 0.20f;
+//  if (fabsf(of_landing_ctrl.G_t - of_landing_ctrl.G_t_prev) > max_G_dt) {
+//    if (of_landing_ctrl.G_t < of_landing_ctrl.G_t_prev) { of_landing_ctrl.G_t = of_landing_ctrl.G_t_prev - max_G_dt; }
+//    else { of_landing_ctrl.G_t = of_landing_ctrl.G_t_prev + max_G_dt; }
+//  }
+//
+//  // low-pass filter the G_t:
+//  float lp_factor = dt / of_landing_ctrl.lp_const;
+//  Bound(lp_factor, 0.f, 1.f);
+//
+//  of_landing_ctrl.G_t += (of_landing_ctrl.G_t - of_landing_ctrl.G_t_prev) * lp_factor;
+//
+//  Bound(of_landing_ctrl.G_t, 0.01, 3.0);
+//
+//  of_landing_ctrl.G_t_prev = of_landing_ctrl.G_t;
+
 
   float P_rls_new11 = of_landing_ctrl.P_rls11 - ( Gain11 * input_M11 * of_landing_ctrl.P_rls11 + Gain11 * input_M21 * of_landing_ctrl.P_rls21 );
   float P_rls_new12 = of_landing_ctrl.P_rls12 - ( Gain11 * input_M11 * of_landing_ctrl.P_rls12 + Gain11 * input_M21 * of_landing_ctrl.P_rls22 );
@@ -695,8 +733,23 @@ int32_t INDI_divergence_control(float setpoint, float dt)
 	  of_landing_ctrl.P_rls22 = P_rls_new22;
   }
 
-  float virtual = -of_landing_ctrl.GainP * et;
-  float u_delta = 1 / of_landing_ctrl.G_t * (  dt * virtual - of_landing_ctrl.F_t * (of_landing_ctrl.divergence - of_landing_ctrl.yt_1)  ); // dt in sec
+  float virtual = -1.0*of_landing_ctrl.GainP*et;
+  float u_delta = 0.0;
+//  float u_delta = 1.0/of_landing_ctrl.G_t*(dt*virtual-of_landing_ctrl.F_t*(of_landing_ctrl.divergence-of_landing_ctrl.yt_1)); // dt in sec
+
+  if (fabs(of_landing_ctrl.G_t) > 1e-5f) {
+//  if (of_landing_ctrl.G_t > 1e-5f) {
+	  u_delta = 1.0/of_landing_ctrl.G_t*(dt*virtual-of_landing_ctrl.F_t*(of_landing_ctrl.divergence-of_landing_ctrl.yt_1)); // dt in sec
+//	  u_delta = virtual;
+  }
+//  } else
+//  {
+//	  of_landing_ctrl.ut_1 = 0.0;
+//  }
+
+  // Trial 4: bound u_delta
+//  Bound(u_delta, -of_landing_ctrl.ut_Max, of_landing_ctrl.ut_Max);
+
   float ut = u_delta + of_landing_ctrl.ut_1;
 
   // Limit UT
@@ -708,12 +761,28 @@ int32_t INDI_divergence_control(float setpoint, float dt)
   Bound(ut, -of_landing_ctrl.ut_Max, of_landing_ctrl.ut_Max);
 
   // save
-  of_landing_ctrl.ut_2 = of_landing_ctrl.ut_1;
-  of_landing_ctrl.ut_1 = ut;
-  of_landing_ctrl.yt_2 = of_landing_ctrl.yt_1;
-  of_landing_ctrl.yt_1 = of_landing_ctrl.divergence;
+	  // delay 1 step
+//	  of_landing_ctrl.ut_2 = of_landing_ctrl.ut_1;
+//	  of_landing_ctrl.ut_1 = of_landing_ctrl.ut_0;
+//	  of_landing_ctrl.ut_0 = ut;
+//	  of_landing_ctrl.yt_2 = of_landing_ctrl.yt_1;
+//	  of_landing_ctrl.yt_1 = of_landing_ctrl.divergence;
 
-  int32_t thrust = (of_landing_ctrl.nominal_thrust - ut) * MAX_PPRZ;
+	  //delay 2 step
+//	  of_landing_ctrl.ut_2 = of_landing_ctrl.ut_1;
+//	  of_landing_ctrl.ut_1 = of_landing_ctrl.ut_0;
+//	  of_landing_ctrl.ut_0 = of_landing_ctrl.ut_00;
+//	  of_landing_ctrl.ut_00 = ut;
+//	  of_landing_ctrl.yt_2 = of_landing_ctrl.yt_1;
+//	  of_landing_ctrl.yt_1 = of_landing_ctrl.divergence;
+
+  	  // no delay
+	  of_landing_ctrl.ut_2 = of_landing_ctrl.ut_1;
+	  of_landing_ctrl.ut_1 = ut;
+	  of_landing_ctrl.yt_2 = of_landing_ctrl.yt_1;
+	  of_landing_ctrl.yt_1 = of_landing_ctrl.divergence;
+
+  int32_t thrust = (of_landing_ctrl.nominal_thrust + of_landing_ctrl.ut_1) * MAX_PPRZ;
 
   // PID control:
 //  int32_t thrust = (of_landing_ctrl.nominal_thrust
@@ -777,6 +846,7 @@ void vertical_ctrl_agl_cb(uint8_t sender_id UNUSED, float distance)
 {
   of_landing_ctrl.agl = distance;
   of_landing_ctrl.vel = stateGetSpeedEnu_f()->z;
+  of_landing_ctrl.alt = stateGetPositionEnu_f()->z;
 }
 
 void vertical_ctrl_optical_flow_cb(uint8_t sender_id UNUSED, uint32_t stamp, int16_t flow_x UNUSED,

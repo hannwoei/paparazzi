@@ -73,11 +73,11 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 
 // Other default values:
 #ifndef OFL_PGAIN
-#define OFL_PGAIN 0.05
+#define OFL_PGAIN 0.03
 #endif
 
 #ifndef OFL_IGAIN
-#define OFL_IGAIN 0.0
+#define OFL_IGAIN 0.0014
 #endif
 
 #ifndef OFL_DGAIN

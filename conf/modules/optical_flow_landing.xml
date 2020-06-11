@@ -22,6 +22,7 @@
       <define name="COV_SETPOINT" value="-0.0075" description="Target Covariance for adaptive gain increment."/>
       <define name="LP_CONST" value="0.75" description="Low pass filter constant for divergence input."/>
       <define name="ELC_OSCILLATE" value="true" description="Oscillate to find optimum gain before initiating landing."/>
+      <define name="HEIGHT" value="1.0" description="Desired height"/>
     </section>
   </doc>
   <settings>
@@ -44,6 +45,7 @@
         <dl_setting var="of_landing_ctrl.dgain_adaptive" min="0" step="0.01" max="5.0" module="ctrl/optical_flow_landing" shortname="dgain_adaptive"/>
         <dl_setting var="of_landing_ctrl.reduction_factor_elc" min="0.1" step="0.01" max="3.0" module="ctrl/optical_flow_landing" shortname="reduction_factor_elc"/>
         <dl_setting var="of_landing_ctrl.elc_oscillate" min="0" step="1" max="1" values="FALSE|TRUE" module="ctrl/optical_flow_landing" shortname="oscillate" param="OFL_ELC_OSCILLATE"/>
+        <dl_setting var="of_landing_ctrl.height_desired" min="0" step="0.1" max="5" module="ctrl/optical_flow_landing" shortname="height" param="OFL_HEIGHT"/>
       </dl_settings>
     </dl_settings>
   </settings>

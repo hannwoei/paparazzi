@@ -73,19 +73,31 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 
 // Other default values:
 #ifndef OFL_PGAIN
-#define OFL_PGAIN 0.03
+#define OFL_PGAIN 0.3
 #endif
 
 #ifndef OFL_IGAIN
-#define OFL_IGAIN 0.0014
+#define OFL_IGAIN 0.0
 #endif
+
+//#ifndef OFL_IGAIN
+//#define OFL_IGAIN 0.0014
+//#endif
 
 #ifndef OFL_DGAIN
 #define OFL_DGAIN 0.0
 #endif
 
+#ifndef OFL_PGAIN_HEIGHT
+#define OFL_PGAIN_HEIGHT 0.03
+#endif
+
+#ifndef OFL_IGAIN_HEIGHT
+#define OFL_IGAIN_HEIGHT 0.001
+#endif
+
 #ifndef OFL_VISION_METHOD
-#define OFL_VISION_METHOD 1
+#define OFL_VISION_METHOD 0
 #endif
 
 #ifndef OFL_CONTROL_METHOD
@@ -94,6 +106,10 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 
 #ifndef OFL_COV_METHOD
 #define OFL_COV_METHOD 0
+#endif
+
+#ifndef OFL_HEIGHT
+#define OFL_HEIGHT 5.0
 #endif
 
 // number of time steps used for calculating the covariance (oscillations)
@@ -163,7 +179,8 @@ static void send_divergence(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_DIVERGENCE(trans, dev, AC_ID,
                            &(of_landing_ctrl.divergence), &dt_sum, &of_landing_ctrl.ut_1,
-                           &thrust_set, &of_landing_ctrl.F_t, &of_landing_ctrl.G_t, &(of_landing_ctrl.agl), &(of_landing_ctrl.alt), &(of_landing_ctrl.vel));
+                           &thrust_set, &of_landing_ctrl.F_t, &of_landing_ctrl.G_t, &(of_landing_ctrl.agl), &(of_landing_ctrl.alt), &(of_landing_ctrl.vel),
+						   &(of_landing_ctrl.VISION_METHOD), &(of_landing_ctrl.CONTROL_METHOD));
 }
 
 /// Function definitions
@@ -251,6 +268,9 @@ void vertical_ctrl_module_init(void)
   of_landing_ctrl.G_t_prev = 0.0;
   of_landing_ctrl.GainP = 30.0; //1.0
   of_landing_ctrl.ut_Max = 0.1;
+  of_landing_ctrl.height_desired = OFL_HEIGHT;
+  of_landing_ctrl.pgain_height = OFL_PGAIN_HEIGHT;
+  of_landing_ctrl.igain_height = OFL_IGAIN_HEIGHT;
 
   err_height = 0.0;
   dt_sum = 0.0;
@@ -391,6 +411,11 @@ void vertical_ctrl_module_run(bool in_flight)
 
 
   } else {
+
+	// change to landing control
+	of_landing_ctrl.CONTROL_METHOD = 3;
+
+
     // USE REAL VISION OUTPUTS:
     // TODO: this div_factor depends on the subpixel-factor (automatically adapt?)
     // TODO: this factor is camera specific and should be implemented in the optical
@@ -409,9 +434,6 @@ void vertical_ctrl_module_run(bool in_flight)
     // low-pass filter the divergence:
     of_landing_ctrl.divergence += (new_divergence - of_landing_ctrl.divergence) * lp_factor;
     prev_vision_time = vision_time;
-
-    // change to landing control
-    of_landing_ctrl.CONTROL_METHOD = 3;
   }
 
   /***********
@@ -427,10 +449,10 @@ void vertical_ctrl_module_run(bool in_flight)
                                           of_landing_ctrl.dgain, dt);
 
       // trigger the landing if the cov div is too high:
-      if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
-      // if (of_landing_ctrl.agl < 0.2) {
-        thrust_set = final_landing_procedure();
-      }
+//      if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
+//      // if (of_landing_ctrl.agl < 0.2) {
+//        thrust_set = final_landing_procedure();
+//      }
     } else if (of_landing_ctrl.CONTROL_METHOD == 1) {
       // ADAPTIVE GAIN CONTROL:
       // TODO: i-gain and d-gain are currently not adapted
@@ -558,13 +580,13 @@ void vertical_ctrl_module_run(bool in_flight)
 
         // trigger the landing if the cov div is too high:
         //if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
-//        if (of_landing_ctrl.agl < 0.2) {
-//          thrust_set = final_landing_procedure();
-//        }
+        if (of_landing_ctrl.agl < 0.25) {
+          thrust_set = final_landing_procedure();
+        }
     } else if (of_landing_ctrl.CONTROL_METHOD == 4) {
 	  // Height CONTROL:
 
-    	thrust_set = height_control(1.5, dt);
+    	thrust_set = height_control(of_landing_ctrl.height_desired, dt);
 
 	  // trigger the landing if the cov div is too high:
 	  //if (fabsf(cov_div) > of_landing_ctrl.cov_limit) {
@@ -812,15 +834,13 @@ int32_t height_control(float setpoint, float dt)
 
 	of_landing_ctrl.sum_err += err_height*dt;
 
-	float fb_cmd = (of_landing_ctrl.pgain * err_height) + (of_landing_ctrl.igain * of_landing_ctrl.sum_err);
+	float fb_cmd = (of_landing_ctrl.pgain_height * err_height) + (of_landing_ctrl.igain_height * of_landing_ctrl.sum_err);
 
 	int32_t thrust = (of_landing_ctrl.nominal_thrust + fb_cmd) * MAX_PPRZ;
 
 
 	// bound thrust:
 	Bound(thrust, 0.25 * of_landing_ctrl.nominal_thrust * MAX_PPRZ, MAX_PPRZ);
-
-	// printf("thrust = %d\n", thrust );
 
 	return thrust;
 }

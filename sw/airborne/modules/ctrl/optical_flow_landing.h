@@ -86,6 +86,9 @@ struct OpticalFlowLanding {
   float F_t, G_t, G_t_prev;
   float GainP;
   float ut_Max;
+  float height_desired;
+  float pgain_height;                  ///< P-gain for height control
+  float igain_height;                  ///< I-gain for height control
 };
 
 extern struct OpticalFlowLanding of_landing_ctrl;

@@ -15,8 +15,8 @@
     <module name="gps" type="datalink"/>
     <module name="stabilization" type="indi_simple"/>
     <module name="ahrs" type="int_cmpl_quat">
-      <configure name="USE_MAGNETOMETER" value="FALSE"/>
-      <define name="AHRS_USE_GPS_HEADING" value="TRUE"/>
+      <configure name="USE_MAGNETOMETER" value="TRUE"/>
+      <define name="AHRS_USE_GPS_HEADING" value="FALSE"/>
       <define name="AHRS_HEADING_UPDATE_GPS_MIN_SPEED" value="0"/>
     </module>
     <module name="ins" type="extended"/>
@@ -109,9 +109,13 @@
     <define name="H_Y" value="0.0017972"/>
     <define name="H_Z" value="0.9211303"/-->
     <!-- USM, Engineering -->
-    <define name="H_X" value="0.99620076"/>
+    <!--define name="H_X" value="0.99620076"/>
     <define name="H_Y" value="-0.00436455"/>
-    <define name="H_Z" value="-0.08697702"/>
+    <define name="H_Z" value="-0.08697702"/-->
+    <!-- Hijauan -->
+    <define name="H_X" value="0.996804"/>
+    <define name="H_Y" value="-0.00493873"/>
+    <define name="H_Z" value="-0.079731"/>
   </section>
 
   <section name="INS" prefix="INS_">
@@ -213,7 +217,7 @@
 
   <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
     <define name="REF_MAX_SPEED" value="2" unit="m/s"/>
-    <define name="MAX_BANK" value="20" unit="deg"/>
+    <define name="MAX_BANK" value="10" unit="deg"/>
     <define name="PGAIN" value="82"/> <!-- GPS: 120 no GPS: 0--> 
     <define name="DGAIN" value="68"/> <!-- GPS: 80 no GPS: 302-->
     <define name="IGAIN" value="10"/> <!-- GPS: 30 no GPS: 0-->

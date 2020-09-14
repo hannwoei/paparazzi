@@ -101,7 +101,7 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 #endif
 
 #ifndef OFL_CONTROL_METHOD
-#define OFL_CONTROL_METHOD 3
+#define OFL_CONTROL_METHOD 4
 #endif
 
 #ifndef OFL_COV_METHOD
@@ -109,7 +109,7 @@ PRINT_CONFIG_VAR(OFL_OPTICAL_FLOW_ID)
 #endif
 
 #ifndef OFL_HEIGHT
-#define OFL_HEIGHT 5.0
+#define OFL_HEIGHT 3.0
 #endif
 
 // number of time steps used for calculating the covariance (oscillations)
@@ -413,7 +413,7 @@ void vertical_ctrl_module_run(bool in_flight)
   } else {
 
 	// change to landing control
-	of_landing_ctrl.CONTROL_METHOD = 3;
+	of_landing_ctrl.CONTROL_METHOD = 4;
 
 
     // USE REAL VISION OUTPUTS:

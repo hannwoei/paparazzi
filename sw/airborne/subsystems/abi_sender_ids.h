@@ -413,4 +413,19 @@
 #define DETECT_GATE_ABI_ID 33
 #endif
 
+/*
+ * IDs of OPTICFLOW estimates (message 28)
+ */
+#ifndef FLOW_OPTICFLOW2_ID
+#define FLOW_OPTICFLOW2_ID 4
+#endif
+
+/*
+ * IDs of VELOCITY estimates (message 29)
+ */
+
+#ifndef VEL_OPTICFLOW2_ID
+#define VEL_OPTICFLOW2_ID 6
+#endif
+
 #endif /* ABI_SENDER_IDS_H */

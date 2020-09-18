@@ -192,6 +192,26 @@
       <field name="extra"        type="int16_t">Extra field for options like detector source etc</field>
     </message>
 
+    <message name="OPTICAL_FLOW2" id="28">
+      <field name="stamp" type="uint32_t" unit="us"/>
+      <field name="flow_x" type="int16_t">Flow in x direction from the camera (in subpixels)</field>
+      <field name="flow_y" type="int16_t">Flow in y direction from the camera (in subpixels)</field>
+      <field name="flow_der_x" type="int16_t">The derotated flow calculation in the x direction (in subpixels)</field>
+      <field name="flow_der_y" type="int16_t">The derotated flow calculation in the y direction (in subpixels)</field>
+      <field name="quality" type="float"/>
+      <field name="size_divergence" type="float">Divergence as determined with the size method (in 1/seconds) with LK, and Divergence (1/seconds) itself with EF</field>
+      <field name="fps" type="float">FPS from vision</field>
+    </message>
+
+    <message name="VELOCITY_ESTIMATE2" id="29">
+      <field name="stamp" type="uint32_t" unit="us"/>
+      <field name="x" type="float" unit="m/s"/>
+      <field name="y" type="float" unit="m/s"/>
+      <field name="z" type="float" unit="m/s"/>
+      <field name="noise_x" type="float">Set negative noise to disable parameter axis</field>
+      <field name="noise_y" type="float"/>
+      <field name="noise_z" type="float"/>
+    </message>
   </msg_class>
 
 </protocol>

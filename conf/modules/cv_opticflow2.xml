@@ -9,7 +9,7 @@
     </description>
 
     <!-- Optical flow calculation parameters -->
-    <section name="OPTICFLOW" prefix="OPTICFLOW_">
+    <section name="OPTICFLOW2" prefix="OPTICFLOW2_">
       <define name="AGL_ID" value="ABI_BROADCAST" description="ABI receive id for ABI message (sonar measurement) (default: ABI_BROADCAST)"/>
       <define name="SEND_ABI_ID" value="1" description="ABI sender id for opticflow messages (default: 1)"/>
 
@@ -65,11 +65,11 @@
   <autoload name="pose_history"/>
 
   <header>
-    <file name="opticflow_module.h"/>
+    <file name="opticflow_module2.h"/>
   </header>
 
-  <init fun="opticflow_module_init()"/>
-  <periodic fun="opticflow_module_run()" autorun="TRUE"/>
+  <init fun="opticflow2_module_init()"/>
+  <periodic fun="opticflow2_module_run()" autorun="TRUE"/>
 
   <makefile target="ap|nps">
     <!-- Include the needed Computer Vision files -->
@@ -80,8 +80,8 @@
     <file name="v4l2.c" dir="modules/computer_vision/lib/v4l"/>
 
     <!-- The optical flow module (calculator) -->
-    <file name="opticflow_module.c"/>
-    <file name="opticflow_calculator.c" dir="modules/computer_vision/opticflow"/>
+    <file name="opticflow_module2.c"/>
+    <file name="opticflow_calculator2.c" dir="modules/computer_vision/opticflow"/>
     <file name="size_divergence.c" dir="modules/computer_vision/opticflow"/>
     <file name="linear_flow_fit.c" dir="modules/computer_vision/opticflow"/>
     <file name="pprz_algebra_float.c" dir="math"/>

@@ -1,0 +1,4 @@
+<map file="hijauan.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 5.2764584	100.5062065"/>
+  <point x="1218" y="554" geo="WGS84 5.2701369	100.5201638"/>
+</map>

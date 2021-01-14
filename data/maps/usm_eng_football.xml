@@ -1,0 +1,4 @@
+<map file="usm_eng_football.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 5.1486530	100.4957571"/>
+  <point x="1420" y="652" geo="WGS84 5.1453458	100.5029891"/>
+</map>

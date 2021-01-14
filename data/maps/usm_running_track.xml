@@ -1,0 +1,4 @@
+<map file="usm_running_track.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 5.1497182	100.4980183"/>
+  <point x="736" y="397" geo="WGS84 5.1477044	100.5017668"/>
+</map>

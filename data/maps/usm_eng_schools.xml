@@ -1,0 +1,4 @@
+<map file="usm_eng_schools.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 5.1486428	100.4900479"/>
+  <point x="1417" y="635" geo="WGS84 5.1454218	100.4972646"/>
+</map>

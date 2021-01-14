@@ -1,0 +1,64 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="optical_flow_depth" dir="ctrl">
+  <doc>
+    <description>
+      Optical flow depth estimation.
+
+      This module implements optical flow based depth estimation
+      
+    </description>
+    <define name="OFL_AGL_ID" value="ABI_BROADCAST" description="Sender id of the AGL (sonar) ABI message"/>
+    <section name="OFL" prefix="OFL_">
+      <define name="PGAIN" value="0.50" description="P gain on height error"/>
+      <define name="IGAIN" value="0.10" description="I gain on summed height error"/>
+      <define name="DGAIN" value="0.0" description="D gain on summed height error"/>
+      <define name="VISION_METHOD" value="1" description="0 = fake vision, 1 = real vision"/>
+      <define name="CONTROL_METHOD" value="0" description="0 = fixed gain control, 1 = adaptive gain control, 2 = exponential control, 3 = INDI, 4 = Sonar"/>
+      <define name="COV_METHOD" value="0" description="0 = cov(uz, div), 1 = cov(div_past, div)"/>
+      <define name="COV_WINDOW_SIZE" value="30" description="Number of time steps for window size for getting the covariance over time."/>
+      <define name="COV_LANDING_LIMIT" value="2.2" description="Covariance where the vehicle engages final landing procedure."/>
+      <define name="COV_SETPOINT" value="-0.0075" description="Target Covariance for adaptive gain increment."/>
+      <define name="LP_CONST" value="0.75" description="Low pass filter constant for divergence input."/>
+      <define name="ELC_OSCILLATE" value="true" description="Oscillate to find optimum gain before initiating landing."/>
+      <define name="HEIGHT" value="1.0" description="Desired height"/>
+    </section>
+  </doc>
+  <settings>
+    <dl_settings>
+      <dl_settings NAME="OpticalFlowLanding">
+        <dl_setting var="of_landing_ctrl2.nominal_thrust" min="0" step="0.001" max="1" module="ctrl/optical_flow_depth" shortname="nominal_thrust"/>
+        <dl_setting var="of_landing_ctrl2.lp_const" min="0.005" step="0.005" max="1" module="ctrl/optical_flow_depth" shortname="lp_factor" param="OFL_LP_CONST"/>
+        <dl_setting var="of_landing_ctrl2.divergence_setpoint" min="-1" step="0.01" max="1" module="ctrl/optical_flow_depth" shortname="div sp"/>
+        <dl_setting var="of_landing_ctrl2.cov_set_point" min="-6" step="0.0001" max="6" module="ctrl/optical_flow_depth" shortname="cov_set_point" param="OFL_COV_SETPOINT"/>
+        <dl_setting var="of_landing_ctrl2.cov_limit" min="0" step="0.0001" max="6" module="ctrl/optical_flow_depth" shortname="cov_limit" param="OFL_COV_LANDING_LIMIT"/>
+        <dl_setting var="of_landing_ctrl2.pgain" min="0" step="0.001" max="6" module="ctrl/optical_flow_depth" shortname="pgain" param="OFL_PGAIN"/>
+        <dl_setting var="of_landing_ctrl2.igain" min="0" step="0.001" max="1" module="ctrl/optical_flow_depth" shortname="igain" param="OFL_IGAIN"/>
+        <dl_setting var="of_landing_ctrl2.dgain" min="0" step="0.1" max="6" module="ctrl/optical_flow_depth" shortname="dgain" param="OFL_DGAIN"/>
+        <dl_setting var="of_landing_ctrl2.VISION_METHOD" min="0" step="1" max="1" values="Ground truth|Online" module="ctrl/optical_flow_depth" shortname="VISION_METHOD" param="OFL_VISION_METHOD"/>
+        <dl_setting var="of_landing_ctrl2.CONTROL_METHOD" min="0" step="1" max="4" values="Simple|Adaptive|Exp|INDI|Sonar" module="ctrl/optical_flow_depth" shortname="CONTROL_METHOD" param="OFL_CONTROL_METHOD"/>
+        <dl_setting var="of_landing_ctrl2.COV_METHOD" min="0" step="1" max="1" values="Div-Thrust|Div-Shift div" module="ctrl/optical_flow_depth" shortname="COV_METHOD" param="OFL_COV_METHOD"/>
+        <dl_setting var="of_landing_ctrl2.delay_steps" min="0" step="1" max="60" module="ctrl/optical_flow_depth" shortname="delay_steps"/>
+        <dl_setting var="of_landing_ctrl2.pgain_adaptive" min="0" step="0.1" max="20.0" module="ctrl/optical_flow_depth" shortname="pgain_adaptive"/>
+        <dl_setting var="of_landing_ctrl2.igain_adaptive" min="0" step="0.01" max="1.0" module="ctrl/optical_flow_depth" shortname="igain_adaptive"/>
+        <dl_setting var="of_landing_ctrl2.dgain_adaptive" min="0" step="0.01" max="5.0" module="ctrl/optical_flow_depth" shortname="dgain_adaptive"/>
+        <dl_setting var="of_landing_ctrl2.reduction_factor_elc" min="0.1" step="0.01" max="3.0" module="ctrl/optical_flow_depth" shortname="reduction_factor_elc"/>
+        <dl_setting var="of_landing_ctrl2.elc_oscillate" min="0" step="1" max="1" values="FALSE|TRUE" module="ctrl/optical_flow_depth" shortname="oscillate" param="OFL_ELC_OSCILLATE"/>
+        <dl_setting var="of_landing_ctrl2.height_desired" min="0" step="0.1" max="5" module="ctrl/optical_flow_depth" shortname="height" param="OFL_HEIGHT"/>
+      </dl_settings>
+    </dl_settings>
+  </settings>
+
+  <header>
+    <file name="optical_flow_depth.h"/>
+  </header>
+  
+  <!-- run init causing sonar failed! -->
+  <!-- init fun="vertical_ctrl_module_init2()" /-->
+  <periodic fun="vertical_ctrl_module_run2()" autorun="TRUE"/>
+
+  <makefile target="ap">
+    <file name="optical_flow_depth.c"/>
+  </makefile>
+
+</module>

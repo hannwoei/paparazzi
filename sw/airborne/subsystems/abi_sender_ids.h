@@ -417,7 +417,7 @@
  * IDs of OPTICFLOW estimates (message 28)
  */
 #ifndef FLOW_OPTICFLOW2_ID
-#define FLOW_OPTICFLOW2_ID 4
+#define FLOW_OPTICFLOW2_ID 9
 #endif
 
 /*
@@ -425,7 +425,7 @@
  */
 
 #ifndef VEL_OPTICFLOW2_ID
-#define VEL_OPTICFLOW2_ID 6
+#define VEL_OPTICFLOW2_ID 10
 #endif
 
 #endif /* ABI_SENDER_IDS_H */
